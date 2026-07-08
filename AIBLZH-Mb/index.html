@@ -1,0 +1,2257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI病历整理预审</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a8f69;
+            --primary-dark: #157a5a;
+            --bg-gray: #f5f5f5;
+            --text-gray: #666666;
+            --border-gray: #e0e0e0;
+            --success-green: #28a745;
+            --warning-orange: #fad514;
+            --warning-orange-dark: #f59e0b;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-gray);
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .nav-active {
+            color: var(--primary);
+        }
+        .nav-active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background-color: var(--primary);
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        /* 标注角标样式 */
+        .annotation-badge {
+            display: inline-block;
+            vertical-align: top;
+            background-color: rgb(250, 173, 20);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 14px;
+            padding: 0px 4px;
+            border-radius: 2px;
+            cursor: pointer;
+            position: absolute;
+            top: -8px;
+            right: -4px;
+            z-index: 100;
+        }
+        .annotation-badge:hover {
+            background-color: rgb(230, 153, 0);
+        }
+        /* 标注浮窗样式 */
+        .annotation-popup {
+            position: fixed;
+            width: 450px;
+            max-height: 80vh;
+            background-color: #f0efef;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            overflow: hidden;
+        }
+        .annotation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #e8e7e7;
+            border-bottom: 1px solid #d0cfcf;
+            cursor: move;
+        }
+        .annotation-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .annotation-close {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #666;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        .annotation-close:hover {
+            background-color: #ccc;
+        }
+        .annotation-content {
+            padding: 14px;
+            max-height: calc(80vh - 60px);
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #333;
+            white-space: pre-wrap;
+        }
+        .annotation-content h4 {
+            margin: 14px 0 10px 0;
+            padding-bottom: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #222;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .annotation-content p {
+            margin-bottom: 14px;
+            line-height: 1.7;
+        }
+        .annotation-content ul, .annotation-content ol {
+            margin: 10px 0 14px 22px;
+            padding-left: 0;
+        }
+        .annotation-content li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+        .annotation-content li ul, .annotation-content li ol {
+            margin: 4px 0 4px 20px;
+        }
+        .annotation-content blockquote {
+            border-left: 4px solid #1a8f69;
+            padding: 8px 12px;
+            margin: 12px 0;
+            color: #555;
+            font-style: italic;
+            background-color: #f8f9fa;
+            border-radius: 0 4px 4px 0;
+        }
+        .annotation-content strong {
+            font-weight: 600;
+            color: #222;
+        }
+        .annotation-content em {
+            font-style: italic;
+        }
+        .annotation-content table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 12px 0 16px 0;
+            font-size: 12px;
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .annotation-content th {
+            background-color: #f5f7fa;
+            font-weight: 600;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid #e8eaed;
+            color: #333;
+        }
+        .annotation-content td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #f0f2f5;
+            vertical-align: top;
+            color: #444;
+        }
+        .annotation-content tr:hover td {
+            background-color: #fafbfc;
+        }
+        .annotation-content tr:last-child td {
+            border-bottom: none;
+        }
+        .annotation-content .section-label {
+            font-weight: 600;
+            color: #1a8f69;
+            margin-right: 6px;
+        }
+        .annotation-content .empty-line {
+            height: 8px;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-green {
+            background-color: #28a745;
+        }
+        .status-red {
+            background-color: #dc3545;
+        }
+        .status-orange {
+            background-color: #fd7e14;
+        }
+        .status-blue {
+            background-color: #007bff;
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-in-right {
+                animation: slideInRight 0.3s ease;
+            }
+            @keyframes slideInRight {
+                from { opacity: 0; transform: translateX(20px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            .animate-slide-up {
+                animation: slideUp 0.3s ease;
+            }
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(100%); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style>
+</head>
+<body>
+    <!-- 登录页 -->
+    <div id="login-page" class="page active min-h-screen bg-gray-100">
+        <div class="flex flex-col items-center justify-center min-h-screen px-4">
+            <div class="w-20 h-20 bg-[var(--primary)] rounded-full flex items-center justify-center mb-6">
+                <i class="fas fa-file-medical text-white text-2xl"></i>
+            </div>
+            <h1 class="text-xl font-bold text-gray-800 mb-2">AI病历整理预审</h1>
+            <p class="text-sm text-gray-500 mb-8">专业医疗服务平台</p>
+            
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 relative">
+                <span class="annotation-badge" onclick="showAnnotation(1)">1</span>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                    <div class="relative">
+                        <input type="password" id="password" placeholder="请输入密码" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent pr-10">
+                        <i class="fas fa-eye absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" 
+                           onclick="togglePassword()"></i>
+                    </div>
+                </div>
+                <button id="login-btn" class="w-full bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors mb-4"
+                    onclick="handleLogin()">
+                    登录
+                </button>
+                <div class="flex items-center my-4">
+                    <div class="flex-1 border-t border-gray-200"></div>
+                    <span class="px-4 text-xs text-gray-400">其他登录方式</span>
+                    <div class="flex-1 border-t border-gray-200"></div>
+                </div>
+                <button class="w-full bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors flex items-center justify-center gap-2">
+                    <i class="fab fa-weixin"></i>
+                    <span>微信快捷登录</span>
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-6">登录即表示同意《服务协议》和《隐私政策》</p>
+        </div>
+    </div>
+
+    <!-- 首页 -->
+    <div id="home-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="flex items-center justify-center h-12">
+                <h1 class="text-lg font-medium text-gray-800">AI病历助手</h1>
+            </div>
+        </header>
+        
+        <div class="px-4 py-4 relative">
+            <span class="annotation-badge" onclick="showAnnotation(2)">2</span>
+            <button id="new-record-btn" class="w-full bg-[var(--primary)] text-white rounded-xl p-4 flex items-center justify-between hover:bg-[var(--primary-dark)] transition-colors">
+                <div>
+                    <h2 class="text-lg font-bold mb-1">新建病历</h2>
+                    <p class="text-xs text-green-100">智能整理病历 · 精准匹配科室 · 辅助临床决策</p>
+                </div>
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-plus text-white"></i>
+                </div>
+            </button>
+        </div>
+
+        <div class="px-4 space-y-3 relative">
+            <span class="annotation-badge" onclick="showAnnotation(3)" style="top: -4px;">3</span>
+            <div id="record-draft" class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-medium text-gray-800">李先生</span>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">消化内科</span>
+                    <span class="text-xs text-gray-400">2026-05-10</span>
+                </div>
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span><i class="fas fa-file-alt mr-2"></i>草稿</span>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            </div>
+
+            <div id="record-analyzing" class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-medium text-gray-800">周女士</span>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">内分泌科</span>
+                    <span class="text-xs text-gray-400">2026-05-09</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-[var(--primary)]"><i class="fas fa-spinner spinner mr-2"></i>AI整理中...</span>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            </div>
+
+            <div id="record-done-1" class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-medium text-gray-800">赵女士</span>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">肿瘤科</span>
+                    <span class="text-xs text-gray-400">2026-05-08</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-[var(--primary)]"><i class="fas fa-check-circle mr-2"></i>AI整理完成 <span class="text-red-500 ml-1">new</span></span>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            </div>
+
+            <div id="record-done-2" class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-medium text-gray-800">赵女士</span>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">肿瘤科</span>
+                    <span class="text-xs text-gray-400">2026-05-08</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-[var(--primary)]"><i class="fas fa-check-circle mr-2"></i>AI整理完成</span>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            </div>
+
+            <div id="record-failed" class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-medium text-gray-800">孙先生</span>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">骨科</span>
+                    <span class="text-xs text-gray-400">2026-05-07</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-red-500"><i class="fas fa-times-circle mr-2"></i>AI整理失败</span>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+            <div class="flex justify-around">
+                <button id="nav-work" class="flex flex-col items-center py-2 nav-active relative">
+                    <i class="fas fa-file-text text-lg"></i>
+                    <span class="text-xs mt-1">工单</span>
+                </button>
+                <button id="nav-profile" class="flex flex-col items-center py-2 text-gray-400">
+                    <i class="fas fa-user text-lg"></i>
+                    <span class="text-xs mt-1">我的</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- 新建病历页 -->
+    <div id="new-record-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-home" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">新建病历</h1>
+        </header>
+
+        <div class="flex items-center justify-center py-3 bg-green-50">
+            <span class="text-[var(--primary)] text-sm"><i class="fas fa-brain mr-1"></i>AI辅助已开启</span>
+        </div>
+
+        <div class="px-4 py-4 space-y-4">
+            <div class="bg-white rounded-xl p-4 relative">
+                <span class="annotation-badge" onclick="showAnnotation(4)">4</span>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-medium text-gray-800 flex items-center">
+                        <i class="fas fa-user-circle mr-2 text-[var(--primary)]"></i>患者信息
+                    </h3>
+                    <span id="toggle-fill-mode" class="text-xs text-[var(--primary)] cursor-pointer">手动填写</span>
+                </div>
+                <div id="ai-fill-hint" class="block">
+                    <p class="text-sm text-gray-400">AI分析后自动完善患者信息</p>
+                </div>
+                <div id="manual-fill-form" class="hidden pt-3 space-y-3 border-t border-gray-100 mt-3">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>姓名</label>
+                        <input type="text" placeholder="患者姓名" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">身份证号</label>
+                        <input type="text" placeholder="请输入" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>性别</label>
+                            <div id="gender-select" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white cursor-pointer flex items-center justify-between">
+                                <span id="gender-value">请选择</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>年龄</label>
+                            <input type="text" placeholder="请输入" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 relative">
+                <span class="annotation-badge" onclick="showAnnotation(5)">5</span>
+                <h3 class="font-medium text-gray-800 flex items-center mb-4">
+                    <i class="fas fa-stethoscope mr-2 text-[var(--primary)]"></i>会诊需求
+                </h3>
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-600 mb-2">病情描述 (客户主诉) <span class="text-red-500">*</span></label>
+                    <textarea rows="4" placeholder="描述症状、持续时间及既往治疗情况..." 
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-2">会诊目的 <span class="text-red-500">*</span></label>
+                    <textarea rows="2" placeholder="此次会诊核心解决问题" 
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 relative">
+                <span class="annotation-badge" onclick="showAnnotation(6)">6</span>
+                <h3 class="font-medium text-gray-800 flex items-center mb-4">
+                    <i class="fas fa-file-medical mr-2 text-[var(--primary)]"></i>病历及检查资料
+                </h3>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div class="aspect-square bg-gray-200 rounded-lg relative">
+                        <span class="absolute right-1 top-1 text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                    <div class="aspect-square bg-gray-200 rounded-lg relative">
+                        <span class="absolute right-1 top-1 text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                    <div class="aspect-square bg-gray-200 rounded-lg relative">
+                        <span class="absolute right-1 top-1 text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                </div>
+                <div class="space-y-2 mb-3">
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>胸部CT报告.pdf
+                        </span>
+                        <span class="text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-word text-blue-500 mr-2"></i>肿瘤标志物结果.word
+                        </span>
+                        <span class="text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                </div>
+                <button id="upload-file-btn" class="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-500 hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i>上传文件
+                </button>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
+            <button class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                保存草稿
+            </button>
+            <button id="start-analysis-btn" class="flex-1 bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors flex items-center justify-center">
+                开始AI分析 <i class="fas fa-chevron-right ml-1"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- AI分析中页 -->
+    <div id="analysis-page" class="page min-h-screen bg-gray-100">
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="flex items-center justify-center h-12">
+                <h1 class="text-lg font-medium text-gray-800">AI智能分析中</h1>
+            </div>
+        </header>
+
+        <div class="px-4 py-4 relative">
+            <span class="annotation-badge" onclick="showAnnotation(7)">7</span>
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-600">整体进度</span>
+                <span class="text-sm font-medium text-blue-600">65%</span>
+            </div>
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 progress-bar" style="width: 65%"></div>
+            </div>
+        </div>
+
+        <div class="px-4 space-y-3">
+            <div class="bg-green-50 rounded-xl p-4 border border-green-100">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-check text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">解析病历文件</p>
+                        <p class="text-xs text-gray-500">已成功解析3份病历文件</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 rounded-xl p-4 border border-green-100">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-check text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">提取关键信息</p>
+                        <p class="text-xs text-gray-500">已提取主诉、现病史、过敏史等 12 项关键信息</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-spinner spinner text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">校验病历完整性</p>
+                        <p class="text-xs text-gray-500">正在整合病史信息，生成标准化会诊摘要...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-100 rounded-xl p-4 opacity-50">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-clock text-gray-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">推荐科室</p>
+                        <p class="text-xs text-gray-400">待处理...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-100 rounded-xl p-4 opacity-50">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-clock text-gray-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">提供智能诊断</p>
+                        <p class="text-xs text-gray-400">待处理...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-100 rounded-xl p-4 opacity-50">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-clock text-gray-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">生成会诊摘要</p>
+                        <p class="text-xs text-gray-400">待处理...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-red-50 rounded-xl p-4 border border-red-100">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-times text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">AI分析失败</p>
+                        <p class="text-xs text-red-500">系统服务暂时不可用，请稍后重试</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-4 mt-6">
+            <button class="w-full bg-gray-200 text-gray-400 py-3 rounded-lg font-medium mb-3 cursor-not-allowed">
+                整理完成后查看
+            </button>
+            <div class="flex gap-3">
+                <button id="view-original-btn-analysis" class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    查看原病历
+                </button>
+                <button id="return-home-btn" class="flex-1 bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors">
+                    返回首页（后台继续处理）
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI分析结果页 -->
+    <div id="result-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-list" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">AI分析结果</h1>
+        </header>
+
+        <div class="flex border-b border-gray-200 bg-white relative">
+            <span class="annotation-badge" onclick="showAnnotation(8)">8</span>
+            <button id="tab-arrange" class="flex-1 py-3 text-[var(--primary)] border-b-2 border-[var(--primary)] text-sm font-medium">
+                AI整理病历
+            </button>
+            <button id="tab-classify" class="flex-1 py-3 text-gray-400 text-sm">
+                AI智能分诊
+            </button>
+        </div>
+
+        <!-- AI整理病历内容 -->
+        <div id="content-arrange" class="px-4 py-4 space-y-4">
+            <div class="bg-white rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-medium text-gray-800 flex items-center">
+                        <i class="fas fa-user-circle mr-2 text-[var(--primary)]"></i>患者信息
+                    </h3>
+                    <span id="edit-patient-btn" class="text-xs text-[var(--primary)] cursor-pointer">修改</span>
+                </div>
+                <p class="text-sm text-gray-600">张三 (男·45岁·11010119980808084456)</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-medium text-gray-800 flex items-center">
+                        <i class="fas fa-stethoscope mr-2 text-[var(--primary)]"></i>会诊需求
+                    </h3>
+                    <span id="edit-demand-btn" class="text-xs text-[var(--primary)] cursor-pointer">修改</span>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs text-gray-400 mb-1">病情描述 (客户主诉) <span class="text-red-500">*</span></label>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        患者近2月反复咳嗽，伴有白色色粘痰，无发热。曾在当地医院行胸部CT提示右肺上叶小结节（约6mm），建议定期复查。今为求进一步诊治咨询会诊。
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">会诊目的 <span class="text-red-500">*</span></label>
+                    <p class="text-sm text-gray-600">明确诊断、制定治疗方案</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-medium text-gray-800 flex items-center">
+                        <i class="fas fa-file-medical mr-2 text-[var(--primary)]"></i>病历及检查资料
+                    </h3>
+                    <span id="edit-documents-btn" class="text-xs text-[var(--primary)] cursor-pointer">修改</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=medical%20record%20file%20patient%20chart%20document&image_size=square" alt="病历文件" class="w-full h-full object-cover">
+                    </div>
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=CT%20scan%20medical%20imaging%20report&image_size=square" alt="CT检查报告" class="w-full h-full object-cover">
+                    </div>
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=blood%20test%20laboratory%20report%20results&image_size=square" alt="检验报告" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=MRI%20scan%20brain%20medical%20image&image_size=portrait_4_3" alt="MRI影像" class="w-full h-full object-cover">
+                    </div>
+                    <div class="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ultrasound%20medical%20examination%20report&image_size=portrait_4_3" alt="超声检查报告" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>胸部CT报告.pdf
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-word text-blue-500 mr-2"></i>肿瘤标志物结果.word
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI智能分诊内容 -->
+        <div id="content-classify" class="hidden px-4 py-4 space-y-4">
+            <div class="bg-white rounded-xl p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-medium text-gray-800 flex items-center">
+                        <i class="fas fa-stethoscope mr-2 text-[var(--primary)]"></i>科室推荐
+                    </h3>
+                    <span class="text-xs text-[var(--primary)] cursor-pointer">一键复制</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <span class="text-sm font-medium text-gray-800">心血管内科</span>
+                        <span class="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">推荐</span>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        基于患者典型胸痛症状、心电图异常及影像学检查结果，AI分析认为患者可能存在冠状动脉狭窄。
+                    </p>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                    <div class="flex items-start gap-3">
+                        <span class="text-sm font-medium text-gray-800">呼吸内科</span>
+                        <span class="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">备选</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">排除肺部疾病所致气短。</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <h3 class="font-medium text-gray-800 flex items-center mb-4">
+                    <i class="fas fa-file-check mr-2 text-[var(--primary)]"></i>资料完整性
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                        <span class="text-sm text-gray-600">病情描述完整</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                        <span class="text-sm text-gray-600">CT影像已上传</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                        <span class="text-sm text-gray-600">肿瘤标志物已上传</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle text-orange-500 text-sm"></i>
+                        <span class="text-sm text-gray-600">缺失：病理报告</span>
+                    </div>
+                </div>
+                <div class="mt-4 bg-gray-50 rounded-lg p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-gray-500 flex items-center">
+                            <i class="fas fa-message-circle mr-1"></i>补全话术建议
+                        </span>
+                        <span class="text-xs text-[var(--primary)] cursor-pointer">一键复制</span>
+                    </div>
+                    <p class="text-xs text-gray-600 italic">
+                        "王先生，为更好地为您安排专家会诊，请问您是否有出院小结或之前的病理报告可以发给我？"
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-medium text-gray-800 flex items-center">
+                        <i class="fas fa-search mr-2 text-[var(--primary)]"></i>智能诊断
+                    </h3>
+                    <span class="text-xs text-[var(--primary)] cursor-pointer">一键复制</span>
+                </div>
+                <div class="mb-4">
+                    <p class="text-sm font-medium text-gray-800 mb-3">AI初步诊断</p>
+                    <ul class="space-y-1">
+                        <li class="flex items-center gap-2 text-xs text-gray-600">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            冠状动脉粥样硬化性心脏病 (85%)
+                        </li>
+                        <li class="flex items-center gap-2 text-xs text-gray-600">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            高血压病 2级 (60%)
+                        </li>
+                        <li class="flex items-center gap-2 text-xs text-gray-600">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            高血压病 (60%)
+                        </li>
+                        <li class="flex items-center gap-2 text-xs text-gray-600">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            2型糖尿病 (45%)
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-800 mb-3">诊疗建议</p>
+                    <ul class="space-y-1">
+                        <li class="flex items-center gap-2 text-xs text-gray-600">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            建议完善冠脉造影检查以明确血管狭窄程度
+                        </li>
+                        <li class="flex items-center gap-2 text-xs text-gray-600">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            给予抗血小板聚集、调脂稳定斑块治疗
+                        </li>
+                        <li class="flex items-center gap-2 text-xs text-gray-600">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            控制血压血糖，监测心功能变化
+                        </li>
+                    </ul>
+                </div>
+                <p class="text-xs text-gray-400 mt-4">AI建议仅供参考，请以临床医生判断为准</p>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
+            <button id="view-original-btn" class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                查看原病历
+            </button>
+            <button id="share-link-btn" class="flex-1 bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors">
+                生成病历分享链接
+            </button>
+        </div>
+    </div>
+
+    <!-- 修改患者信息页 -->
+    <div id="edit-patient-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-edit-patient" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">修改病历</h1>
+        </header>
+
+        <div class="px-4 py-4">
+            <h2 class="text-sm font-medium text-gray-800 mb-4">修改患者信息</h2>
+            <div class="bg-white rounded-xl p-4 space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>姓名</label>
+                    <input type="text" value="张三" class="w-full px-3 py-2 border-b border-gray-200 text-gray-800 focus:outline-none focus:border-[var(--primary)]">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">身份证号</label>
+                    <input type="text" placeholder="请输入" class="w-full px-3 py-2 border-b border-gray-200 text-gray-800 focus:outline-none focus:border-[var(--primary)]">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2"><span class="text-red-500">*</span>性别</label>
+                    <div class="flex gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="gender" value="male" checked class="text-[var(--primary)]">
+                            <span class="text-sm text-gray-700">男</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="gender" value="female" class="text-[var(--primary)]">
+                            <span class="text-sm text-gray-700">女</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>年龄</label>
+                    <input type="text" value="45" class="w-full px-3 py-2 border-b border-gray-200 text-gray-800 focus:outline-none focus:border-[var(--primary)]">
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
+            <button id="cancel-patient-btn" class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                取消
+            </button>
+            <button id="save-patient-btn" class="flex-1 bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors">
+                保存
+            </button>
+        </div>
+    </div>
+
+    <!-- 修改会诊需求页 -->
+    <div id="edit-demand-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-edit-demand" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">修改病历</h1>
+        </header>
+
+        <div class="px-4 py-4">
+            <h2 class="text-sm font-medium text-gray-800 mb-4">修改会诊需求</h2>
+            <div class="bg-white rounded-xl p-4 space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2">病情描述 (客户主诉) <span class="text-red-500">*</span></label>
+                    <textarea rows="5" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none">
+患者近2月反复咳嗽，伴有白色色粘痰，无发热。曾在当地医院行胸部CT提示右肺上叶小结节（约6mm），建议定期复查。今为求进一步诊治咨询会诊。
+                    </textarea>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2">会诊目的 <span class="text-red-500">*</span></label>
+                    <textarea rows="2" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none">
+明确诊断、制定治疗方案
+                    </textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
+            <button id="cancel-demand-btn" class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                取消
+            </button>
+            <button id="save-demand-btn" class="flex-1 bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors">
+                保存
+            </button>
+        </div>
+    </div>
+
+    <!-- 修改病历及检查资料页 -->
+    <div id="edit-documents-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-edit-documents" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">修改病历</h1>
+        </header>
+
+        <div class="px-4 py-4">
+            <h2 class="text-sm font-medium text-gray-800 mb-4">修改病历及检查资料</h2>
+            <div class="bg-white rounded-xl p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=medical%20record%20file%20patient%20chart%20document&image_size=square" alt="病历图片" class="w-full h-full object-cover">
+                        <span class="absolute right-1 top-1 text-white bg-black/50 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer">×</span>
+                    </div>
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=CT%20scan%20medical%20imaging%20report&image_size=square" alt="病历图片" class="w-full h-full object-cover">
+                        <span class="absolute right-1 top-1 text-white bg-black/50 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer">×</span>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>胸部CT报告.pdf
+                        </span>
+                        <span class="text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-word text-blue-500 mr-2"></i>肿瘤标志物结果.word
+                        </span>
+                        <span class="text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                </div>
+                <button id="upload-file-btn-edit" class="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-500 hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i>上传文件
+                </button>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
+            <button id="cancel-documents-btn" class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                取消
+            </button>
+            <button id="save-documents-btn" class="flex-1 bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors">
+                保存
+            </button>
+        </div>
+    </div>
+
+    <!-- AI分析失败页面 -->
+    <div id="analysis-failed-page" class="page min-h-screen bg-gray-100">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-home-failed" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">AI分析结果</h1>
+        </header>
+
+        <div class="px-4 py-8 relative">
+            <span class="annotation-badge" onclick="showAnnotation(9)" style="top: 12px;">9</span>
+            <div class="flex flex-col items-center">
+                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-times-circle text-red-500 text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">AI分析失败</h2>
+                <p class="text-sm text-gray-500 text-center mb-6">抱歉，AI未能成功整理您的病历信息</p>
+                
+                <div class="w-full bg-white rounded-xl p-4 mb-6">
+                    <h3 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>失败原因
+                    </h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        系统服务暂时不可用，请稍后重试。
+                    </p>
+                </div>
+
+                <button id="retry-analysis-btn" class="w-full bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors flex items-center justify-center mb-3">
+                    <i class="fas fa-redo mr-2"></i>重新发起AI分析
+                </button>
+                
+                <div class="flex gap-3 w-full">
+                    <button id="view-original-btn-failed" class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        查看原病历
+                    </button>
+                    <button id="modify-record-btn-failed" class="flex-1 border border-gray-300 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        修改病历
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pageHistory = [];
+        let currentPage = null;
+
+        function showPage(pageId) {
+            if (currentPage) {
+                pageHistory.push(currentPage);
+            }
+            currentPage = pageId;
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function goBack() {
+            if (pageHistory.length > 0) {
+                const previousPage = pageHistory.pop();
+                currentPage = previousPage;
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(previousPage).classList.add('active');
+            } else {
+                showPage('home-page');
+            }
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username || password) {
+                showPage('home-page');
+            } else {
+                alert('请输入用户名和密码');
+            }
+        }
+
+        document.getElementById('login-btn').addEventListener('click', handleLogin);
+        document.getElementById('new-record-btn').addEventListener('click', () => showPage('new-record-page'));
+        document.getElementById('back-home').addEventListener('click', () => showPage('home-page'));
+        document.getElementById('start-analysis-btn').addEventListener('click', () => {
+            showPage('analysis-page');
+            simulateAnalysis();
+        });
+        document.getElementById('return-home-btn').addEventListener('click', () => {
+                stopAnalysis();
+                showPage('home-page');
+            });
+            document.getElementById('view-original-btn-analysis').addEventListener('click', () => {
+                stopAnalysis();
+                showPage('original-record-page');
+            });
+        document.getElementById('record-draft').addEventListener('click', () => {
+            toggleSaveDraftButton(true);
+            showPage('modify-record-page');
+        });
+        document.getElementById('record-analyzing').addEventListener('click', () => {
+            toggleSaveDraftButton(false);
+            showPage('analysis-page');
+        });
+        document.getElementById('record-done-1').addEventListener('click', () => {
+            toggleSaveDraftButton(false);
+            showPage('result-page');
+        });
+        document.getElementById('record-done-2').addEventListener('click', () => {
+            toggleSaveDraftButton(false);
+            showPage('result-page');
+        });
+        document.getElementById('record-failed').addEventListener('click', () => {
+            toggleSaveDraftButton(false);
+            showPage('analysis-failed-page');
+        });
+
+        function toggleSaveDraftButton(show) {
+            const saveDraftBtn = document.getElementById('save-draft-btn');
+            if (saveDraftBtn) {
+                if (show) {
+                    saveDraftBtn.classList.remove('hidden');
+                } else {
+                    saveDraftBtn.classList.add('hidden');
+                }
+            }
+        }
+
+        const saveDraftBtn = document.getElementById('save-draft-btn');
+        if (saveDraftBtn) {
+            saveDraftBtn.addEventListener('click', () => {
+                alert('草稿已保存');
+                toggleSaveDraftButton(false);
+            });
+        }
+
+        document.getElementById('back-list').addEventListener('click', () => showPage('home-page'));
+
+        document.getElementById('nav-work').addEventListener('click', () => {
+            document.getElementById('nav-work').classList.add('nav-active');
+            document.getElementById('nav-profile').classList.remove('nav-active');
+        });
+        document.getElementById('nav-profile').addEventListener('click', () => {
+            document.getElementById('nav-profile').classList.add('nav-active');
+            document.getElementById('nav-work').classList.remove('nav-active');
+        });
+
+        document.getElementById('toggle-fill-mode').addEventListener('click', () => {
+            const aiHint = document.getElementById('ai-fill-hint');
+            const manualForm = document.getElementById('manual-fill-form');
+            const toggleText = document.getElementById('toggle-fill-mode');
+            
+            if (manualForm.classList.contains('hidden')) {
+                aiHint.classList.add('hidden');
+                manualForm.classList.remove('hidden');
+                toggleText.textContent = 'AI智能填写';
+            } else {
+                aiHint.classList.remove('hidden');
+                manualForm.classList.add('hidden');
+                toggleText.textContent = '手动填写';
+            }
+        });
+
+        document.getElementById('tab-arrange').addEventListener('click', () => {
+            document.getElementById('tab-arrange').classList.add('border-b-2', 'border-[var(--primary)]', 'text-[var(--primary)]');
+            document.getElementById('tab-classify').classList.remove('border-b-2', 'border-[var(--primary)]', 'text-[var(--primary)]');
+            document.getElementById('tab-classify').classList.add('text-gray-400');
+            document.getElementById('content-arrange').classList.remove('hidden');
+            document.getElementById('content-classify').classList.add('hidden');
+        });
+
+        document.getElementById('tab-classify').addEventListener('click', () => {
+            document.getElementById('tab-classify').classList.add('border-b-2', 'border-[var(--primary)]', 'text-[var(--primary)]');
+            document.getElementById('tab-arrange').classList.remove('border-b-2', 'border-[var(--primary)]', 'text-[var(--primary)]');
+            document.getElementById('tab-arrange').classList.add('text-gray-400');
+            document.getElementById('content-classify').classList.remove('hidden');
+            document.getElementById('content-arrange').classList.add('hidden');
+        });
+
+        document.getElementById('edit-patient-btn').addEventListener('click', () => showPage('edit-patient-page'));
+        document.getElementById('edit-demand-btn').addEventListener('click', () => showPage('edit-demand-page'));
+        document.getElementById('edit-documents-btn').addEventListener('click', () => showPage('edit-documents-page'));
+
+        document.getElementById('back-edit-patient').addEventListener('click', () => showPage('result-page'));
+        document.getElementById('back-edit-demand').addEventListener('click', () => showPage('result-page'));
+        document.getElementById('back-edit-documents').addEventListener('click', () => showPage('result-page'));
+
+        document.getElementById('cancel-patient-btn').addEventListener('click', () => showPage('result-page'));
+        document.getElementById('cancel-demand-btn').addEventListener('click', () => showPage('result-page'));
+        document.getElementById('cancel-documents-btn').addEventListener('click', () => showPage('result-page'));
+
+        document.getElementById('save-patient-btn').addEventListener('click', () => showPage('result-page'));
+        document.getElementById('save-demand-btn').addEventListener('click', () => showPage('result-page'));
+        document.getElementById('save-documents-btn').addEventListener('click', () => showPage('result-page'));
+
+        document.getElementById('back-home-failed').addEventListener('click', () => showPage('home-page'));
+        document.getElementById('retry-analysis-btn').addEventListener('click', () => {
+            showPage('analysis-page');
+            simulateAnalysis();
+        });
+        document.getElementById('view-original-btn-failed').addEventListener('click', () => showPage('original-record-page'));
+        document.getElementById('modify-record-btn-failed').addEventListener('click', () => {
+            toggleSaveDraftButton(true);
+            showPage('modify-record-page');
+        });
+
+        let analysisInterval = null;
+
+        function simulateAnalysis() {
+            let progress = 65;
+            const progressBar = document.querySelector('.progress-bar');
+            const progressText = document.querySelector('.text-blue-600');
+            
+            analysisInterval = setInterval(() => {
+                progress += 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(analysisInterval);
+                    analysisInterval = null;
+                    setTimeout(() => {
+                        showPage('result-page');
+                    }, 500);
+                }
+                progressBar.style.width = progress + '%';
+                progressText.textContent = progress + '%';
+            }, 300);
+        }
+
+        function stopAnalysis() {
+            if (analysisInterval) {
+                clearInterval(analysisInterval);
+                analysisInterval = null;
+            }
+        }
+
+        function showModal(modalId) {
+            console.log('showModal called with:', modalId);
+            const overlay = document.getElementById(modalId + '-overlay');
+            const modal = document.getElementById(modalId);
+            console.log('Overlay element:', overlay);
+            console.log('Modal element:', modal);
+            if (!overlay || !modal) {
+                console.error('Modal elements not found:', modalId);
+                return;
+            }
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+            }, 10);
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            console.log('Modal shown successfully:', modalId);
+        }
+
+        function hideModal(modalId) {
+            const overlay = document.getElementById(modalId + '-overlay');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                document.getElementById(modalId).classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        // 标注浮窗数据
+        const annotationData = {
+            1: {
+                title: '登录模块',
+                content: `#### 页面布局
+- Logo区域：居中显示，包含图标和标题
+- 登录表单：用户名、密码输入框
+- 登录按钮：主色调（#1a8f69）
+- 分割线：其他登录方式
+- 微信快捷登录按钮
+- 底部协议提示文字
+
+#### 字段说明
+
+| 字段名 | 类型       | 必填 | 默认值 | 校验规则     |
+| --- | -------- | -- | --- | -------- |
+| 用户名 | text     | 是  | 空   | 长度2-20字符 |
+| 密码  | password | 是  | 空   | 长度6-20字符 |
+
+#### 交互说明
+
+- 点击密码输入框右侧眼睛图标：切换密码显示/隐藏
+- 用户名密码均不为空时，登录按钮可点击
+- 登录成功后跳转到首页
+
+#### 角色说明
+
+- 仅管理后台账号标记身份为"健康专员"可登录。`
+            },
+            2: {
+                title: '新建病历入口',
+                content: `#### 页面布局
+- 顶部导航栏：标题"AI病历助手"
+- 新建病历卡片：主色调背景，突出入口，显示副标题"智能整理病历 · 精准匹配科室 · 辅助临床决策"
+- 病历列表：按时间倒序排列的病历卡片
+- 底部导航栏：工单、我的两个Tab
+
+#### 功能说明
+- 点击"新建病历"按钮跳转到新建病历页面
+
+#### 视觉规范
+- 背景色：主色调 #1a8f69
+- 文字颜色：白色
+- 右侧圆形加号图标`
+            },
+            3: {
+                title: '病历卡片列表',
+                content: `#### 字段说明
+
+| 字段名      | 类型     | 说明                                   |
+| -------- | ------ | ------------------------------------ |
+| 患者姓名     | string | 显示患者姓名，无姓名时，显示"未知姓名"                 |
+| 科室标签     | string | 显示拟分诊科室名称，无科室时，不显示                   |
+| 创建日期     | date   | 格式：YYYY-MM-DD                        |
+| 状态       | enum   | 草稿/AI整理中/AI整理完成/AI整理失败               |
+| 状态-new图标 | icon   | AI整理完成，用户未点击卡片进入AI分析结果页时显示，点击卡片后标识消失 |
+
+#### 交互规则
+
+| 状态       | 点击行为 | 跳转目标                      |
+| -------- | ---- | ------------------------- |
+| 草稿       | 跳转   | 修改病历页（modify-record-page） |
+| AI整理中    | 跳转   | AI分析中页（analysis-page）     |
+| AI整理完成   | 跳转   | AI分析结果页（result-page）      |
+| AI整理失败   | 跳转   | AI分析失败页（analysis-failed-page） |
+
+#### 视觉规范
+
+- 卡片悬停效果：阴影加深（hover:shadow-md）
+- 右侧箭头图标：灰色 chevron-right
+- 状态文字颜色：
+  - 草稿：text-gray-500
+  - AI整理中/完成：text-[var(--primary)] #1a8f69
+  - AI整理失败：text-red-500`
+            },
+            4: {
+                title: '患者信息区域',
+                content: `#### 页面布局
+- 返回按钮 + 标题"新建病历"
+- AI辅助提示横幅（绿色背景）
+- 患者信息区域（可切换AI填充/手动填写模式）
+
+#### 字段说明
+
+| 字段名  | 类型     | 必填      | 默认值 | 校验规则     | 说明            |
+| ---- | ------ | ------- | --- | -------- | ------------- |
+| 姓名   | text   | 是（手动模式） | 空   | 长度2-50字符 | AI填充模式由AI自动识别 |
+| 身份证号 | text   | 否       | 空   | 18位身份证格式 | AI填充模式由AI自动识别 |
+| 性别   | select | 是（手动模式） | 请选择 | 男/女      | AI填充模式由AI自动识别 |
+| 年龄   | text   | 是（手动模式） | 空   | 1-120整数  | AI填充模式由AI自动识别 |
+
+#### 显示规则
+- 姓名、身份证号、性别、年龄全部为空时，区域显示提示文案"AI分析后自动完善患者信息"
+- 有任一字段不为空，则显示具体子字段信息
+- 姓名为空显示"未知姓名"
+- 其他字段为空，则不显示字段
+
+#### 交互说明
+- 点击"手动填写"：切换为手动输入模式，显示表单
+- 点击"AI智能填写"：切换为AI填充模式，显示提示`
+            },
+            5: {
+                title: '会诊需求区域',
+                content: `#### 字段说明
+
+| 字段名        | 类型       | 必填 | 默认值 | 校验规则            | 说明               |
+| ---------- | -------- | -- | --- | --------------- | ---------------- |
+| 病情描述（客户主诉） | textarea | 是  | 空   | 最少10字符，最多2000字符 | 描述症状、持续时间及既往治疗情况 |
+| 会诊目的       | textarea | 是  | 空   | 最少5字符，最多500字符   | 此次会诊核心解决问题       |
+
+#### 校验规则
+
+| 字段   | 校验时机     | 错误提示           |
+| ---- | -------- | -------------- |
+| 姓名   | 手动模式下提交时 | 请输入患者姓名        |
+| 性别   | 手动模式下提交时 | 请选择性别          |
+| 年龄   | 手动模式下提交时 | 请输入有效年龄（1-120） |
+| 病情描述 | 提交时      | 病情描述最少10个字符    |
+| 会诊目的 | 提交时      | 会诊目的最少5个字符     |
+
+#### 交互说明
+- 点击"保存草稿"：保存当前数据，提示"草稿已保存"
+- 点击"开始AI分析"：校验必填项，通过后跳转AI分析页`
+            },
+            6: {
+                title: '病历及检查资料区域',
+                content: `#### 字段说明
+
+| 字段名  | 类型       | 必填 | 默认值 | 校验规则            | 说明                           |
+| ---- | -------- | -- | --- | --------------- | ---------------------------- |
+| 图片列表 | image[] | 否  | 空   | 最大30张，单张不超过10MB | 支持jpg、png格式                  |
+| 文件列表 | file[]  | 否  | 空   | 最多30个           | 支持pdf、word、excel、ppt、音频、视频格式 |
+
+#### 交互说明
+
+- 点击上传区域：弹出选择方式，支持拍照、从相册选择、从微信聊天选择
+- 点击图片右上角×：删除该图片
+- 点击文件右侧×：删除该文件`
+            },
+            7: {
+                title: 'AI分析进度页面',
+                content: `#### 页面布局
+
+- 顶部导航栏：标题"AI智能分析中"
+- 整体进度条：百分比显示
+- 任务列表：5个步骤卡片
+- 底部操作栏：整理完成后查看 + 查看原病历 + 返回首页
+
+#### 任务步骤定义
+
+| 步骤序号 | 步骤名称     | 状态文案（待处理） | 状态文案（处理中）                     | 状态文案（已完成）                 | 状态文案（失败）                    |
+| ---- | -------- | ----------- | ----------------------------- | --------------------------- | ------------------------------ |
+| 1    | 解析病历文件   | 待处理...      | 正在解析上传的病历文件，请稍候...            | 已成功解析3份病历文件                | AI服务响应超时，请稍后重试                 |
+| 2    | 提取关键信息   | 待处理...      | 正在提取病历中的关键信息，包括主诉、病史等...    | 已提取主诉、现病史、过敏史等12项关键信息      | 服务器负载过高，请稍后再试               |
+| 3    | 校验病历完整性  | 待处理...      | 正在整合病史信息，校验病历完整性...          | 已完成病历完整性校验                | AI服务异常，请稍后重试             |
+| 4    | 推荐科室     | 待处理...      | 正在根据病情智能分析，推荐最适合的科室...      | 已完成智能分诊，推荐科室为[科室名称]      | 网络连接失败，请检查网络                  |
+| 5    | 提供智能诊断   | 待处理...      | 正在基于病历信息生成智能诊断建议...          | 已完成智能诊断分析                | 系统服务暂时不可用，请稍后重试            |
+
+#### 交互规则
+
+| 操作        | 行为描述                  |
+| --------- | --------------------- |
+| 点击"查看原病历" | 停止分析进度动画，跳转原始病历页      |
+| 点击"返回首页"  | 停止分析进度动画，跳转首页（后台继续处理） |
+| AI分析完成    | 自动跳转AI分析结果页           |
+| AI分析失败    | 自动跳转AI分析失败页           |
+
+#### 进度动画规则
+
+- 进度条每300ms更新一次
+- 每次增加5%进度
+- 达到100%后延迟500ms跳转到结果页
+
+#### 失败状态样式
+
+- 背景色：红色浅背景（bg-red-50）
+- 边框：红色边框（border-red-100）
+- 图标：红色叉号（fas fa-times text-red-600）
+- 状态文字：红色（text-red-500）`
+            },
+            8: {
+                title: 'AI分析结果页面',
+                content: `#### 页面布局
+
+- 返回按钮 + 标题"AI分析结果"
+- Tab切换栏：AI整理病历 / AI智能分诊
+- 内容区域（根据Tab显示不同内容）
+- 底部操作栏：查看原病历 + 生成病历分享链接
+
+#### Tab1: AI整理病历
+
+**患者信息卡片**
+
+| 字段名  | 类型     | 说明            |
+| ---- | ------ | ------------- |
+| 姓名   | string | 患者姓名          |
+| 性别   | string | 男/女           |
+| 年龄   | number | 岁             |
+| 身份证号 | string | 18位身份证号（脱敏显示） |
+
+**会诊需求卡片**
+
+| 字段名        | 类型   | 说明         |
+| ---------- | ---- | ---------- |
+| 病情描述（客户主诉） | text | AI整理后的病情描述 |
+| 会诊目的       | text | 整理后的会诊目的   |
+
+**病历及检查资料卡片**
+
+| 字段名  | 类型       | 说明                |
+| ---- | -------- | ----------------- |
+| 图片列表 | image[] | AI整理后的图片，支持点击预览大图 |
+| 文件列表 | file[]  | 原始上传的文件，支持点击预览文件  |
+
+#### Tab2: AI智能分诊
+
+**科室推荐卡片**
+
+| 字段名  | 类型     | 说明          |
+| ---- | ------ | ----------- |
+| 推荐科室 | string | AI推荐的科室名称   |
+| 推荐理由 | text   | AI分析得出的推荐原因 |
+| 备选科室 | string | 备选科室名称      |
+| 备选原因 | text   | 备选原因说明      |
+
+**资料完整性卡片**
+
+| 字段名     | 类型   | 说明         |
+| ------- | ---- | ---------- |
+| 完整性项目列表 | list | 每项资料的检查状态  |
+| 缺失提示    | text | 缺失资料说明（如有） |
+| 补全话术建议  | text | 一键复制的话术    |
+
+**智能诊断卡片**
+
+| 字段名    | 类型   | 说明            |
+| ------ | ---- | ------------- |
+| 初步诊断列表 | list | 诊断名称 + 置信度百分比 |
+| 诊疗建议列表 | list | 每条建议内容        |
+| 免责声明   | text | AI建议仅供参考      |
+
+#### 交互规则
+- 点击"修改"按钮：跳转对应编辑子页面
+- 点击"查看原病历"：跳转原始病历页
+- 点击"生成病历分享链接"：显示分享弹窗
+- 点击Tab：切换显示内容`
+            },
+            9: {
+                title: '原始病历页面',
+                content: `#### 页面布局
+- 返回按钮 + 标题"原始病历"
+- 患者信息卡片：显示患者姓名和性别
+- 会诊需求卡片：显示病情描述和会诊目的
+- 病历及检查资料卡片：显示图片网格和文件列表
+- 底部操作栏：修改病历按钮
+
+#### 字段说明
+
+| 字段名        | 类型   | 说明           |
+| ---------- | ---- | ------------ |
+| 患者姓名       | text | 显示患者姓名        |
+| 性别         | text | 显示患者性别        |
+| 病情描述（客户主诉） | text | 显示用户提交的病情描述  |
+| 会诊目的       | text | 显示用户提交的会诊目的  |
+| 图片列表       | list | 显示上传的图片缩略图    |
+| 文件列表       | list | 显示上传的文件名      |
+
+#### 交互规则
+- 点击返回按钮：返回上一页
+- 点击图片：预览大图
+- 点击文件：预览文件内容
+- 点击"修改病历"按钮：跳转修改病历页`
+            },
+            9: {
+                title: 'AI分析失败页面',
+                content: `#### 页面布局
+
+- 返回按钮 + 标题"AI分析结果"
+- 失败图标：红色圆形背景 + 叉号图标
+- 失败标题："AI分析失败"
+- 失败描述："抱歉，AI未能成功整理您的病历信息"
+- 失败原因卡片：详细说明失败原因及建议补充内容
+- 底部操作栏：重新发起AI分析 + 查看原病历 + 修改病历
+
+#### 失败原因说明
+
+- 失败原因统一展示为："系统服务暂时不可用，请稍后重试。"
+- 不区分具体失败类型，用户看到的是统一的提示文案
+- 建议用户操作：稍后重新发起AI分析
+
+#### 交互规则
+
+| 操作        | 行为描述              |
+| --------- | ----------------- |
+| 点击"重新发起AI分析" | 跳转AI分析进度页，重新开始分析   |
+| 点击"查看原病历"   | 跳转到原始病历页查看上传的文件    |
+| 点击"修改病历"    | 跳转到修改病历页，补充完善病历信息  |
+| 点击返回按钮    | 跳转到首页            |
+
+#### 视觉规范
+
+- 失败图标背景：红色浅背景（bg-red-100）
+- 失败图标颜色：红色（text-red-500）
+- 失败标题颜色：黑色（text-gray-800）
+- 失败描述颜色：灰色（text-gray-500）
+- 失败原因卡片：白色背景（bg-white），圆角12px
+- 重新发起按钮：主色调背景（bg-[var(--primary)]）`
+            },
+            11: {
+                title: '修改病历页面',
+                content: `#### 页面布局
+- 返回按钮 + 标题"修改病历"
+- 患者信息区域（支持AI智能填写）
+- 会诊需求区域（可编辑）
+- 病历及检查资料区域（可新增/删除）
+- 底部操作栏：保存草稿 + 开始AI分析
+
+#### 字段说明
+
+| 字段名        | 类型       | 必填 | 说明               |
+| ---------- | -------- | -- | ---------------- |
+| 姓名         | text     | 是  | 患者姓名，支持AI自动识别  |
+| 身份证号      | text     | 否  | 18位身份证号        |
+| 性别         | select   | 是  | 男/女             |
+| 年龄         | text     | 是  | 1-120整数          |
+| 病情描述（客户主诉） | textarea | 是  | 描述症状、持续时间及既往治疗情况 |
+| 会诊目的       | textarea | 是  | 此次会诊核心解决问题     |
+| 图片列表       | image[]  | 否  | 支持jpg、png格式，最大30张 |
+| 文件列表       | file[]   | 否  | 支持多种格式，最多30个   |
+
+#### 交互规则
+- 点击返回按钮：返回上一页
+- 点击"AI智能填写"：切换为AI填充模式
+- 点击上传区域：弹出上传方式选择弹窗
+- 点击图片/文件右上角×：删除该项目
+- 点击"保存草稿"：保存当前数据为草稿
+- 点击"开始AI分析"：校验后跳转AI分析页`
+            }
+        };
+
+        // 当前打开的弹窗ID
+        let currentPopupId = null;
+
+        // 显示标注浮窗
+        function showAnnotation(id) {
+            // 如果已经打开了相同的弹窗，不重复打开
+            if (currentPopupId === id) {
+                return;
+            }
+            
+            // 关闭之前打开的弹窗
+            closeAnnotation();
+            
+            currentPopupId = id;
+            const data = annotationData[id];
+            
+            // 创建弹窗HTML
+            const popup = document.createElement('div');
+            popup.id = `annotation-popup-${id}`;
+            popup.className = 'annotation-popup';
+            popup.style.left = '50%';
+            popup.style.top = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            
+            popup.innerHTML = `
+                <div class="annotation-header" id="annotation-header-${id}">
+                    <span class="annotation-title">[${id}] 需求描述：${data.title}</span>
+                    <span class="annotation-close" onclick="event.stopPropagation(); event.preventDefault(); closeAnnotation();">×</span>
+                </div>
+                <div class="annotation-content">${parseMarkdown(data.content)}</div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            // 添加拖拽功能
+            makeDraggable(id);
+        }
+
+        let currentDragPopup = null;
+        let onDrag = null;
+        let stopDrag = null;
+        let isDragging = false;
+
+        // 关闭标注浮窗
+        function closeAnnotation() {
+            if (currentPopupId) {
+                isDragging = false;
+                const popup = document.getElementById(`annotation-popup-${currentPopupId}`);
+                if (popup) {
+                    popup.remove();
+                }
+                if (onDrag) {
+                    document.removeEventListener('mousemove', onDrag);
+                }
+                if (stopDrag) {
+                    document.removeEventListener('mouseup', stopDrag);
+                }
+                onDrag = null;
+                stopDrag = null;
+                currentDragPopup = null;
+                currentPopupId = null;
+            }
+        }
+
+        // 解析Markdown
+        function parseMarkdown(text) {
+            const tableMarker = '___MARKDOWN_TABLE_PLACEHOLDER___';
+            const tables = [];
+            
+            const lines = text.split('\n');
+            let resultLines = [];
+            let inTable = false;
+            let currentTable = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                
+                if (line.trim().startsWith('|')) {
+                    if (!inTable) {
+                        if (i + 1 < lines.length) {
+                            const nextLine = lines[i + 1];
+                            if (nextLine.trim().startsWith('|') && isSeparatorLine(nextLine)) {
+                                inTable = true;
+                                currentTable.push(line);
+                                currentTable.push(nextLine);
+                                i++;
+                                continue;
+                            }
+                        }
+                    }
+                    
+                    if (inTable) {
+                        currentTable.push(line);
+                        continue;
+                    }
+                }
+                
+                if (inTable) {
+                    tables.push(currentTable.join('\n'));
+                    resultLines.push(tableMarker + (tables.length - 1));
+                    inTable = false;
+                    currentTable = [];
+                }
+                
+                resultLines.push(line);
+            }
+            
+            if (inTable && currentTable.length > 0) {
+                tables.push(currentTable.join('\n'));
+                resultLines.push(tableMarker + (tables.length - 1));
+            }
+            
+            let result = resultLines.join('\n');
+            
+            result = result.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+            result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            result = result.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            result = parseLists(result);
+            result = result.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+            
+            result = result.replace(/\n{2,}/g, '</p><p>');
+            result = '<p>' + result + '</p>';
+            result = result.replace(/<p>\s*<\/p>/g, '');
+            result = result.replace(/<p><br>\s*<\/p>/g, '');
+            result = result.replace(/\n/g, '<br>');
+            
+            tables.forEach((tableText, index) => {
+                const tableHtml = convertToHtmlTable(tableText);
+                result = result.replace(tableMarker + index, tableHtml);
+            });
+            
+            return result;
+        }
+
+        // 判断是否为分隔符行
+        function isSeparatorLine(line) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) return false;
+            const content = trimmed.slice(1, -1);
+            return /^[-|=:\s]+$/.test(content);
+        }
+
+        // 转换为HTML表格
+        function convertToHtmlTable(tableText) {
+            const lines = tableText.trim().split('\n');
+            if (lines.length < 2) return tableText;
+            
+            let headerRow = null;
+            let dataRows = [];
+            
+            for (const line of lines) {
+                if (line.trim().startsWith('|')) {
+                    if (!isSeparatorLine(line)) {
+                        if (!headerRow) {
+                            headerRow = line;
+                        } else {
+                            dataRows.push(line);
+                        }
+                    }
+                }
+            }
+            
+            if (!headerRow) return tableText;
+            
+            let thead = '<thead><tr>';
+            const headerCells = headerRow.split('|').filter(cell => cell.trim());
+            headerCells.forEach(cell => {
+                thead += `<th>${cell.trim()}</th>`;
+            });
+            thead += '</tr></thead>';
+            
+            let tbody = '<tbody>';
+            dataRows.forEach(row => {
+                const cells = row.split('|').filter(cell => cell.trim());
+                if (cells.length === 0) return;
+                
+                tbody += '<tr>';
+                cells.forEach(cell => {
+                    tbody += `<td>${cell.trim()}</td>`;
+                });
+                tbody += '</tr>';
+            });
+            tbody += '</tbody>';
+            
+            return `<table>${thead}${tbody}</table>`;
+        }
+
+        // 解析列表
+        function parseLists(text) {
+            // 处理无序列表
+            const ulRegex = /^(- .+\n?)+/gm;
+            text = text.replace(ulRegex, (match) => {
+                const items = match.trim().split('\n').filter(item => item.trim());
+                let html = '<ul>';
+                items.forEach(item => {
+                    const content = item.replace(/^- /, '').trim();
+                    html += `<li>${content}</li>`;
+                });
+                html += '</ul>';
+                return html;
+            });
+            
+            // 处理有序列表
+            const olRegex = /^(\d+\. .+\n?)+/gm;
+            text = text.replace(olRegex, (match) => {
+                const items = match.trim().split('\n').filter(item => item.trim());
+                let html = '<ol>';
+                items.forEach(item => {
+                    const content = item.replace(/^\d+\. /, '').trim();
+                    html += `<li>${content}</li>`;
+                });
+                html += '</ol>';
+                return html;
+            });
+            
+            return text;
+        }
+
+        // 拖拽功能
+        function makeDraggable(id) {
+            const popup = document.getElementById(`annotation-popup-${id}`);
+            const header = document.getElementById(`annotation-header-${id}`);
+            
+            let offsetX = 0;
+            let offsetY = 0;
+            
+            header.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - popup.offsetLeft;
+                offsetY = e.clientY - popup.offsetTop;
+                document.addEventListener('mousemove', onDrag);
+                document.addEventListener('mouseup', stopDrag);
+                e.preventDefault();
+            });
+            
+            onDrag = function(e) {
+                if (!isDragging) return;
+                
+                let newX = e.clientX - offsetX;
+                let newY = e.clientY - offsetY;
+                
+                const maxX = window.innerWidth - popup.offsetWidth;
+                const maxY = window.innerHeight - popup.offsetHeight;
+                
+                newX = Math.max(0, Math.min(newX, maxX));
+                newY = Math.max(0, Math.min(newY, maxY));
+                
+                popup.style.left = newX + 'px';
+                popup.style.top = newY + 'px';
+                popup.style.transform = 'none';
+            };
+            
+            stopDrag = function() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onDrag);
+                document.removeEventListener('mouseup', stopDrag);
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('nav-profile').addEventListener('click', () => {
+                showPage('profile-page');
+                document.getElementById('nav-profile').classList.add('nav-active');
+                document.getElementById('nav-work').classList.remove('nav-active');
+            });
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                showPage('login-page');
+            });
+
+            document.getElementById('nav-work-profile').addEventListener('click', () => {
+                showPage('home-page');
+                document.getElementById('nav-work').classList.add('nav-active');
+                document.getElementById('nav-profile').classList.remove('nav-active');
+            });
+
+            document.getElementById('back-original').addEventListener('click', () => {
+                showPage('result-page');
+            });
+
+            document.getElementById('edit-record-original-btn').addEventListener('click', () => {
+                showPage('modify-record-page');
+            });
+
+            document.getElementById('back-modify').addEventListener('click', () => {
+                goBack();
+            });
+
+            document.getElementById('start-analysis-modify-btn').addEventListener('click', () => {
+                toggleSaveDraftButton(false);
+                showPage('analysis-page');
+                simulateAnalysis();
+            });
+
+            document.getElementById('share-overlay').addEventListener('click', function() {
+                const overlay = document.getElementById('share-overlay');
+                const modal = document.getElementById('share-modal');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            });
+
+            document.getElementById('share-cancel').addEventListener('click', function() {
+                const overlay = document.getElementById('share-overlay');
+                const modal = document.getElementById('share-modal');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            });
+
+            document.getElementById('copy-link-btn').addEventListener('click', () => {
+                const link = 'https://tlh.youmaijiiankang.com/boss/#/pdfview?id=6757002540&orderId=6757002538';
+                navigator.clipboard.writeText(link).then(() => {
+                    alert('链接已复制');
+                });
+            });
+
+            document.getElementById('view-original-btn').addEventListener('click', () => {
+                showPage('original-record-page');
+            });
+
+            const shareBtn = document.getElementById('share-link-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    console.log('share-link-btn clicked');
+                    const overlay = document.getElementById('share-overlay');
+                    const modal = document.getElementById('share-modal');
+                    overlay.classList.remove('hidden', 'opacity-0');
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+            } else {
+                console.error('share-link-btn not found');
+            }
+
+            const genderSelect = document.getElementById('gender-select');
+            if (genderSelect) {
+                genderSelect.addEventListener('click', function() {
+                    console.log('gender-select clicked');
+                    const overlay = document.getElementById('gender-overlay');
+                    const modal = document.getElementById('gender-modal');
+                    overlay.classList.remove('hidden', 'opacity-0');
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+            } else {
+                console.error('gender-select not found');
+            }
+
+            document.querySelectorAll('.gender-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const value = option.getAttribute('data-value');
+                    document.getElementById('gender-value').textContent = value;
+                    const overlay = document.getElementById('gender-overlay');
+                    const modal = document.getElementById('gender-modal');
+                    overlay.classList.add('opacity-0');
+                    setTimeout(() => {
+                        overlay.classList.add('hidden');
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }, 300);
+                });
+            });
+
+            document.getElementById('gender-overlay').addEventListener('click', function() {
+                const overlay = document.getElementById('gender-overlay');
+                const modal = document.getElementById('gender-modal');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            });
+
+            document.getElementById('gender-cancel').addEventListener('click', function() {
+                const overlay = document.getElementById('gender-overlay');
+                const modal = document.getElementById('gender-modal');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            });
+
+            document.getElementById('upload-file-btn').addEventListener('click', () => {
+                showModal('upload-modal');
+            });
+
+            document.getElementById('upload-file-btn-edit').addEventListener('click', () => {
+                showModal('upload-modal');
+            });
+
+            document.getElementById('upload-file-btn-modify').addEventListener('click', () => {
+                showModal('upload-modal');
+            });
+
+            document.getElementById('upload-modal-overlay').addEventListener('click', () => hideModal('upload-modal'));
+            document.getElementById('upload-cancel').addEventListener('click', () => hideModal('upload-modal'));
+        });
+    </script>
+    <!-- 我的页面 -->
+    <div id="profile-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="flex items-center justify-center h-12">
+                <h1 class="text-lg font-medium text-gray-800">我的</h1>
+            </div>
+        </header>
+
+        <div class="px-4 py-6">
+            <div class="bg-white rounded-xl p-6 flex flex-col items-center">
+                <div class="w-24 h-24 rounded-full overflow-hidden mb-4">
+                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20male%20doctor%20portrait%20white%20coat%20stethoscope&image_size=square" 
+                         alt="用户头像" class="w-full h-full object-cover">
+                </div>
+                <h2 class="text-lg font-medium text-gray-800 mb-1">张医助</h2>
+                <p class="text-sm text-gray-500 mb-1">护理部</p>
+            </div>
+
+            <button id="logout-btn" class="w-full mt-4 bg-gray-100 text-gray-600 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                退出登录
+            </button>
+        </div>
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+            <div class="flex justify-around">
+                <button id="nav-work-profile" class="flex flex-col items-center py-2 text-gray-400 relative">
+                    <i class="fas fa-file-text text-lg"></i>
+                    <span class="text-xs mt-1">工单</span>
+                </button>
+                <button id="nav-profile-active" class="flex flex-col items-center py-2 nav-active relative">
+                    <i class="fas fa-user text-lg"></i>
+                    <span class="text-xs mt-1">我的</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- 原始病历页面 -->
+    <div id="original-record-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-original" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">原始病历</h1>
+        </header>
+
+        <div class="px-4 py-4 space-y-4">
+            <div class="bg-white rounded-xl p-4 relative">
+                <span class="annotation-badge" onclick="showAnnotation(9)">9</span>
+                <h3 class="font-medium text-gray-800 flex items-center mb-2">
+                    <i class="fas fa-user-circle mr-2 text-[var(--primary)]"></i>患者信息
+                </h3>
+                <p class="text-sm text-gray-600">张三 (男)</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <h3 class="font-medium text-gray-800 flex items-center mb-4">
+                    <i class="fas fa-stethoscope mr-2 text-[var(--primary)]"></i>会诊需求
+                </h3>
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-600 mb-2">病情描述 (客户主诉) <span class="text-red-500">*</span></label>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        患者近2月反复咳嗽，伴有白色粘痰，无发热。曾在当地医院行胸部CT提示右肺上叶小结节（约6mm），建议定期复查。今为求进一步诊治咨询会诊。
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-2">会诊目的 <span class="text-red-500">*</span></label>
+                    <p class="text-sm text-gray-600">明确诊断</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <h3 class="font-medium text-gray-800 flex items-center mb-4">
+                    <i class="fas fa-file-medical mr-2 text-[var(--primary)]"></i>病历及检查资料
+                </h3>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div class="aspect-square bg-gray-200 rounded-lg"></div>
+                    <div class="aspect-square bg-gray-200 rounded-lg"></div>
+                    <div class="aspect-square bg-gray-200 rounded-lg"></div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center bg-gray-50 rounded-lg px-3 py-2">
+                        <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                        <span class="text-sm text-gray-600">胸部CT报告.pdf</span>
+                    </div>
+                    <div class="flex items-center bg-gray-50 rounded-lg px-3 py-2">
+                        <i class="fas fa-file-word text-blue-500 mr-2"></i>
+                        <span class="text-sm text-gray-600">肿瘤标志物结果.word</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3">
+            <button id="edit-record-original-btn" class="w-full bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors">
+                修改病历
+            </button>
+        </div>
+    </div>
+
+    <!-- 修改病历页面 -->
+    <div id="modify-record-page" class="page min-h-screen bg-gray-100 pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-10 flex items-center px-4 h-12">
+            <button id="back-modify" class="flex items-center text-gray-600 hover:text-gray-800">
+                <i class="fas fa-chevron-left mr-2"></i>
+            </button>
+            <h1 class="text-lg font-medium text-gray-800 mx-auto">修改病历</h1>
+        </header>
+
+        <div class="px-4 py-4 space-y-4">
+            <div class="bg-white rounded-xl p-4 relative">
+                <span class="annotation-badge" onclick="showAnnotation(10)">10</span>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-medium text-gray-800 flex items-center">
+                        <i class="fas fa-user-circle mr-2 text-[var(--primary)]"></i>患者信息
+                    </h3>
+                    <span id="ai-fill-modify" class="text-xs text-[var(--primary)] cursor-pointer">AI智能填写</span>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>姓名</label>
+                        <input type="text" placeholder="患者姓名" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">身份证号</label>
+                        <input type="text" placeholder="请输入" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>性别</label>
+                            <select class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+                                <option>请选择</option>
+                                <option>男</option>
+                                <option>女</option>
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>年龄</label>
+                            <input type="text" placeholder="请输入" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <h3 class="font-medium text-gray-800 flex items-center mb-4">
+                    <i class="fas fa-stethoscope mr-2 text-[var(--primary)]"></i>会诊需求
+                </h3>
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-600 mb-2">病情描述 (客户主诉) <span class="text-red-500">*</span></label>
+                    <textarea rows="4" placeholder="描述症状、持续时间及既往治疗情况..." 
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-2">会诊目的 <span class="text-red-500">*</span></label>
+                    <textarea rows="2" placeholder="此次会诊核心解决问题" 
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4">
+                <h3 class="font-medium text-gray-800 flex items-center mb-4">
+                    <i class="fas fa-file-medical mr-2 text-[var(--primary)]"></i>病历及检查资料
+                </h3>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div class="aspect-square bg-gray-200 rounded-lg relative">
+                        <span class="absolute right-1 top-1 text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                    <div class="aspect-square bg-gray-200 rounded-lg relative">
+                        <span class="absolute right-1 top-1 text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                    <div class="aspect-square bg-gray-200 rounded-lg relative">
+                        <span class="absolute right-1 top-1 text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                </div>
+                <div class="space-y-2 mb-3">
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>胸部CT报告.pdf
+                        </span>
+                        <span class="text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-file-word text-blue-500 mr-2"></i>肿瘤标志物结果.word
+                        </span>
+                        <span class="text-gray-400 cursor-pointer hover:text-gray-600">×</span>
+                    </div>
+                </div>
+                <button id="upload-file-btn-modify" class="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-500 hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i>上传文件
+                </button>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3">
+            <div class="flex gap-3">
+                <button id="save-draft-btn" class="flex-1 bg-orange-500 text-white py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors hidden">
+                    保存草稿
+                </button>
+                <button id="start-analysis-modify-btn" class="flex-1 bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors flex items-center justify-center">
+                    开始AI分析 <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享链接弹窗 -->
+    <div id="share-overlay" class="fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="share-modal" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 hidden animate-slide-up max-h-[70vh] overflow-y-auto">
+        <div class="px-4 py-4">
+            <div class="text-center text-gray-500 text-sm mb-4">病历分享链接</div>
+            <div class="bg-gray-50 rounded-xl p-4">
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-gray-500">患者姓名：</span><span class="text-gray-800">庄日红</span></p>
+                    <p><span class="text-gray-500">拟申请科室：</span><span class="text-gray-800">胸外科</span></p>
+                    <p><span class="text-gray-500">患者病历：</span></p>
+                    <p class="text-gray-600 break-all text-xs">https://tlh.youmaijiiankang.com/boss/#/pdfview?id=6757002540&orderId=6757002538</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-100 px-4 py-3 space-y-2">
+            <button id="copy-link-btn" class="w-full bg-[var(--primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--primary-dark)] transition-colors">
+                一键复制
+            </button>
+            <div id="share-cancel" class="w-full py-3 text-center text-gray-500 cursor-pointer hover:bg-gray-50">取消</div>
+        </div>
+    </div>
+
+    <!-- 性别选择弹窗 -->
+    <div id="gender-overlay" class="fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="gender-modal" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 hidden animate-slide-up">
+        <div class="p-4">
+            <div class="text-center text-gray-500 text-sm mb-4">请选择性别</div>
+            <div class="space-y-2">
+                <div class="gender-option w-full py-3 text-center text-gray-800 border-b border-gray-100 cursor-pointer hover:bg-gray-50" data-value="男">男</div>
+                <div class="gender-option w-full py-3 text-center text-gray-800 border-b border-gray-100 cursor-pointer hover:bg-gray-50" data-value="女">女</div>
+            </div>
+            <div id="gender-cancel" class="w-full py-3 text-center text-gray-500 mt-4 cursor-pointer hover:bg-gray-50">取消</div>
+        </div>
+    </div>
+
+    <!-- 上传文件弹窗 -->
+    <div id="upload-modal-overlay" class="fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="upload-modal" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 hidden animate-slide-up">
+        <div class="p-4">
+            <div class="text-center text-gray-500 text-sm mb-4">请选择上传方式</div>
+            <div class="space-y-2">
+                <div class="w-full py-3 px-4 flex items-center gap-4 text-gray-800 border-b border-gray-100 cursor-pointer hover:bg-gray-50">
+                    <i class="fas fa-camera text-[var(--primary)]"></i>
+                    <span>拍照</span>
+                </div>
+                <div class="w-full py-3 px-4 flex items-center gap-4 text-gray-800 border-b border-gray-100 cursor-pointer hover:bg-gray-50">
+                    <i class="fas fa-images text-[var(--primary)]"></i>
+                    <span>从相册选择</span>
+                </div>
+                <div class="w-full py-3 px-4 flex items-center gap-4 text-gray-800 border-b border-gray-100 cursor-pointer hover:bg-gray-50">
+                    <i class="fab fa-weixin text-green-600"></i>
+                    <span>从微信聊天选择</span>
+                </div>
+            </div>
+            <div id="upload-cancel" class="w-full py-3 text-center text-gray-500 mt-4 cursor-pointer hover:bg-gray-50">取消</div>
+        </div>
+    </div>
+</body>
+</html>
