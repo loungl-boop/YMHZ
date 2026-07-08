@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>会诊工单审核暂存与放行</title>
+  <style>
+    :root {
+      --green: #008b72;
+      --green-dark: #006f5b;
+      --green-soft: #e6f6f1;
+      --orange: #ff6b2c;
+      --orange-soft: #fff1ea;
+      --red: #d93026;
+      --red-soft: #fdecec;
+      --blue: #2563eb;
+      --blue-soft: #eef4ff;
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #d9dee3;
+      --bg: #f5f6f7;
+      --white: #fff;
+      --shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    .doc-nav {
+      position: fixed;
+      top: 16px;
+      right: 24px;
+      z-index: 20;
+      display: flex;
+      gap: 8px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .doc-nav button {
+      height: 30px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: #344054;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .doc-nav button.active {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .page {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 32px 24px 56px;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .hero,
+    .section {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero { padding: 28px 32px; }
+    .section { margin-top: 22px; padding: 24px; }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    h1 { margin: 0; font-size: 30px; line-height: 1.25; }
+    h2 { margin: 0 0 16px; font-size: 22px; line-height: 1.35; }
+    h3 { margin: 0 0 10px; font-size: 17px; }
+    p { margin: 0 0 12px; }
+    ul { margin: 8px 0 0 22px; padding: 0; }
+    li { margin: 6px 0; }
+
+    .summary {
+      margin-top: 16px;
+      max-width: 920px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card,
+    .meta-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--green);
+      border-radius: 4px;
+      background: var(--green-soft);
+    }
+
+    .warn {
+      border-left-color: var(--orange);
+      background: var(--orange-soft);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tag.green { color: var(--green-dark); background: var(--green-soft); }
+    .tag.orange { color: var(--orange); background: var(--orange-soft); }
+    .tag.red { color: var(--red); background: var(--red-soft); }
+    .tag.blue { color: var(--blue); background: var(--blue-soft); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #fafafa;
+      color: #4b5563;
+      font-weight: 700;
+    }
+
+    .flow {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .step {
+      min-width: 130px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #fff;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .arrow {
+      color: #98a2b3;
+      font-weight: 800;
+    }
+
+    .mock {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      position: relative;
+    }
+
+    .mockbar,
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      gap: 12px;
+      padding: 0 14px;
+      background: #f7f8f9;
+      border-bottom: 1px solid var(--line);
+      color: #475467;
+      font-size: 13px;
+    }
+
+    .content {
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 22px;
+      border-bottom: 1px solid var(--line);
+      min-width: 900px;
+    }
+
+    .tab {
+      padding: 12px 0 10px;
+      border-bottom: 2px solid transparent;
+      color: #4b5563;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 14px 0;
+      min-width: 900px;
+    }
+
+    .input {
+      min-width: 172px;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0 10px;
+      color: #98a2b3;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .btn.primary {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .btn.ghost {
+      border-color: transparent;
+      background: transparent;
+      color: var(--green);
+      padding: 0 6px;
+    }
+
+    .link-action {
+      height: auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--green);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .link-action:hover {
+      text-decoration: underline;
+    }
+
+    .annotation {
+      border: 1px dashed var(--green);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfffd;
+      color: #344054;
+      font-size: 13px;
+    }
+
+    .prototype-canvas {
+      position: relative;
+    }
+
+    .mock-frame {
+      min-width: 0;
+    }
+
+    .annotation-index,
+    .pin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 0 0 3px rgba(0, 139, 114, 0.16);
+    }
+
+    .pin {
+      position: absolute;
+      z-index: 3;
+      border: 0;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .pin.active {
+      background: var(--orange);
+      box-shadow: 0 0 0 3px rgba(255, 107, 44, 0.18);
+    }
+
+    .annotation-popover {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 30;
+      display: none;
+      width: min(380px, calc(100vw - 24px));
+      border-left: 1px solid var(--line);
+      padding: 18px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      overflow-y: auto;
+    }
+
+    .annotation-popover.show {
+      display: block;
+    }
+
+    .annotation-popover-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .annotation-popover h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .annotation-popover-body {
+      margin: 0;
+      color: #475467;
+      font-size: 14px;
+    }
+
+    .rule-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .rule-item {
+      border: 1px solid #e4e9ee;
+      border-radius: 6px;
+      padding: 10px;
+      background: #fbfcfd;
+    }
+
+    .rule-item strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--green);
+      font-size: 13px;
+    }
+
+    .rule-item span {
+      display: block;
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .annotation-close {
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      color: #667085;
+    }
+
+    .prototype-nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .prototype-nav button {
+      height: 34px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: #344054;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .prototype-nav button.active {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+
+    .prototype-page {
+      display: none;
+    }
+
+    .prototype-page.active {
+      display: block;
+    }
+
+    .status-link {
+      border: 0;
+      cursor: pointer;
+      color: var(--green-dark);
+      background: var(--green-soft);
+    }
+
+    .popover {
+      position: relative;
+      width: 250px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .popover::before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: 26px;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      transform: rotate(45deg);
+    }
+
+    .popover-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .popover-row span:first-child { color: var(--muted); }
+
+    .hold-menu {
+      display: none;
+      position: absolute;
+      left: 128px;
+      top: 206px;
+      z-index: 4;
+      width: 250px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .hold-menu.show {
+      display: block;
+    }
+
+    .audit-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 16px;
+      min-height: 520px;
+    }
+
+    .record,
+    .audit-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .record-title {
+      margin: 0 0 20px;
+      padding-bottom: 16px;
+      border-bottom: 3px solid var(--green);
+      font-size: 22px;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      border-bottom: 1px solid #edf0f2;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+
+    .info-row span:first-child { color: var(--muted); }
+
+    .radio {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .radio.featured {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .circle {
+      width: 16px;
+      height: 16px;
+      margin-top: 3px;
+      border: 1px solid #b8c0cc;
+      border-radius: 50%;
+      background: #fff;
+      flex: 0 0 auto;
+    }
+
+    .radio strong { display: block; margin-bottom: 2px; }
+    .radio small { color: var(--muted); font-size: 13px; }
+
+    .detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .detail-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .detail-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .meta-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #344054;
+      background: #f2f4f7;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 13px;
+    }
+
+    .footer {
+      margin-top: 22px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .page { padding: 70px 12px 40px; }
+      .hero, .section { padding: 18px; }
+      .grid, .grid-3, .audit-layout, .detail-meta { grid-template-columns: 1fr; }
+      .annotation-popover { left: 12px; right: 12px; top: 64px; bottom: auto; width: auto; max-height: 72vh; border: 1px solid var(--line); border-radius: 8px; }
+      .doc-nav { left: 12px; right: 12px; justify-content: center; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="doc-nav" aria-label="交付文件导航">
+    <button class="active" type="button" data-view="overview">整体方案</button>
+    <button type="button" data-view="prototype">原型</button>
+    <button type="button" data-view="prd">PRD</button>
+  </nav>
+
+  <main class="page">
+    <section class="view active" id="overview">
+      <div class="hero">
+        <p class="eyebrow">整体方案</p>
+        <h1>会诊工单审核暂存与放行</h1>
+        <p class="summary">
+          本页用于向研发同学说明需求背景、产品方案思路和方案概览。默认展示整体方案，右上角可切换查看本次需求涉及的原型与 PRD。
+        </p>
+        <div class="note">
+          <strong>核心结论：</strong>不新增主流程状态，仅在“待审核”节点内增加审核暂存状态：未预审 / 预审通过待放行。
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>1. 需求背景</h2>
+        <p>
+          当前会诊流程为：提交病历、病历审核、分诊、会诊、总结。部分 ToB 项目以会诊形式对地方医生进行培训，项目经理需要控制整体项目进度，同时医助人员数量有限，需要控制每天进入分诊和会诊的病例量。
+        </p>
+        <p>
+          由于不希望影响地方医生提交病历的积极性，平台不在提交环节限制申请数量。审核老师需要先完成病历质量判断，但对于已经审核无问题的病例，希望暂不大量流转到分诊。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>2. 产品方案思路</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>不改变主流程</h3>
+            <p>工单主状态仍按现有流程流转：待审核 → 待分诊 → 会诊 → 总结。避免影响状态机、统计、权限和历史数据。</p>
+          </div>
+          <div class="card">
+            <h3>审核与放行解耦</h3>
+            <p>审核老师可选择“预审通过，暂不流转”，标记病历已看过且质量无问题，但不进入待分诊。</p>
+          </div>
+        </div>
+        <div class="flow">
+          <div class="step">提交病历</div>
+          <div class="arrow">→</div>
+          <div class="step">待审核</div>
+          <div class="arrow">→</div>
+          <div class="step">预审通过待放行</div>
+          <div class="arrow">→</div>
+          <div class="step">通过并流转</div>
+          <div class="arrow">→</div>
+          <div class="step">待分诊</div>
+        </div>
+        <p class="summary">“预审通过待放行”不是主流程状态，而是待审核节点内的暂存分层。</p>
+      </div>
+
+      <div class="section">
+        <h2>3. 方案概览</h2>
+        <table>
+          <thead>
+            <tr><th>页面</th><th>改造点</th><th>原则</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>待办页</td><td>大病会诊 - 审核病历下增加“全部 / 未预审 / 预审通过待放行”；列表展示审核暂存状态。</td><td>审核老师高频处理入口，强展示。</td></tr>
+            <tr><td>工单列表页</td><td>不增加预审状态展示和筛选。</td><td>全局列表保持简洁，避免字段膨胀。</td></tr>
+            <tr><td>工单详情页</td><td>仅当待审核且预审通过待放行时展示预审信息，并提供取消预审操作。</td><td>条件展示，支持就地修正。</td></tr>
+            <tr><td>工单审核页</td><td>审核结果增加“预审通过，暂不流转”。</td><td>合并在审核动作中，不做独立标记按钮。</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>4. 研发边界</h2>
+        <table>
+          <thead>
+            <tr><th>事项</th><th>结论</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>是否新增主流程状态</td><td>不新增。主流程仍为待审核 → 待分诊。</td></tr>
+            <tr><td>是否影响驳回、不通过、通过</td><td>不影响。三者继续沿用现有审核动作。</td></tr>
+            <tr><td>是否需要新字段</td><td>需要。建议字段为 <span class="code">review_hold_status</span>，枚举值为 <span class="code">none</span> / <span class="code">preapproved_hold</span>。</td></tr>
+            <tr><td>历史数据如何处理</td><td>所有历史待审核工单默认 review_hold_status = none。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="view" id="prototype">
+      <div class="hero">
+        <p class="eyebrow">原型</p>
+        <h1>本次需求涉及页面与调整后原型</h1>
+        <p class="summary">
+          本页用于具体展示本次需求涉及的页面、页面调整效果，以及类似 Axure 标注的模块规则。原型按页面拆分，可在下方切换查看。
+        </p>
+        <div class="prototype-nav" aria-label="原型页面导航">
+          <button class="active" type="button" data-prototype-page="todo">待办页</button>
+          <button type="button" data-prototype-page="list">工单列表页</button>
+          <button type="button" data-prototype-page="detail">工单详情页</button>
+          <button type="button" data-prototype-page="audit">工单审核页</button>
+        </div>
+      </div>
+
+      <div class="section prototype-page active" data-prototype-panel="todo">
+        <h2>1. 待办页：大病会诊 - 审核病历</h2>
+        <div class="prototype-canvas">
+          <div class="mock-frame">
+            <div class="mock">
+              <button class="pin" type="button" style="left: 345px; top: 96px;" data-note-title="审核暂存筛选" data-note-body="前端规则：在“审核病历”Tab 下展示三个筛选：全部、未预审、预审通过待放行；默认选中“未预审”。切换筛选后刷新列表和数量。
+后端规则：列表查询增加 review_hold_status 参数；全部不传或传 all，未预审传 none，预审通过待放行传 preapproved_hold。
+数据口径：三个数量均限定在当前待办类型=大病会诊审核病历、主工单状态=待审核的范围内统计。">1</button>
+              <button class="pin" type="button" style="left: 132px; top: 184px;" data-note-title="审核暂存状态列与取消预审" data-note-body="前端规则：待办页新增“审核暂存状态”列；none 展示“未预审”，preapproved_hold 展示“预审通过待放行”。点击“预审通过待放行”状态标签弹出浮层，展示预审老师、预审时间和取消预审按钮；未预审状态不可点击。
+后端规则：待办列表接口返回 review_hold_status、review_hold_operator_name、review_hold_at。
+取消规则：取消预审调用取消暂存接口，校验工单状态=待审核且 review_hold_status=preapproved_hold；成功后置为 none，并记录操作日志。
+刷新规则：取消成功后当前行状态更新为“未预审”；若当前筛选为“预审通过待放行”，该行从列表移除并刷新数量。">2</button>
+              <div class="mockbar"><strong>工作台 ＞ 待办 ＞ 大病会诊</strong></div>
+              <div class="content">
+                <div class="tabs">
+                  <div class="tab">完善病历 (49)</div>
+                  <div class="tab">资质材料审核 (0)</div>
+                  <div class="tab">协助完善病历 (25)</div>
+                  <div class="tab active">审核病历 (255)</div>
+                  <div class="tab">待分诊 (41)</div>
+                  <div class="tab">待会诊 (59)</div>
+                </div>
+                <div class="toolbar">
+                  <span class="btn">全部 255</span>
+                  <span class="btn primary">未预审 231</span>
+                  <span class="btn">预审通过待放行 24</span>
+                  <span class="input">患者姓名</span>
+                  <span class="input">项目名称</span>
+                  <span class="btn primary">查询</span>
+                  <span class="btn">重置</span>
+                </div>
+                <table>
+                  <thead>
+                    <tr><th>工单状态</th><th>审核暂存状态</th><th>所属项目</th><th>拟申请会诊科室</th><th>患者姓名</th><th>申请时间</th><th>操作</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><span class="tag orange">待审核</span></td><td><span class="tag orange">未预审</span></td><td>健康习水2026</td><td>消化内科</td><td>杜祥法</td><td>2026-07-06 15:04</td><td><span class="btn ghost">查看</span><span class="btn ghost">审核</span><span class="btn ghost">更多</span></td></tr>
+                    <tr><td><span class="tag orange">待审核</span></td><td><button class="tag green status-link" type="button">预审通过待放行</button></td><td>健康习水2026</td><td>基本外科</td><td>王某某</td><td>2026-07-06 14:06</td><td><span class="btn ghost">查看</span><span class="btn ghost">审核</span><span class="btn ghost">更多</span></td></tr>
+                  </tbody>
+                </table>
+                <div class="hold-menu" id="hold-menu">
+                  <div class="popover-row"><span>预审老师</span><strong>张老师</strong></div>
+                  <div class="popover-row"><span>预审时间</span><strong>2026-07-06 16:20</strong></div>
+                  <div class="popover-row"><span>当前状态</span><strong>预审通过待放行</strong></div>
+                  <button class="btn cancel-hold" type="button">取消预审</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section prototype-page" data-prototype-panel="list">
+        <h2>2. 工单列表页：保持现状</h2>
+        <div class="prototype-canvas">
+          <div class="mock-frame">
+            <div class="mock">
+              <button class="pin" type="button" style="left: 420px; top: 62px;" data-note-title="工单列表页整体无变化" data-note-body="页面规则：工单列表页保持现状，不新增审核暂存状态展示，不新增审核暂存状态筛选。
+后端规则：工单列表查询接口不需要新增 review_hold_status 查询条件。
+验收规则：预审通过待放行工单在工单列表页仍展示为主流程状态“待审核”。">1</button>
+              <div class="mockbar"><strong>工单管理 ＞ 会诊工单</strong></div>
+              <div class="content">
+                <div class="toolbar">
+                  <span class="input">工单号</span>
+                  <span class="input">患者/临床医生/申请人姓名手机号</span>
+                  <span class="input">项目</span>
+                  <span class="input">服务</span>
+                  <span class="btn primary">查询</span>
+                  <span class="btn">重置</span>
+                  <span class="btn">更多搜索</span>
+                </div>
+                <table>
+                  <thead><tr><th>工单号</th><th>申请时间</th><th>患者姓名</th><th>申请人姓名</th><th>工单状态</th><th>会诊时间</th><th>操作</th></tr></thead>
+                  <tbody><tr><td>HZ0706150454138546270</td><td>2026-07-06 15:04:54</td><td>杜祥法</td><td>袁佳兵</td><td><span class="tag orange">待审核</span></td><td>-</td><td><span class="btn ghost">查看</span><span class="btn ghost">更多</span></td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section prototype-page" data-prototype-panel="detail">
+        <h2>3. 工单详情页：条件展示</h2>
+        <div class="prototype-canvas">
+          <div class="mock-frame">
+            <div class="mock">
+              <button class="pin" type="button" style="left: 335px; top: 18px;" data-note-title="详情页预审信息与取消预审" data-note-body="前端规则：仅当 order_status=待审核 且 review_hold_status=preapproved_hold 时，在主状态旁展示“预审通过待放行”标签，并展示审核暂存状态、预审老师、预审时间和“取消预审”按钮。
+后端规则：详情接口返回 review_hold_status；未返回或为 none 时不展示暂存标签。
+取消规则：点击“取消预审”调用取消暂存接口，校验工单状态=待审核且 review_hold_status=preapproved_hold；成功后置为 none，并记录操作日志。
+刷新规则：取消成功后详情页移除“预审通过待放行”标签和预审信息模块，工单仍为待审核。">1</button>
+              <div class="detail-head">
+                <div class="detail-title"><span>HZ0706150454138546270</span><span class="tag orange">待审核</span><span class="tag green">预审通过待放行</span></div>
+                <div><span class="tag blue">健康习水2026</span> 创建于 2026-07-06 15:04:54</div>
+              </div>
+              <div class="detail-meta">
+                <div class="meta-item"><div class="meta-label">审核暂存状态</div><strong>预审通过待放行</strong></div>
+                <div class="meta-item"><div class="meta-label">预审老师</div><strong>张老师</strong></div>
+                <div class="meta-item"><div class="meta-label">预审时间</div><strong>2026-07-06 16:20:31</strong></div>
+                <div class="meta-item"><div class="meta-label">操作</div><button class="link-action" type="button">取消预审</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section prototype-page" data-prototype-panel="audit">
+        <h2>4. 工单审核页：合并到审核结果</h2>
+        <div class="prototype-canvas">
+          <div class="mock-frame">
+            <div class="mock">
+              <button class="pin" type="button" style="right: 338px; top: 155px;" data-note-title="审核结果模块" data-note-body="前端规则：原“通过”文案调整为“通过并流转”，用于和“预审通过，暂不流转”区分；新增“预审通过，暂不流转”审核结果；提交按钮不增加二次确认。
+后端规则：仅更新 review_hold_status=preapproved_hold、review_hold_operator_id、review_hold_operator_name、review_hold_at；工单主状态仍为待审核。
+流转规则：通过并流转复用现有审核通过逻辑，工单进入待分诊；预审通过暂不流转不生成待分诊任务，不触发分诊通知，不占用当日分诊处理量。
+日志规则：新增预审通过、取消预审两类操作日志，记录操作人、时间、工单号；驳回、不通过沿用现有接口逻辑。">1</button>
+              <div class="topbar">
+                <div>← 返回　<strong>HZ0706150454138546270</strong>　<span class="tag orange">待审核</span></div>
+                <div><span class="tag blue">健康习水2026</span></div>
+              </div>
+              <div class="content audit-layout">
+                <div class="record">
+                  <h3 class="record-title">杜祥法的病历</h3>
+                  <div class="info-row"><span>患者信息</span><strong>男，51岁，158cm，42kg</strong></div>
+                  <div class="info-row"><span>临床医生</span><strong>袁佳兵 / 习水县中医院</strong></div>
+                  <div class="info-row"><span>拟申请科室</span><strong>消化内科</strong></div>
+                  <div class="info-row"><span>会诊目的</span><strong>指导食管鳞状上皮异型增生、幽门狭窄、十二指肠狭窄的治疗</strong></div>
+                </div>
+                <aside class="audit-panel">
+                  <h3>审核病历</h3>
+                  <p><span class="tag red">必填</span> 审核结果</p>
+                  <div class="radio featured"><span class="circle"></span><div><strong>通过并流转</strong><small>提交后进入待分诊。</small></div></div>
+                  <div class="radio"><span class="circle"></span><div><strong>预审通过，暂不流转</strong><small>病历已审核无问题，但暂不进入分诊。</small></div></div>
+                  <div class="radio"><span class="circle"></span><div><strong>驳回</strong><small>退回申请方补充或修改病历。</small></div></div>
+                  <div class="radio"><span class="circle"></span><div><strong>不通过</strong><small>病历不符合本次会诊要求，结束当前申请。</small></div></div>
+                  <span class="btn primary">提交</span>
+                  <span class="btn">取消</span>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="prd">
+      <div class="hero">
+        <p class="eyebrow">PRD</p>
+        <h1>会诊工单审核暂存与放行需求文档</h1>
+        <p class="summary">
+          本页用于沉淀整体需求说明，包括目标、用户故事、功能需求、字段接口建议、测试验收和风险。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>1. 需求概要</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>问题描述</h3>
+            <p>ToB 培训型会诊项目中，地方医生提交病历数量较多，但医助、分诊、会诊资源有限。审核老师希望提前确认病历质量，但又不能让大量病例立即流转到待分诊。</p>
+          </div>
+          <div class="card">
+            <h3>解决方案</h3>
+            <p>在不新增主流程状态的前提下，为待审核工单增加审核暂存状态：未预审 / 预审通过待放行。审核页新增“预审通过，暂不流转”。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>2. 用户故事与验收标准</h2>
+        <table>
+          <thead><tr><th>用户故事</th><th>验收标准</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>作为审核老师，我希望将病历标记为预审通过但暂不流转，以便不用重复查看已确认无问题的病历。</td>
+              <td><ul><li>审核页增加“预审通过，暂不流转”。</li><li>提交后主状态仍为待审核。</li><li>审核暂存状态为“预审通过待放行”。</li><li>不触发分诊流转。</li></ul></td>
+            </tr>
+            <tr>
+              <td>作为审核老师，我希望在待办中区分未预审和预审待放行，以便优先处理真正未看过的病历。</td>
+              <td><ul><li>待办页“大病会诊 - 审核病历”下展示“全部 / 未预审 / 预审通过待放行”。</li><li>待办列表展示“审核暂存状态”列。</li><li>预审待放行工单操作列仍展示“审核”。</li></ul></td>
+            </tr>
+            <tr>
+              <td>作为审核老师，我希望取消误标的预审通过状态，以便工单可以回到未预审池。</td>
+              <td><ul><li>待办页点击“预审通过待放行”状态标签可打开浮层。</li><li>工单详情页在预审信息模块展示“取消预审”按钮。</li><li>取消后审核暂存状态变为“未预审”。</li></ul></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note warn">
+          <strong>非目标：</strong>不新增主流程状态；不限制地方医生提交病历数量；不改动现有“通过 / 驳回 / 不通过”的业务结果语义；工单列表页不新增审核暂存状态展示和筛选；本期不强制实现项目每日放行上限。
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>3. 功能需求</h2>
+        <table>
+          <thead><tr><th>页面</th><th>需求</th></tr></thead>
+          <tbody>
+            <tr><td>待办页</td><td>大病会诊 - 审核病历下增加“全部 / 未预审 / 预审通过待放行”筛选；列表增加“审核暂存状态”列；操作列保持“查看 / 审核 / 更多”。</td></tr>
+            <tr><td>工单列表页</td><td>保持现状。不展示审核暂存状态，不增加审核暂存状态筛选。</td></tr>
+            <tr><td>工单详情页</td><td>当工单状态为待审核且审核暂存状态为预审通过待放行时，顶部展示“预审通过待放行”标签，并展示预审老师、预审时间和取消预审按钮。</td></tr>
+            <tr><td>工单审核页</td><td>审核结果调整为“通过并流转 / 预审通过，暂不流转 / 驳回 / 不通过”。提交不增加二次确认。</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>4. 技术规格</h2>
+        <table>
+          <thead><tr><th>字段</th><th>类型</th><th>枚举/说明</th></tr></thead>
+          <tbody>
+            <tr><td><span class="code">review_hold_status</span></td><td>enum</td><td><span class="code">none</span>：未预审；<span class="code">preapproved_hold</span>：预审通过待放行。</td></tr>
+            <tr><td><span class="code">review_hold_operator_id</span></td><td>string</td><td>最近一次设置预审通过待放行的操作人 ID。</td></tr>
+            <tr><td><span class="code">review_hold_operator_name</span></td><td>string</td><td>最近一次设置预审通过待放行的操作人姓名。</td></tr>
+            <tr><td><span class="code">review_hold_at</span></td><td>datetime</td><td>最近一次设置预审通过待放行的时间。</td></tr>
+          </tbody>
+        </table>
+        <table>
+          <thead><tr><th>动作</th><th>前置条件</th><th>结果</th></tr></thead>
+          <tbody>
+            <tr><td>设置预审通过待放行</td><td>工单状态 = 待审核；用户有审核权限</td><td>review_hold_status = preapproved_hold；写入操作人和时间。</td></tr>
+            <tr><td>取消预审</td><td>工单状态 = 待审核；review_hold_status = preapproved_hold</td><td>review_hold_status = none；记录取消操作日志。</td></tr>
+            <tr><td>通过并流转</td><td>工单状态 = 待审核；用户有审核权限</td><td>复用原通过逻辑进入待分诊；不新增主流程状态。</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>5. 测试与验收</h2>
+        <table>
+          <thead><tr><th>测试场景</th><th>预期结果</th></tr></thead>
+          <tbody>
+            <tr><td>待审核工单选择“预审通过，暂不流转”</td><td>主状态仍为待审核；进入“预审通过待放行”筛选；不出现在待分诊。</td></tr>
+            <tr><td>预审待放行工单点击“审核”后选择“通过并流转”</td><td>工单进入待分诊；原审核通过相关通知、任务、统计保持一致。</td></tr>
+            <tr><td>在待办页状态标签或详情页点击取消预审</td><td>工单回到未预审列表；详情页不再展示预审通过待放行信息。</td></tr>
+            <tr><td>工单列表页查看待审核工单</td><td>不展示审核暂存状态，不提供审核暂存状态筛选。</td></tr>
+            <tr><td>驳回、不通过、通过原流程回归</td><td>所有原流程结果、通知、日志、状态流转保持原有行为。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="footer">会诊工单审核暂存与放行 · 2026-07-07</p>
+  </main>
+
+  <div class="annotation-popover" id="annotation-popover" role="dialog" aria-live="polite" aria-label="页面标注">
+    <div class="annotation-popover-head">
+      <h3 id="annotation-title">页面标注</h3>
+      <button class="annotation-close" type="button" aria-label="关闭标注">×</button>
+    </div>
+    <div class="annotation-popover-body" id="annotation-body"></div>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll(".doc-nav button");
+    const views = document.querySelectorAll(".view");
+    const prototypeButtons = document.querySelectorAll(".prototype-nav button");
+    const prototypePanels = document.querySelectorAll(".prototype-page");
+    const pins = document.querySelectorAll(".pin");
+    const annotationPopover = document.querySelector("#annotation-popover");
+    const annotationTitle = document.querySelector("#annotation-title");
+    const annotationBody = document.querySelector("#annotation-body");
+    const annotationClose = document.querySelector(".annotation-close");
+    const holdStatusButtons = document.querySelectorAll(".status-link");
+    const holdMenu = document.querySelector("#hold-menu");
+    const cancelHoldButton = document.querySelector(".cancel-hold");
+
+    const prototypeHashMap = {
+      todo: "prototype-todo",
+      list: "prototype-list",
+      detail: "prototype-detail",
+      audit: "prototype-audit",
+    };
+
+    function showPrototypePage(pageName, updateHash = true) {
+      prototypePanels.forEach((panel) => {
+        panel.classList.toggle("active", panel.dataset.prototypePanel === pageName);
+      });
+      prototypeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.prototypePage === pageName);
+      });
+      closeAnnotation();
+      closeHoldMenu();
+      if (updateHash) {
+        history.replaceState(null, "", "#" + prototypeHashMap[pageName]);
+      }
+    }
+
+    function closeAnnotation() {
+      annotationPopover.classList.remove("show");
+      pins.forEach((pin) => pin.classList.remove("active"));
+    }
+
+    function closeHoldMenu() {
+      if (holdMenu) {
+        holdMenu.classList.remove("show");
+      }
+    }
+
+    function openAnnotation(pin) {
+      annotationTitle.textContent = pin.dataset.noteTitle;
+      annotationBody.innerHTML = "";
+      const ruleList = document.createElement("div");
+      ruleList.className = "rule-list";
+      pin.dataset.noteBody.split("\n").filter(Boolean).forEach((line) => {
+        const separatorIndex = line.indexOf("：");
+        const item = document.createElement("div");
+        item.className = "rule-item";
+        const label = document.createElement("strong");
+        const body = document.createElement("span");
+        if (separatorIndex > -1) {
+          label.textContent = line.slice(0, separatorIndex);
+          body.textContent = line.slice(separatorIndex + 1);
+        } else {
+          label.textContent = "说明";
+          body.textContent = line;
+        }
+        item.append(label, body);
+        ruleList.append(item);
+      });
+      annotationBody.append(ruleList);
+      pins.forEach((item) => item.classList.toggle("active", item === pin));
+      annotationPopover.classList.add("show");
+    }
+
+    function showView(viewName, updateHash = true) {
+      views.forEach((view) => view.classList.toggle("active", view.id === viewName));
+      buttons.forEach((button) => button.classList.toggle("active", button.dataset.view === viewName));
+      closeAnnotation();
+      closeHoldMenu();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (updateHash && location.hash !== "#" + viewName) {
+        history.replaceState(null, "", "#" + viewName);
+      }
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => showView(button.dataset.view));
+    });
+
+    prototypeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        showView("prototype", false);
+        showPrototypePage(button.dataset.prototypePage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    pins.forEach((pin) => {
+      pin.addEventListener("click", (event) => {
+        event.stopPropagation();
+        closeHoldMenu();
+        openAnnotation(pin);
+      });
+    });
+
+    annotationClose.addEventListener("click", closeAnnotation);
+
+    holdStatusButtons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        closeAnnotation();
+        holdMenu.classList.toggle("show");
+      });
+    });
+
+    if (cancelHoldButton) {
+      cancelHoldButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        holdStatusButtons.forEach((button) => {
+          button.textContent = "未预审";
+          button.classList.remove("green", "status-link");
+          button.classList.add("orange");
+          button.disabled = true;
+        });
+        closeHoldMenu();
+      });
+    }
+
+    document.addEventListener("click", (event) => {
+      if (!annotationPopover.contains(event.target) && !event.target.classList.contains("pin")) {
+        closeAnnotation();
+      }
+      if (holdMenu && !holdMenu.contains(event.target) && !event.target.classList.contains("status-link")) {
+        closeHoldMenu();
+      }
+    });
+
+    const initialView = location.hash.replace("#", "");
+    const initialPrototype = Object.entries(prototypeHashMap).find(([, hash]) => hash === initialView);
+
+    if (initialPrototype) {
+      showView("prototype", false);
+      showPrototypePage(initialPrototype[0], false);
+    } else if (["overview", "prototype", "prd"].includes(initialView)) {
+      showView(initialView, false);
+    }
+  </script>
+</body>
+</html>
