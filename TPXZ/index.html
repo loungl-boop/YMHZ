@@ -1,0 +1,1560 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>会诊平台图片旋转优化方案</title>
+  <style>
+    :root {
+      --bg: #f4f6f7;
+      --card: #ffffff;
+      --ink: #1f2a37;
+      --muted: #64748b;
+      --line: #d8e0e4;
+      --brand: #008a70;
+      --brand-dark: #00745f;
+      --brand-soft: #e1f4ef;
+      --warn: #d97706;
+      --danger: #c24141;
+      --blue: #256f9c;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      line-height: 1.75;
+    }
+
+    button {
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .view-switch {
+      position: fixed;
+      top: 18px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .view-switch button {
+      min-width: 64px;
+      padding: 7px 12px;
+      border-radius: 6px;
+      background: transparent;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .view-switch button.active {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 24px 72px;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    #prototype.active {
+      width: calc(100vw - 48px);
+      margin-left: calc(560px - 50vw);
+    }
+
+    .hero,
+    .section {
+      margin-bottom: 20px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .hero {
+      padding: 32px;
+    }
+
+    .eyebrow {
+      margin-bottom: 8px;
+      color: var(--brand);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    h1 {
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 17px;
+    }
+
+    p {
+      margin: 0;
+      color: #344256;
+    }
+
+    .lead {
+      margin-top: 16px;
+      color: #536175;
+    }
+
+    .conclusion {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--brand);
+      border-radius: 4px;
+      background: var(--brand-soft);
+      color: #1f2a37;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .card p,
+    li,
+    td {
+      color: #465569;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    li + li { margin-top: 6px; }
+
+    table {
+      width: 100%;
+      margin-top: 12px;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      color: #253244;
+      background: #f1f5f7;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .flow span {
+      min-width: 128px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .flow b {
+      color: #94a3b8;
+      font-size: 20px;
+    }
+
+    code,
+    pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    pre {
+      margin: 14px 0 0;
+      padding: 16px;
+      overflow: auto;
+      border-radius: 7px;
+      color: #e5f3ef;
+      background: #142529;
+      font-size: 13px;
+      line-height: 1.58;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 0 6px 6px 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #eef3f4;
+      color: #526273;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .warn {
+      border-left-color: var(--warn);
+      background: #fff7ed;
+    }
+
+    .danger {
+      border-left-color: var(--danger);
+      background: #fff1f2;
+    }
+
+    .prototype-shell {
+      position: relative;
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr);
+      min-height: 720px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eef1f3;
+    }
+
+    .prd-marker {
+      position: absolute;
+      z-index: 5;
+      display: grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 6px 16px rgba(37, 111, 156, 0.32);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .annotations {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .annotations.show {
+      display: block;
+    }
+
+    .marker-a { left: 184px; top: 362px; }
+    .marker-b { right: 24px; bottom: 92px; }
+
+    .prd-notes {
+      position: absolute;
+      right: 18px;
+      top: 62px;
+      z-index: 4;
+      width: 300px;
+      padding: 14px;
+      border: 1px solid #bdd7e7;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+      pointer-events: auto;
+    }
+
+    .prd-notes h3 {
+      margin-bottom: 10px;
+      color: var(--blue);
+      font-size: 15px;
+    }
+
+    .prd-note {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+      padding: 9px 0;
+      border-top: 1px solid #e2edf3;
+      color: #475569;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .prd-note:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .note-index {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .sidebar {
+      padding: 14px 12px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .brand {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+      font-weight: 800;
+    }
+
+    .mark {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .menu {
+      display: grid;
+      gap: 4px;
+      color: #5f6b7a;
+    }
+
+    .menu div {
+      padding: 8px 10px;
+      border-radius: 5px;
+    }
+
+    .menu .on {
+      color: var(--brand);
+      background: var(--brand-soft);
+      font-weight: 800;
+    }
+
+    .mock-main {
+      min-width: 0;
+    }
+
+    .mock-top {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      color: #667085;
+    }
+
+    .mock-body {
+      padding: 16px;
+    }
+
+    .case-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .case-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .status {
+      padding: 2px 8px;
+      border: 1px solid #f97316;
+      border-radius: 4px;
+      color: #ea580c;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mock-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 120px;
+      gap: 14px;
+    }
+
+    .record {
+      padding: 0 24px 28px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .label {
+      padding: 14px 0;
+      color: #64748b;
+    }
+
+    .value {
+      padding: 14px 0;
+      color: #253244;
+    }
+
+    .side-actions {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .primary,
+    .secondary {
+      height: 34px;
+      border-radius: 4px;
+      font-weight: 800;
+    }
+
+    .primary {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .secondary {
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .hint {
+      margin: 6px 0 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      color: #266157;
+      background: #f0faf7;
+      font-size: 13px;
+    }
+
+    .demo-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      border: 1px solid #cfe3df;
+      border-radius: 8px;
+      background: #f6fbfa;
+    }
+
+    .demo-controls p {
+      color: #496270;
+      font-size: 14px;
+    }
+
+    .mode-switch {
+      display: flex;
+      flex: none;
+      gap: 8px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .mode-switch button {
+      min-width: 88px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      color: #334155;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .mode-switch button.active {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .mode-switch button[data-mode="conflict"].active {
+      background: var(--warn);
+    }
+
+    .annotation-toggle {
+      flex: none;
+      min-width: 92px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .annotation-toggle.active {
+      color: #fff;
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    .thumb-card { min-width: 0; }
+
+    .thumb {
+      position: relative;
+      height: 150px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: #f1f1f1;
+    }
+
+    .paper,
+    .preview-paper {
+      transform: rotate(var(--rotation, 0deg));
+      transform-origin: center;
+      transition: transform 180ms ease;
+    }
+
+    .paper {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 118px;
+      height: 78px;
+      transform: translate(-50%, -50%) rotate(var(--rotation, 0deg));
+      border: 1px solid #c3cdd2;
+      background:
+        repeating-linear-gradient(#e7eff1 0 2px, transparent 2px 12px),
+        #fbfdfd;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.14);
+    }
+
+    .paper::before {
+      content: "检验报告";
+      position: absolute;
+      left: 10px;
+      top: 7px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #536172;
+    }
+
+    .overlay {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      z-index: 2;
+      display: flex;
+      gap: 5px;
+      padding: 5px;
+      border-radius: 5px;
+      background: rgba(39, 45, 50, 0.78);
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+
+    .thumb:hover .overlay { opacity: 1; }
+
+    .icon {
+      width: 25px;
+      height: 25px;
+      border-radius: 4px;
+      color: #fff;
+      background: transparent;
+    }
+
+    .icon:hover { background: rgba(255, 255, 255, 0.18); }
+
+    .save-state {
+      position: absolute;
+      right: 7px;
+      bottom: 7px;
+      z-index: 3;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .save-state.saving { color: var(--warn); }
+    .save-state.saved { color: var(--brand); }
+    .save-state.conflict { color: var(--danger); }
+    .save-state.failed {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      color: var(--danger);
+    }
+
+    .retry-save {
+      padding: 0;
+      color: var(--brand);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .filename {
+      margin-top: 7px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      background: rgba(0, 0, 0, 0.62);
+    }
+
+    .modal.open { display: block; }
+
+    .strip {
+      height: 64px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .strip-item {
+      width: 68px;
+      height: 40px;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      background: #edf2f4;
+    }
+
+    .strip-item.active { border-color: var(--brand); }
+
+    .close,
+    .arrow {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .close {
+      top: 90px;
+      right: 28px;
+      width: 46px;
+      height: 46px;
+      font-size: 30px;
+    }
+
+    .arrow {
+      top: 50%;
+      width: 44px;
+      height: 44px;
+      transform: translateY(-50%);
+      font-size: 28px;
+    }
+
+    .prev { left: 28px; }
+    .next { right: 28px; }
+
+    .preview-stage {
+      position: absolute;
+      inset: 64px 90px 106px;
+      display: grid;
+      place-items: center;
+    }
+
+    .preview-paper {
+      width: min(760px, 72vw);
+      height: min(480px, 58vh);
+      border: 1px solid #b8c4ca;
+      background:
+        repeating-linear-gradient(#edf3f4 0 3px, transparent 3px 34px),
+        #fbfdfd;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+    }
+
+    .preview-paper::before {
+      content: "检验报告单";
+      display: block;
+      margin: 34px 42px 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #9aa9ad;
+      color: #44515f;
+      font-size: 24px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .preview-paper::after {
+      content: "项目           结果           参考范围\A PT             12.4           9.0-13.0\A INR            1.07           0.80-1.20\A APTT           27.3           23.0-32.0\A D-Dimer        0.170          0-0.500";
+      display: block;
+      margin: 0 80px;
+      color: #526173;
+      white-space: pre;
+      font: 18px/2 "SFMono-Regular", Consolas, monospace;
+    }
+
+    .toolbar {
+      position: absolute;
+      left: 50%;
+      bottom: 32px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      transform: translateX(-50%);
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+    }
+
+    .tool {
+      min-width: 36px;
+      height: 34px;
+      border-radius: 5px;
+      background: #fff;
+      font-weight: 800;
+    }
+
+    .tool:hover { background: #edf4f5; }
+    .zoom { min-width: 58px; text-align: center; font-weight: 800; }
+
+    .toast {
+      position: fixed;
+      top: 88px;
+      left: 50%;
+      z-index: 120;
+      display: none;
+      transform: translateX(-50%);
+      padding: 9px 14px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(20, 37, 41, 0.9);
+      font-weight: 800;
+    }
+
+    .toast.show { display: block; }
+
+    .conflict {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      z-index: 130;
+      display: none;
+      width: 360px;
+      padding: 18px;
+      border-radius: 9px;
+      background: #fff;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+    }
+
+    .conflict.open { display: block; }
+
+    .conflict h3 {
+      color: var(--danger);
+    }
+
+    .conflict-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .ghost,
+    .solid {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 800;
+    }
+
+    .ghost {
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .solid {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    @media (max-width: 900px) {
+      .view-switch {
+        left: 12px;
+        right: 12px;
+        justify-content: center;
+      }
+
+      .page { padding-top: 82px; }
+      #prototype.active {
+        width: auto;
+        margin-left: 0;
+      }
+      .grid { grid-template-columns: 1fr; }
+      .prototype-shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .demo-controls {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .mock-layout { grid-template-columns: 1fr; }
+      .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .prd-marker,
+      .prd-notes {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="view-switch" aria-label="页面切换">
+    <button class="active" data-view="solution">整体方案</button>
+    <button data-view="prototype">原型</button>
+    <button data-view="prd">PRD</button>
+  </div>
+
+  <main class="page">
+    <section class="view active" id="solution">
+      <div class="hero">
+        <div class="eyebrow">整体方案</div>
+        <h1>会诊平台查看模式图片旋转优化</h1>
+        <p class="lead">
+          本页面用于向产品、研发、测试同学说明病历审核场景下图片方向调整的产品思路、交互原型和 PRD。
+          默认展示整体方案，右上角可切换查看本次需求涉及的原型与 PRD。
+        </p>
+        <div class="conclusion">
+          核心结论：查看模式下旋转图片默认视为修正资料方向，系统自动保存；但保存机制需从“关闭预览时保存”优化为“旋转后防抖保存最终角度”。
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>1. 需求背景</h2>
+        <p>
+          会诊平台病历审核老师在查看检查、检验、影像资料时，经常遇到上传图片方向不正的问题。当前系统在小图模式支持预览、编辑、下载、旋转；
+          大图预览使用预览组件，并在点击右上角关闭按钮时保存旋转角度。
+        </p>
+        <p style="margin-top:12px;">
+          线上问题并不在于“默认保存”这个产品逻辑，而在于保存触发时机和保存过程过重：旋转高频操作容易带来重复请求、页面刷新、状态不同步和多人覆盖。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>2. 产品方案思路</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>默认保存，不增加操作成本</h3>
+            <p>审核老师把图片转正，通常是在修正资料展示方向，而不是做个人临时查看偏好。因此不要求老师额外点击“保存”。</p>
+          </div>
+          <div class="card">
+            <h3>关闭按钮只关闭预览</h3>
+            <p>关闭按钮的语义是退出查看，不应承载保存业务。保存动作改由旋转后的防抖任务自动完成。</p>
+          </div>
+          <div class="card">
+            <h3>前端即时响应</h3>
+            <p>点击旋转后小图和大图立即改变角度，接口保存异步进行，避免审核阅读被打断。</p>
+          </div>
+          <div class="card">
+            <h3>版本校验防覆盖</h3>
+            <p>同一图片被多人同时修改时，通过图片级 rotationVersion 判断冲突，不允许静默覆盖他人的调整。</p>
+          </div>
+        </div>
+        <div class="flow">
+          <span>点击旋转</span><b>→</b>
+          <span>即时展示</span><b>→</b>
+          <span>防抖 1 秒</span><b>→</b>
+          <span>保存最终角度</span><b>→</b>
+          <span>同步状态</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>3. 方案概览</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>模块</th>
+              <th>改造点</th>
+              <th>原则</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>小图模式</td>
+              <td>点击旋转后缩略图立即转动，显示保存状态，停止操作后自动保存。</td>
+              <td>轻操作、即时反馈。</td>
+            </tr>
+            <tr>
+              <td>大图预览</td>
+              <td>工具栏旋转后即时展示，关闭按钮不再保存，仅关闭预览。</td>
+              <td>组件负责查看，业务层负责保存。</td>
+            </tr>
+            <tr>
+              <td>保存机制</td>
+              <td>同一图片连续旋转合并为一次请求，仅提交最终角度；成功只在图片卡片内弱提示。</td>
+              <td>减少请求，无刷新，不用双重提示打扰审核。</td>
+            </tr>
+            <tr>
+              <td>多人冲突</td>
+              <td>保存时携带图片方向版本号，版本不一致则提示用户先查看最新图片。</td>
+              <td>不静默覆盖，先看最新再调整。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>4. 多人同时打开的处理</h2>
+        <p>
+          图片旋转采用轻量乐观锁。用户打开病历时获取图片当前角度和版本号；保存时提交 baseRotationVersion。
+          若服务端版本仍一致则保存成功；若版本已变化，说明其他用户已经修改过，当前用户收到冲突提示。
+        </p>
+        <div class="conclusion warn">
+          冲突文案建议：该图片方向已被其他老师先一步保存。请先查看最新图片方向，再判断是否还需要继续调整。
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>5. 版本规则与产品边界</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>规则</th>
+              <th>产品定义</th>
+              <th>技术实现建议</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>版本对象</td>
+              <td>版本控制到单张图片，不锁整份病历。</td>
+              <td>每张图片维护 rotationVersion。</td>
+            </tr>
+            <tr>
+              <td>保存校验</td>
+              <td>用户保存时必须基于自己看到的图片方向版本。</td>
+              <td>保存请求携带 baseRotationVersion。</td>
+            </tr>
+            <tr>
+              <td>冲突处理</td>
+              <td>若别人已先保存，不允许当前用户静默覆盖；先引导查看最新图片。</td>
+              <td>后端返回 ROTATION_VERSION_CONFLICT 和最新图片方向数据。</td>
+            </tr>
+            <tr>
+              <td>再次调整</td>
+              <td>用户查看最新图片后，如果仍认为方向不对，可以再次旋转保存。</td>
+              <td>前端用最新 rotationVersion 发起新的保存请求。</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="conclusion">
+          产品经理需要定义冲突体验、用户提示、是否允许再次覆盖、日志要求和状态边界；技术同学基于这些产品规则设计字段、接口、并发校验和异常码。
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="prototype">
+      <div class="hero">
+        <div class="eyebrow">原型</div>
+        <h1>图片旋转自动保存交互原型</h1>
+        <p class="lead">可点击演示：小图旋转、大图预览旋转、防抖自动保存、关闭预览不保存、保存失败重试、多人冲突提示。演示模式在原型外部切换，不进入业务页面本身。</p>
+      </div>
+
+      <div class="section">
+        <div class="demo-controls">
+          <p id="demoModeText">当前为正常模式：旋转图片后，系统防抖自动保存最终角度。</p>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="annotation-toggle" id="annotationToggle">显示标注</button>
+            <div class="mode-switch" aria-label="演示模式切换">
+              <button class="active" data-mode="normal">正常模式</button>
+              <button data-mode="failed">失败演示</button>
+              <button data-mode="conflict">冲突演示</button>
+            </div>
+          </div>
+        </div>
+        <div class="prototype-shell">
+          <div class="annotations" id="annotations">
+            <span class="prd-marker marker-a">1</span>
+            <span class="prd-marker marker-b">2</span>
+            <div class="prd-notes" aria-label="PRD 模块标注">
+              <h3>PRD 模块标注</h3>
+              <div class="prd-note"><span class="note-index">1</span><span>资料图片模块：小图和大图旋转后立即展示，停止操作后自动保存最终结果；成功只做局部弱提示，失败在图片卡片内提供重试入口。</span></div>
+              <div class="prd-note"><span class="note-index">2</span><span>多人冲突模块：当保存时发现图片方向已被他人更新，先提示用户查看最新图片方向；用户查看后如仍需调整，可再次旋转并保存。</span></div>
+            </div>
+          </div>
+          <aside class="sidebar">
+            <div class="brand"><span class="mark">会</span>尤迈会诊</div>
+            <div class="menu">
+              <div>工作台</div>
+              <div>用户中心</div>
+              <div>订单管理</div>
+              <div class="on">工单管理</div>
+              <div>审批管理</div>
+              <div>医疗资源</div>
+              <div>消息中心</div>
+            </div>
+          </aside>
+          <div class="mock-main">
+            <div class="mock-top">
+              <span>工单管理 〉会诊工单 〉会诊详情</span>
+              <span>杨小龙⌄</span>
+            </div>
+            <div class="mock-body">
+              <div class="case-head">
+                <div class="case-title">
+                  <span>← 返回</span>
+                  <span>HZ0709125306756556907</span>
+                  <span class="status">待审核</span>
+                </div>
+                <span style="color:#667085;">协助人：赵芃 · 创建于 2026-07-09 12:53:07</span>
+              </div>
+              <div class="mock-layout">
+                <div class="record">
+                  <div class="row">
+                    <div class="label">辅助检查</div>
+                    <div class="value">急诊科心电图：正常心电图，窦性心律。血气分析：动脉氧分压 70，钾离子 3.4，乳酸 2.2。</div>
+                  </div>
+                  <div class="row">
+                    <div class="label">治疗方案</div>
+                    <div class="value">入院完善相关检查，急诊已洗胃，入院后一级护理，监测生命体征，补液治疗。</div>
+                  </div>
+                  <div class="row">
+                    <div class="label">资料图片</div>
+                    <div class="value">
+                      <div style="color:var(--brand);font-weight:800;">⇩ 下载资料　□ 查看源文件　▧ 文件转图片</div>
+                      <div class="gallery" id="gallery"></div>
+                    </div>
+                  </div>
+                </div>
+                <aside class="side-actions">
+                  <button class="primary">审核</button>
+                  <button class="secondary">编辑病历</button>
+                  <button class="secondary">⌄</button>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="prd">
+      <div class="hero">
+        <div class="eyebrow">PRD</div>
+        <h1>查看模式图片旋转自动保存优化 PRD</h1>
+        <p class="lead">
+          本 PRD 用于明确图片旋转优化的业务目标、功能范围、交互规则、接口数据、异常处理和验收标准。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>1. 背景与目标</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>背景</h3>
+            <p>病历审核老师查看图片资料时，部分上传图片方向不正。当前旋转保存依赖关闭预览或频繁请求，影响审核效率和系统稳定性。</p>
+          </div>
+          <div class="card">
+            <h3>目标</h3>
+            <ul>
+              <li>旋转后图片即时展示。</li>
+              <li>系统自动保存，无需用户手动提交。</li>
+              <li>连续旋转只保存最终角度。</li>
+              <li>保存过程不刷新页面。</li>
+              <li>多人同时操作时不静默覆盖。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>2. 功能需求</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>编号</th>
+              <th>需求</th>
+              <th>优先级</th>
+              <th>验收说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>FR-1</td>
+              <td>小图模式点击旋转后即时更新缩略图角度。</td>
+              <td>P0</td>
+              <td>点击后 100ms 内完成前端展示，不等待接口返回。</td>
+            </tr>
+            <tr>
+              <td>FR-2</td>
+              <td>大图预览点击旋转后即时更新大图角度。</td>
+              <td>P0</td>
+              <td>大图与顶部缩略图角度同步。</td>
+            </tr>
+            <tr>
+              <td>FR-3</td>
+              <td>旋转后自动防抖保存最终角度。</td>
+              <td>P0</td>
+              <td>连续旋转多次，后端只收到最后一次角度。</td>
+            </tr>
+            <tr>
+              <td>FR-4</td>
+              <td>关闭预览不触发保存。</td>
+              <td>P0</td>
+              <td>关闭按钮仅关闭预览，保存由旋转后的防抖任务处理。</td>
+            </tr>
+            <tr>
+              <td>FR-5</td>
+              <td>展示保存状态。</td>
+              <td>P0</td>
+              <td>包含保存中、已保存、保存失败、冲突提示；成功不再额外弹全局 toast。</td>
+            </tr>
+            <tr>
+              <td>FR-6</td>
+              <td>支持图片级版本冲突校验。</td>
+              <td>P0</td>
+              <td>版本不一致时提示用户先查看最新图片，不静默覆盖。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>3. 交互规则</h2>
+        <ul>
+          <li>小图 hover 后展示预览、编辑、下载、旋转；点击旋转后图片立即转动。</li>
+          <li>大图预览工具栏保留旋转、缩放、下载；点击旋转后大图立即转动。</li>
+          <li>旋转后显示“保存中”，保存成功后显示“已保存”并短暂消失。</li>
+          <li>关闭预览时不保存；若后台仍在保存，继续完成保存任务。</li>
+          <li>保存失败时保留当前展示角度，在图片卡片内显示“保存失败”和“重试”入口。</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>4. 数据与接口</h2>
+        <p>图片资料需返回当前角度与版本号。角度只支持 0、90、180、270。</p>
+        <p style="margin-top:10px;">
+          <span class="tag">fileId</span>
+          <span class="tag">rotation</span>
+          <span class="tag">rotationVersion</span>
+          <span class="tag">updatedBy</span>
+          <span class="tag">updatedAt</span>
+        </p>
+        <pre><code>PATCH /api/cases/{caseId}/files/{fileId}/rotation
+
+{
+  "rotation": 180,
+  "baseRotationVersion": 3
+}</code></pre>
+        <pre><code>{
+  "code": "ROTATION_VERSION_CONFLICT",
+  "message": "图片方向已被其他用户更新",
+  "latest": {
+    "rotation": 90,
+    "rotationVersion": 4,
+    "updatedBy": "赵老师",
+    "updatedAt": "2026-07-09 15:23:18"
+  }
+}</code></pre>
+      </div>
+
+      <div class="section">
+        <h2>5. 版本与冲突规则</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>规则项</th>
+              <th>规则说明</th>
+              <th>开发约束</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>版本粒度</td>
+              <td>仅图片方向调整参与版本校验，不影响病历主流程。</td>
+              <td>以 fileId 维度维护 rotationVersion。</td>
+            </tr>
+            <tr>
+              <td>正常保存</td>
+              <td>用户保存时，若服务端版本与 baseRotationVersion 一致，则保存成功。</td>
+              <td>保存成功后返回新的 rotation、rotationVersion、updatedBy、updatedAt。</td>
+            </tr>
+            <tr>
+              <td>冲突保存</td>
+              <td>若服务端版本已变化，说明该图片方向已被他人先保存。</td>
+              <td>接口返回 ROTATION_VERSION_CONFLICT，不更新当前用户提交的角度。</td>
+            </tr>
+            <tr>
+              <td>冲突后的用户路径</td>
+              <td>前端提示用户先查看最新图片方向，用户查看后如仍需调整，可再次旋转保存。</td>
+              <td>查看最新后，前端必须用最新 rotationVersion 作为下一次保存基准。</td>
+            </tr>
+            <tr>
+              <td>日志要求</td>
+              <td>成功保存需记录操作人、原方向、新方向、版本号、操作来源。</td>
+              <td>冲突请求可记录失败日志；再次保存成功需记录新的成功日志。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>6. 异常与验收</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>场景</th>
+              <th>处理规则</th>
+              <th>验收标准</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>连续旋转</td>
+              <td>防抖合并保存。</td>
+              <td>只提交最终角度。</td>
+            </tr>
+            <tr>
+              <td>保存失败</td>
+              <td>保留展示角度，在图片卡片内提供重试。</td>
+              <td>页面不刷新，状态不丢失，用户可对失败图片单独重试。</td>
+            </tr>
+            <tr>
+              <td>多人冲突</td>
+              <td>提示用户先查看最新图片方向。</td>
+              <td>不静默覆盖；查看最新后可再次旋转保存。</td>
+            </tr>
+            <tr>
+              <td>无权限或病历不可修改</td>
+              <td>不允许保存方向。</td>
+              <td>前端禁用或保存失败后提示原因。</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="conclusion danger">非目标：本期不改造病历编辑模式文件增删改，不做实时协同，不新增裁剪、标注、图片增强等高级编辑能力。</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="strip" id="strip"></div>
+    <button class="close" id="close">×</button>
+    <button class="arrow prev" id="prev">‹</button>
+    <button class="arrow next" id="next">›</button>
+    <div class="preview-stage"><div class="preview-paper" id="previewPaper"></div></div>
+    <div class="toolbar">
+      <button class="tool" id="rotateLeft">↺</button>
+      <button class="tool" id="rotateRight">↻</button>
+      <button class="tool">−</button>
+      <div class="zoom">100%</div>
+      <button class="tool">＋</button>
+      <button class="tool">▧</button>
+      <button class="tool">⇩</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">图片方向已保存</div>
+  <div class="conflict" id="conflictPanel">
+    <h3>图片方向存在冲突</h3>
+    <p id="conflictText">该图片方向已被其他老师先一步保存。请先查看最新图片方向，再判断是否还需要继续调整。</p>
+    <div class="conflict-actions">
+      <button class="solid" id="useLatest">查看最新图片</button>
+    </div>
+  </div>
+
+  <script>
+    const switchButtons = document.querySelectorAll(".view-switch button");
+    const views = document.querySelectorAll(".view");
+    const modeButtons = document.querySelectorAll(".mode-switch button");
+    const demoModeText = document.getElementById("demoModeText");
+    const annotationToggle = document.getElementById("annotationToggle");
+    const annotations = document.getElementById("annotations");
+    let demoMode = "normal";
+
+    switchButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        switchButtons.forEach((item) => item.classList.remove("active"));
+        views.forEach((view) => view.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(button.dataset.view).classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    const files = Array.from({ length: 8 }, (_, index) => ({
+      id: `file_${index + 1}`,
+      name: `tmp_${Math.random().toString(16).slice(2, 14)}...jpg`,
+      rotation: index === 1 ? 90 : 0,
+      version: 1,
+      status: "",
+      timer: null
+    }));
+
+    let activeIndex = 0;
+    let conflictIndex = null;
+    const gallery = document.getElementById("gallery");
+    const modal = document.getElementById("modal");
+    const strip = document.getElementById("strip");
+    const previewPaper = document.getElementById("previewPaper");
+    const toast = document.getElementById("toast");
+    const conflictPanel = document.getElementById("conflictPanel");
+    const conflictText = document.getElementById("conflictText");
+
+    function statusText(status) {
+      return { saving: "保存中", saved: "已保存", failed: "保存失败", conflict: "有冲突" }[status] || "";
+    }
+
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        modeButtons.forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        demoMode = button.dataset.mode;
+        conflictPanel.classList.remove("open");
+        files.forEach((file) => {
+          file.status = "";
+          window.clearTimeout(file.timer);
+        });
+        renderGallery();
+        if (modal.classList.contains("open")) renderPreview();
+        const modeText = {
+          normal: "当前为正常模式：旋转图片后，系统防抖自动保存最终角度。",
+          failed: "当前为失败演示模式：旋转图片后保存失败，图片卡片内提供重试入口。",
+          conflict: "当前为冲突演示模式：旋转图片后，保存时直接触发多人版本冲突提示。"
+        };
+        demoModeText.textContent = modeText[demoMode];
+        showToast(`已切换为${button.textContent}`);
+      });
+    });
+
+    annotationToggle.addEventListener("click", () => {
+      const nextVisible = !annotations.classList.contains("show");
+      annotations.classList.toggle("show", nextVisible);
+      annotationToggle.classList.toggle("active", nextVisible);
+      annotationToggle.textContent = nextVisible ? "隐藏标注" : "显示标注";
+    });
+
+    function renderGallery() {
+      gallery.innerHTML = files.map((file, index) => `
+        <div class="thumb-card">
+          <div class="thumb" data-index="${index}">
+            <div class="overlay">
+              <button class="icon" data-action="preview" data-index="${index}" title="预览">◉</button>
+              <button class="icon" title="图片编辑">✎</button>
+              <button class="icon" title="下载">⇩</button>
+              <button class="icon" data-action="rotate" data-index="${index}" title="右旋">↻</button>
+            </div>
+            <div class="paper" style="--rotation:${file.rotation}deg"></div>
+            ${file.status === "failed"
+              ? `<div class="save-state failed"><span>${statusText(file.status)}</span><button class="retry-save" data-action="retry" data-index="${index}">重试</button></div>`
+              : file.status ? `<div class="save-state ${file.status}">${statusText(file.status)}</div>` : ""}
+          </div>
+          <div class="filename">${file.name}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderStrip() {
+      strip.innerHTML = files.map((file, index) => `
+        <div class="strip-item ${index === activeIndex ? "active" : ""}" data-strip="${index}">
+          <div class="paper" style="width:54px;height:34px;--rotation:${file.rotation}deg"></div>
+        </div>
+      `).join("");
+    }
+
+    function renderPreview() {
+      previewPaper.style.setProperty("--rotation", `${files[activeIndex].rotation}deg`);
+      renderStrip();
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1700);
+    }
+
+    function rotateFile(index, delta) {
+      const file = files[index];
+      file.rotation = (file.rotation + delta + 360) % 360;
+      file.status = "saving";
+      renderGallery();
+      if (modal.classList.contains("open")) renderPreview();
+      window.clearTimeout(file.timer);
+      file.timer = window.setTimeout(() => saveRotation(index), 1000);
+    }
+
+    function saveRotation(index, options = {}) {
+      const { bypassDemo = false } = options;
+      const file = files[index];
+      file.status = "saving";
+      renderGallery();
+      if (modal.classList.contains("open")) renderPreview();
+
+      window.setTimeout(() => {
+        if (demoMode === "failed" && !bypassDemo) {
+          file.status = "failed";
+          renderGallery();
+          if (modal.classList.contains("open")) renderPreview();
+          return;
+        }
+
+        if (demoMode === "conflict" && !bypassDemo) {
+          file.status = "conflict";
+          conflictIndex = index;
+          conflictText.textContent = "该图片方向已被赵老师先一步保存。请先查看最新图片方向，再判断是否还需要继续调整。";
+          conflictPanel.classList.add("open");
+          renderGallery();
+          return;
+        }
+        file.version += 1;
+        file.status = "saved";
+        renderGallery();
+        if (modal.classList.contains("open")) renderPreview();
+        window.setTimeout(() => {
+          if (file.status === "saved") {
+            file.status = "";
+            renderGallery();
+          }
+        }, 1600);
+      }, 520);
+    }
+
+    gallery.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      const thumb = event.target.closest(".thumb");
+      if (button?.dataset.action === "retry") {
+        activeIndex = Number(button.dataset.index);
+        saveRotation(activeIndex, { bypassDemo: true });
+        return;
+      }
+      if (button?.dataset.action === "rotate") {
+        activeIndex = Number(button.dataset.index);
+        rotateFile(activeIndex, 90);
+        return;
+      }
+      if (button?.dataset.action === "preview" || thumb) {
+        activeIndex = Number((button || thumb).dataset.index);
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        renderPreview();
+      }
+    });
+
+    strip.addEventListener("click", (event) => {
+      const item = event.target.closest("[data-strip]");
+      if (!item) return;
+      activeIndex = Number(item.dataset.strip);
+      renderPreview();
+    });
+
+    document.getElementById("rotateLeft").addEventListener("click", () => rotateFile(activeIndex, -90));
+    document.getElementById("rotateRight").addEventListener("click", () => rotateFile(activeIndex, 90));
+    document.getElementById("close").addEventListener("click", () => {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      showToast("已关闭预览，保存不依赖关闭按钮");
+    });
+    document.getElementById("prev").addEventListener("click", () => {
+      activeIndex = (activeIndex - 1 + files.length) % files.length;
+      renderPreview();
+    });
+    document.getElementById("next").addEventListener("click", () => {
+      activeIndex = (activeIndex + 1) % files.length;
+      renderPreview();
+    });
+    document.getElementById("useLatest").addEventListener("click", () => {
+      const targetIndex = conflictIndex ?? activeIndex;
+      const file = files[targetIndex];
+      file.rotation = 90;
+      file.version += 1;
+      file.status = "";
+      conflictPanel.classList.remove("open");
+      conflictIndex = null;
+      activeIndex = targetIndex;
+      demoMode = "normal";
+      modeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === "normal");
+      });
+      demoModeText.textContent = "当前为正常模式：旋转图片后，系统防抖自动保存最终角度。";
+      renderGallery();
+      renderPreview();
+      showToast("已刷新为最新图片方向，可根据需要重新旋转");
+    });
+
+    renderGallery();
+  </script>
+</body>
+</html>
