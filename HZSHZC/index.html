@@ -659,7 +659,7 @@
           本页用于向研发同学说明需求背景、产品方案思路和方案概览。默认展示整体方案，右上角可切换查看本次需求涉及的原型与 PRD。
         </p>
         <div class="note">
-          <strong>核心结论：</strong>不新增主流程状态，仅在“待审核”节点内增加审核暂存状态：未预审 / 预审通过待放行。
+          <strong>核心结论：</strong>不新增主流程状态，仅在病历审核节点内增加审核暂存状态，适用于待审核、待复审：未预审 / 预审通过待放行。
         </div>
       </div>
 
@@ -696,7 +696,7 @@
           <div class="arrow">→</div>
           <div class="step">待分诊</div>
         </div>
-        <p class="summary">“预审通过待放行”不是主流程状态，而是待审核节点内的暂存分层。</p>
+        <p class="summary">“预审通过待放行”不是主流程状态，而是病历审核节点内的暂存分层，覆盖待审核、待复审。</p>
       </div>
 
       <div class="section">
@@ -708,7 +708,7 @@
           <tbody>
             <tr><td>待办页</td><td>大病会诊 - 审核病历下增加“全部 / 未预审 / 预审通过待放行”；列表展示审核暂存状态。</td><td>审核老师高频处理入口，强展示。</td></tr>
             <tr><td>工单列表页</td><td>不增加预审状态展示和筛选。</td><td>全局列表保持简洁，避免字段膨胀。</td></tr>
-            <tr><td>工单详情页</td><td>仅当待审核且预审通过待放行时展示预审信息，并提供取消预审操作。</td><td>条件展示，支持就地修正。</td></tr>
+            <tr><td>工单详情页</td><td>仅当待审核或待复审且预审通过待放行时展示预审信息，并提供取消预审操作。</td><td>条件展示，支持就地修正。</td></tr>
             <tr><td>工单审核页</td><td>审核结果增加“预审通过，暂不流转”。</td><td>合并在审核动作中，不做独立标记按钮。</td></tr>
           </tbody>
         </table>
@@ -724,7 +724,7 @@
             <tr><td>是否新增主流程状态</td><td>不新增。主流程仍为待审核 → 待分诊。</td></tr>
             <tr><td>是否影响驳回、不通过、通过</td><td>不影响。三者继续沿用现有审核动作。</td></tr>
             <tr><td>是否需要新字段</td><td>需要。建议字段为 <span class="code">review_hold_status</span>，枚举值为 <span class="code">none</span> / <span class="code">preapproved_hold</span>。</td></tr>
-            <tr><td>历史数据如何处理</td><td>所有历史待审核工单默认 review_hold_status = none。</td></tr>
+            <tr><td>历史数据如何处理</td><td>所有历史待审核、待复审工单默认 review_hold_status = none。</td></tr>
           </tbody>
         </table>
       </div>
@@ -752,10 +752,10 @@
             <div class="mock">
               <button class="pin" type="button" style="left: 345px; top: 96px;" data-note-title="审核暂存筛选" data-note-body="前端规则：在“审核病历”Tab 下展示三个筛选：全部、未预审、预审通过待放行；默认选中“未预审”。切换筛选后刷新列表和数量。
 后端规则：列表查询增加 review_hold_status 参数；全部不传或传 all，未预审传 none，预审通过待放行传 preapproved_hold。
-数据口径：三个数量均限定在当前待办类型=大病会诊审核病历、主工单状态=待审核的范围内统计。">1</button>
+数据口径：三个数量均限定在当前待办类型=大病会诊审核病历、主工单状态=待审核或待复审的范围内统计。">1</button>
               <button class="pin" type="button" style="left: 132px; top: 184px;" data-note-title="审核暂存状态列与取消预审" data-note-body="前端规则：待办页新增“审核暂存状态”列；none 展示“未预审”，preapproved_hold 展示“预审通过待放行”。点击“预审通过待放行”状态标签弹出浮层，展示预审老师、预审时间和取消预审按钮；未预审状态不可点击。
 后端规则：待办列表接口返回 review_hold_status、review_hold_operator_name、review_hold_at。
-取消规则：取消预审调用取消暂存接口，校验工单状态=待审核且 review_hold_status=preapproved_hold；成功后置为 none，并记录操作日志。
+取消规则：取消预审调用取消暂存接口，校验工单状态=待审核或待复审，且 review_hold_status=preapproved_hold；成功后置为 none，并记录操作日志。
 刷新规则：取消成功后当前行状态更新为“未预审”；若当前筛选为“预审通过待放行”，该行从列表移除并刷新数量。">2</button>
               <div class="mockbar"><strong>工作台 ＞ 待办 ＞ 大病会诊</strong></div>
               <div class="content">
@@ -782,7 +782,7 @@
                   </thead>
                   <tbody>
                     <tr><td><span class="tag orange">待审核</span></td><td><span class="tag orange">未预审</span></td><td>健康习水2026</td><td>消化内科</td><td>杜祥法</td><td>2026-07-06 15:04</td><td><span class="btn ghost">查看</span><span class="btn ghost">审核</span><span class="btn ghost">更多</span></td></tr>
-                    <tr><td><span class="tag orange">待审核</span></td><td><button class="tag green status-link" type="button">预审通过待放行</button></td><td>健康习水2026</td><td>基本外科</td><td>王某某</td><td>2026-07-06 14:06</td><td><span class="btn ghost">查看</span><span class="btn ghost">审核</span><span class="btn ghost">更多</span></td></tr>
+                    <tr><td><span class="tag orange">待复审</span></td><td><button class="tag green status-link" type="button">预审通过待放行</button></td><td>健康习水2026</td><td>基本外科</td><td>王某某</td><td>2026-07-06 14:06</td><td><span class="btn ghost">查看</span><span class="btn ghost">审核</span><span class="btn ghost">更多</span></td></tr>
                   </tbody>
                 </table>
                 <div class="hold-menu" id="hold-menu">
@@ -804,7 +804,7 @@
             <div class="mock">
               <button class="pin" type="button" style="left: 420px; top: 62px;" data-note-title="工单列表页整体无变化" data-note-body="页面规则：工单列表页保持现状，不新增审核暂存状态展示，不新增审核暂存状态筛选。
 后端规则：工单列表查询接口不需要新增 review_hold_status 查询条件。
-验收规则：预审通过待放行工单在工单列表页仍展示为主流程状态“待审核”。">1</button>
+验收规则：预审通过待放行工单在工单列表页仍展示原主流程状态，如“待审核”或“待复审”。">1</button>
               <div class="mockbar"><strong>工单管理 ＞ 会诊工单</strong></div>
               <div class="content">
                 <div class="toolbar">
@@ -831,10 +831,10 @@
         <div class="prototype-canvas">
           <div class="mock-frame">
             <div class="mock">
-              <button class="pin" type="button" style="left: 335px; top: 18px;" data-note-title="详情页预审信息与取消预审" data-note-body="前端规则：仅当 order_status=待审核 且 review_hold_status=preapproved_hold 时，在主状态旁展示“预审通过待放行”标签，并展示审核暂存状态、预审老师、预审时间和“取消预审”按钮。
+              <button class="pin" type="button" style="left: 335px; top: 18px;" data-note-title="详情页预审信息与取消预审" data-note-body="前端规则：仅当 order_status=待审核或待复审，且 review_hold_status=preapproved_hold 时，在主状态旁展示“预审通过待放行”标签，并展示审核暂存状态、预审老师、预审时间和“取消预审”按钮。
 后端规则：详情接口返回 review_hold_status；未返回或为 none 时不展示暂存标签。
-取消规则：点击“取消预审”调用取消暂存接口，校验工单状态=待审核且 review_hold_status=preapproved_hold；成功后置为 none，并记录操作日志。
-刷新规则：取消成功后详情页移除“预审通过待放行”标签和预审信息模块，工单仍为待审核。">1</button>
+取消规则：点击“取消预审”调用取消暂存接口，校验工单状态=待审核或待复审，且 review_hold_status=preapproved_hold；成功后置为 none，并记录操作日志。
+刷新规则：取消成功后详情页移除“预审通过待放行”标签和预审信息模块，工单仍保持原审核状态。">1</button>
               <div class="detail-head">
                 <div class="detail-title"><span>HZ0706150454138546270</span><span class="tag orange">待审核</span><span class="tag green">预审通过待放行</span></div>
                 <div><span class="tag blue">健康习水2026</span> 创建于 2026-07-06 15:04:54</div>
@@ -856,7 +856,7 @@
           <div class="mock-frame">
             <div class="mock">
               <button class="pin" type="button" style="right: 338px; top: 155px;" data-note-title="审核结果模块" data-note-body="前端规则：原“通过”文案调整为“通过并流转”，用于和“预审通过，暂不流转”区分；新增“预审通过，暂不流转”审核结果；提交按钮不增加二次确认。
-后端规则：仅更新 review_hold_status=preapproved_hold、review_hold_operator_id、review_hold_operator_name、review_hold_at；工单主状态仍为待审核。
+后端规则：仅更新 review_hold_status=preapproved_hold、review_hold_operator_id、review_hold_operator_name、review_hold_at；工单主状态仍保持当前审核状态（待审核或待复审）。
 流转规则：通过并流转复用现有审核通过逻辑，工单进入待分诊；预审通过暂不流转不生成待分诊任务，不触发分诊通知，不占用当日分诊处理量。
 日志规则：新增预审通过、取消预审两类操作日志，记录操作人、时间、工单号；驳回、不通过沿用现有接口逻辑。">1</button>
               <div class="topbar">
@@ -906,7 +906,7 @@
           </div>
           <div class="card">
             <h3>解决方案</h3>
-            <p>在不新增主流程状态的前提下，为待审核工单增加审核暂存状态：未预审 / 预审通过待放行。审核页新增“预审通过，暂不流转”。</p>
+            <p>在不新增主流程状态的前提下，为病历审核节点工单增加审核暂存状态，覆盖待审核、待复审：未预审 / 预审通过待放行。审核页新增“预审通过，暂不流转”。</p>
           </div>
         </div>
       </div>
@@ -918,7 +918,7 @@
           <tbody>
             <tr>
               <td>作为审核老师，我希望将病历标记为预审通过但暂不流转，以便不用重复查看已确认无问题的病历。</td>
-              <td><ul><li>审核页增加“预审通过，暂不流转”。</li><li>提交后主状态仍为待审核。</li><li>审核暂存状态为“预审通过待放行”。</li><li>不触发分诊流转。</li></ul></td>
+              <td><ul><li>审核页增加“预审通过，暂不流转”。</li><li>提交后主状态仍保持当前审核状态，即待审核或待复审。</li><li>审核暂存状态为“预审通过待放行”。</li><li>不触发分诊流转。</li></ul></td>
             </tr>
             <tr>
               <td>作为审核老师，我希望在待办中区分未预审和预审待放行，以便优先处理真正未看过的病历。</td>
@@ -942,7 +942,7 @@
           <tbody>
             <tr><td>待办页</td><td>大病会诊 - 审核病历下增加“全部 / 未预审 / 预审通过待放行”筛选；列表增加“审核暂存状态”列；操作列保持“查看 / 审核 / 更多”。</td></tr>
             <tr><td>工单列表页</td><td>保持现状。不展示审核暂存状态，不增加审核暂存状态筛选。</td></tr>
-            <tr><td>工单详情页</td><td>当工单状态为待审核且审核暂存状态为预审通过待放行时，顶部展示“预审通过待放行”标签，并展示预审老师、预审时间和取消预审按钮。</td></tr>
+            <tr><td>工单详情页</td><td>当工单状态为待审核或待复审，且审核暂存状态为预审通过待放行时，顶部展示“预审通过待放行”标签，并展示预审老师、预审时间和取消预审按钮。</td></tr>
             <tr><td>工单审核页</td><td>审核结果调整为“通过并流转 / 预审通过，暂不流转 / 驳回 / 不通过”。提交不增加二次确认。</td></tr>
           </tbody>
         </table>
@@ -962,9 +962,9 @@
         <table>
           <thead><tr><th>动作</th><th>前置条件</th><th>结果</th></tr></thead>
           <tbody>
-            <tr><td>设置预审通过待放行</td><td>工单状态 = 待审核；用户有审核权限</td><td>review_hold_status = preapproved_hold；写入操作人和时间。</td></tr>
-            <tr><td>取消预审</td><td>工单状态 = 待审核；review_hold_status = preapproved_hold</td><td>review_hold_status = none；记录取消操作日志。</td></tr>
-            <tr><td>通过并流转</td><td>工单状态 = 待审核；用户有审核权限</td><td>复用原通过逻辑进入待分诊；不新增主流程状态。</td></tr>
+            <tr><td>设置预审通过待放行</td><td>工单状态 = 待审核或待复审；用户有审核权限</td><td>review_hold_status = preapproved_hold；写入操作人和时间。</td></tr>
+            <tr><td>取消预审</td><td>工单状态 = 待审核或待复审；review_hold_status = preapproved_hold</td><td>review_hold_status = none；记录取消操作日志。</td></tr>
+            <tr><td>通过并流转</td><td>工单状态 = 待审核或待复审；用户有审核权限</td><td>复用对应状态下的审核通过逻辑进入下一节点；不新增主流程状态。</td></tr>
           </tbody>
         </table>
       </div>
@@ -974,10 +974,10 @@
         <table>
           <thead><tr><th>测试场景</th><th>预期结果</th></tr></thead>
           <tbody>
-            <tr><td>待审核工单选择“预审通过，暂不流转”</td><td>主状态仍为待审核；进入“预审通过待放行”筛选；不出现在待分诊。</td></tr>
+            <tr><td>待审核或待复审工单选择“预审通过，暂不流转”</td><td>主状态仍保持原审核状态；进入“预审通过待放行”筛选；不出现在待分诊。</td></tr>
             <tr><td>预审待放行工单点击“审核”后选择“通过并流转”</td><td>工单进入待分诊；原审核通过相关通知、任务、统计保持一致。</td></tr>
             <tr><td>在待办页状态标签或详情页点击取消预审</td><td>工单回到未预审列表；详情页不再展示预审通过待放行信息。</td></tr>
-            <tr><td>工单列表页查看待审核工单</td><td>不展示审核暂存状态，不提供审核暂存状态筛选。</td></tr>
+            <tr><td>工单列表页查看待审核或待复审工单</td><td>不展示审核暂存状态，不提供审核暂存状态筛选。</td></tr>
             <tr><td>驳回、不通过、通过原流程回归</td><td>所有原流程结果、通知、日志、状态流转保持原有行为。</td></tr>
           </tbody>
         </table>
