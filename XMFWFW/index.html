@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>发会诊入口权益识别优化产品方案</title>
+  <style>
+    :root {
+      --green: #078a68;
+      --green-dark: #05684f;
+      --ink: #17211f;
+      --muted: #697572;
+      --line: #dde8e5;
+      --soft: #f4f8f7;
+      --paper: #fff;
+      --warn-bg: #fff7e8;
+      --warn: #a96500;
+      --blue: #2469ad;
+      --shadow: 0 16px 42px rgba(18, 62, 51, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #f5f8f7;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+    button, input, select { font: inherit; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 28px;
+      background: rgba(255,255,255,.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, var(--green), #12b88d);
+      box-shadow: inset 0 -6px 14px rgba(0,0,0,.12);
+    }
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .nav button {
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .nav button.active {
+      color: var(--green);
+      background: #e8f6f2;
+      border-color: #c8e6dd;
+      font-weight: 800;
+    }
+    .page { display: none; max-width: 1180px; margin: 0 auto; padding: 34px 28px 70px; }
+    #prototype { max-width: none; padding-left: 28px; padding-right: 28px; }
+    .page.active { display: block; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .hero-main, .panel, .card, .doc {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .hero-main { padding: 36px; }
+    .eyebrow { color: var(--green); font-size: 14px; font-weight: 900; margin-bottom: 10px; }
+    h1 { margin: 0 0 16px; font-size: 36px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 18px; font-size: 24px; line-height: 1.35; }
+    h3 { margin: 24px 0 10px; font-size: 18px; }
+    h4 { margin: 0 0 8px; font-size: 16px; }
+    p { margin: 8px 0; }
+    .lead { color: var(--muted); font-size: 17px; margin: 0; }
+    .hero-side { display: grid; gap: 12px; }
+    .metric { padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+    .metric strong { display: block; color: var(--green); font-size: 22px; }
+    .metric span, .muted { color: var(--muted); }
+    .panel { padding: 28px; margin-top: 20px; box-shadow: 0 10px 30px rgba(18,62,51,.04); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .card { padding: 18px; box-shadow: none; }
+    .card.soft { background: var(--soft); }
+    .card.warn { background: var(--warn-bg); border-color: #efd6a7; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: #e8f6f2;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .tag.warn { background: #fff1d8; color: var(--warn); }
+    .tag.gray { background: #eef2f1; color: #64706d; }
+    .tag.blue { background: #eaf3ff; color: var(--blue); }
+    .callout {
+      padding: 16px 18px;
+      background: var(--soft);
+      border-left: 4px solid var(--green);
+      border-radius: 6px;
+    }
+    ul, ol { padding-left: 22px; margin: 8px 0; }
+    li { margin: 6px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--soft); font-weight: 900; }
+    tr:last-child td { border-bottom: 0; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+    .step { min-height: 104px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(180deg, #fff, #f9fcfb); }
+    .step b { display: block; color: var(--green); margin-bottom: 6px; }
+
+    .proto-toolbar {
+      position: sticky;
+      top: 63px;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      margin: -4px 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(12px);
+    }
+    .proto-title { color: var(--ink); font-weight: 900; }
+    .proto-title span { color: var(--muted); font-size: 13px; font-weight: 500; margin-left: 8px; }
+    .toggle-anno {
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .toggle-anno.active {
+      color: #fff;
+      background: var(--green);
+      border-color: var(--green);
+      font-weight: 800;
+    }
+    .proto-page { display: none; }
+    .proto-page.active { display: block; }
+    .canvas {
+      position: relative;
+      min-height: 780px;
+      width: 100%;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(#eef4f2 1px, transparent 1px),
+        linear-gradient(90deg, #eef4f2 1px, transparent 1px),
+        #fbfdfc;
+      background-size: 24px 24px;
+      overflow: hidden;
+    }
+    .proto-statebar {
+      position: absolute;
+      left: 36px;
+      top: 36px;
+      z-index: 5;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 10px 24px rgba(18,62,51,.08);
+    }
+    .proto-statebar button {
+      min-height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .proto-statebar button.active {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+      font-weight: 800;
+    }
+    .clean-frame { position: relative; margin: 0 auto; z-index: 1; }
+    .backend-frame {
+      max-width: 980px;
+      min-height: 620px;
+      background: #fff;
+      border: 1px solid #cfded9;
+      border-radius: 8px;
+      box-shadow: 0 18px 40px rgba(20, 50, 45, .10);
+      overflow: hidden;
+    }
+    .backend-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: #f6faf9;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+    }
+    .backend-tabs { display: flex; gap: 24px; padding: 0 18px; border-bottom: 1px solid var(--line); background: #fff; }
+    .backend-tabs span { padding: 14px 0; color: var(--muted); }
+    .backend-tabs .on { color: var(--green); border-bottom: 3px solid var(--green); font-weight: 900; }
+    .project-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .project-name { display: flex; align-items: center; gap: 14px; font-weight: 900; font-size: 18px; }
+    .progress { width: 220px; height: 6px; border-radius: 999px; background: #dfe5e3; overflow: hidden; }
+    .progress span { display: block; width: 4%; height: 100%; background: var(--green); }
+    .more-menu {
+      position: absolute;
+      right: 18px;
+      top: 58px;
+      width: 92px;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: 0 10px 26px rgba(0,0,0,.12);
+    }
+    .more-menu div { padding: 6px 10px; border-radius: 4px; font-size: 13px; }
+    .more-menu .on { background: #f2f4f3; font-weight: 800; }
+    .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); }
+    .detail-item { min-height: 58px; padding: 12px 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .detail-item:nth-child(2n) { border-right: 0; }
+    .detail-item b { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .edit-form { padding: 4px 0; }
+    .form-row { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+    .label { color: #596864; }
+    .select-mock { min-height: 40px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 7px 10px; border: 1px solid #cfded9; border-radius: 6px; background: #fff; }
+    .small { color: var(--muted); font-size: 13px; }
+    .boss-shell {
+      position: relative;
+      width: 100%;
+      max-width: none;
+      min-height: 690px;
+      margin: 0 auto;
+      border: 1px solid #cfded9;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f5f6f6;
+      box-shadow: 0 18px 40px rgba(20, 50, 45, .10);
+    }
+    .boss-bg {
+      position: absolute;
+      inset: 0;
+      background: #f6f6f6;
+    }
+    .boss-bg-top { height: 42px; background: #fff; border-bottom: 1px solid #e8eeee; display: flex; align-items: center; gap: 22px; padding: 0 20px; font-size: 13px; color: #666; }
+    .boss-bg-side { position: absolute; left: 0; top: 42px; bottom: 0; width: 176px; background: #fff; border-right: 1px solid #e8eeee; padding: 18px 14px; color: #555; }
+    .boss-bg-side div { padding: 7px 12px; border-radius: 4px; margin-bottom: 6px; }
+    .boss-bg-side .active { color: var(--green); background: #e1f5ee; }
+    .boss-bg-main { position: absolute; left: 194px; right: 16px; top: 58px; bottom: 18px; background: #fff; border-radius: 6px; padding: 16px 20px; }
+    .fake-row { height: 42px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; align-items: center; border-bottom: 1px solid #e4e9e7; color: #222; font-size: 13px; }
+    .boss-mask { position: absolute; inset: 0; background: rgba(0,0,0,.54); z-index: 2; }
+    .drawer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: min(72%, 980px);
+      min-width: 640px;
+      background: #fff;
+      z-index: 3;
+      box-shadow: -12px 0 30px rgba(0,0,0,.16);
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer-head { height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--line); font-weight: 900; }
+    .drawer-body { padding: 18px 24px; overflow: auto; }
+    .drawer-row { display: grid; grid-template-columns: 80px 1fr; gap: 14px; margin-bottom: 13px; align-items: start; font-size: 14px; }
+    .drawer-label { color: #68736f; }
+    .drawer-table { border: 1px solid var(--line); }
+    .drawer-table table { font-size: 13px; }
+    .drawer-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 24px; border-top: 1px solid var(--line); }
+    .boss-state-view .edit-actions { display: none; }
+    .boss-state-edit .view-actions { display: none; }
+    .boss-state-edit .drawer-read { display: none; }
+    .boss-state-view .drawer-edit { display: none; }
+    .field-control {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      min-height: 38px;
+      padding: 7px 10px;
+      border: 1px solid #cfded9;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .dropdown-panel {
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(18,62,51,.08);
+      overflow: hidden;
+    }
+    .dropdown-search {
+      padding: 8px 10px;
+      color: #8a9693;
+      border-bottom: 1px solid var(--line);
+      background: #fafcfc;
+      font-size: 13px;
+    }
+    .dropdown-option { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; font-size: 13px; }
+    .dropdown-option + .dropdown-option { border-top: 1px solid #f0f3f2; }
+    .dropdown-option.active { color: var(--green); background: #f0faf7; }
+    .radio-group { display: grid; gap: 8px; }
+    .radio-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+    }
+    .radio-dot { width: 14px; height: 14px; margin-top: 3px; border: 1px solid #bac8c4; border-radius: 50%; }
+    .radio-option.active { border-color: var(--green); background: #f0faf7; }
+    .radio-option.active .radio-dot { border: 4px solid var(--green); }
+    .radio-option b { display: block; line-height: 1.35; }
+    .radio-option span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .mini-dialog-board {
+      position: relative;
+      width: 390px;
+      min-height: 690px;
+      margin: 28px auto 0;
+      border: 1px solid #d7e2df;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #eef2f1;
+      box-shadow: 0 18px 40px rgba(20,50,45,.10);
+    }
+    .mini-page-bg { position: absolute; inset: 0; }
+    .mini-head { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: #fff; font-weight: 900; }
+    .mini-body { padding: 14px; }
+    .mini-card { padding: 16px; border-radius: 8px; background: #fff; margin-bottom: 12px; }
+    .mini-card.input { height: 92px; display: flex; justify-content: space-between; color: #9aa3a0; }
+    .mini-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 66px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; background: #fff; border-top: 1px solid var(--line); }
+    .mini-mask { position: absolute; inset: 0; background: rgba(0,0,0,.28); z-index: 2; }
+    .mini-dialog {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      top: 220px;
+      z-index: 3;
+    }
+    .mini-context {
+      padding: 14px;
+      border: 1px dashed #bfd1cc;
+      border-radius: 8px;
+      background: rgba(255,255,255,.72);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .modal { margin: 0; padding: 20px; border-radius: 8px; background: #fff; border: 1px solid #f0d8ad; box-shadow: 0 16px 32px rgba(60,38,0,.12); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 18px; border-radius: 6px; border: 1px solid var(--green); background: var(--green); color: #fff; font-weight: 900; text-decoration: none; }
+    .btn.secondary { background: #fff; color: var(--green); }
+    .note {
+      display: none;
+      position: absolute;
+      z-index: 3;
+      width: 245px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #fffdf6;
+      border: 1px solid #e7c77f;
+      box-shadow: 0 14px 28px rgba(71, 48, 0, .12);
+      font-size: 13px;
+    }
+    .note b { color: var(--warn); }
+    .note::before {
+      content: attr(data-area);
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      min-width: 72px;
+      height: 28px;
+      padding: 0 10px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--warn);
+      color: #fff;
+      font-weight: 900;
+    }
+    .pin {
+      display: none;
+      position: absolute;
+      z-index: 4;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--warn);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(112, 70, 0, .22);
+    }
+    .show-annotations .note { display: block; }
+    .show-annotations .pin { display: none; }
+    .anno-marker {
+      display: none;
+      position: absolute;
+      z-index: 8;
+      width: 28px;
+      height: 28px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #1677ff;
+      color: #fff;
+      font-weight: 900;
+      line-height: 24px;
+      text-align: center;
+      box-shadow: 0 8px 18px rgba(22,119,255,.28);
+      cursor: pointer;
+    }
+    .show-annotations .anno-marker { display: block; }
+    .annotation-pop {
+      display: none;
+      position: absolute;
+      z-index: 40;
+      width: 360px;
+      border: 1px solid #cfded9;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 20px 46px rgba(12,36,31,.18);
+      overflow: hidden;
+    }
+    .annotation-pop.open { display: block; }
+    .annotation-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f4f8f7;
+      border-bottom: 1px solid var(--line);
+      cursor: move;
+    }
+    .annotation-head b { font-size: 15px; color: var(--green); }
+    .annotation-close { border: 0; background: transparent; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; }
+    .annotation-body { padding: 14px 16px; font-size: 13px; color: #3b4643; }
+    .annotation-body p { margin: 0 0 10px; }
+    .annotation-body ul { margin: 0; padding-left: 18px; }
+    .annotation-body li { margin: 4px 0; }
+    .state-only { display: none; }
+    .boss-state-view .only-boss-view { display: grid; }
+    .boss-state-edit .only-boss-edit { display: block; }
+    .state-tip .only-tip,
+    .state-draft .only-draft,
+    .state-selfpay .only-selfpay { display: block; }
+    .doc {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 42px 56px;
+      box-shadow: 0 18px 50px rgba(16, 34, 30, .08);
+    }
+    .doc-title { border-bottom: 2px solid var(--line); padding-bottom: 18px; margin-bottom: 26px; }
+    .doc-title h1 { font-size: 32px; }
+    .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; color: var(--muted); font-size: 13px; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f2f5f4; padding: 2px 6px; border-radius: 5px; font-size: 13px; }
+    @media (max-width: 920px) {
+      .topbar { position: static; align-items: flex-start; flex-direction: column; }
+      .page { padding: 22px 16px 48px; }
+      #prototype { padding-left: 16px; padding-right: 16px; }
+      .hero, .grid-2, .grid-3, .flow, .meta { grid-template-columns: 1fr; }
+      .hero-main, .panel, .doc { padding: 22px; }
+      h1 { font-size: 28px; }
+      .proto-toolbar { position: static; flex-direction: column; align-items: flex-start; }
+      .canvas { padding: 18px; min-height: auto; overflow: auto; }
+      .mini-dialog-board { width: 360px; margin-top: 16px; }
+      .drawer { width: 82%; min-width: 0; }
+      .annotation-pop { position: fixed; left: 16px !important; right: 16px; top: 86px !important; width: auto; }
+      .proto-statebar { position: static; margin-bottom: 16px; }
+      .note { position: static; width: auto; margin: 10px 0; }
+      .pin { display: none !important; }
+      .show-annotations .note { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark"></span><span>发会诊入口权益识别优化</span></div>
+    <nav class="nav" aria-label="交付物板块切换">
+      <button class="active" data-target="solution">整体方案说明</button>
+      <button data-target="prototype" data-proto="boss">原型-管理后台</button>
+      <button data-target="prototype" data-proto="mini">原型-小程序</button>
+      <button data-target="prd">PRD 文档</button>
+    </nav>
+  </header>
+
+  <main id="solution" class="page active">
+    <div class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">整体方案说明</div>
+        <h1>不新增首页服务专区，优先优化「发会诊」入口的权益识别与异常提示</h1>
+        <p class="lead">用户继续从首页「发会诊」进入。系统保留现有权益默认、左下角切换、自费路径和草稿弹窗能力，新增后台项目「服务范围」与「无权益提示策略」配置：服务范围只作为疑似识别线索，是否提示由项目策略控制。</p>
+      </div>
+      <div class="hero-side">
+        <div class="metric"><strong>1 个主入口</strong><span>仍以首页「发会诊」承接项目经理宣导路径。</span></div>
+        <div class="metric"><strong>2 个改造点</strong><span>管理后台项目详情页 + 小程序发起会诊页。</span></div>
+        <div class="metric"><strong>0 个强制新状态</strong><span>不新增订单状态，不改变权益分配主模型。</span></div>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>1. 评审结论</h2>
+      <table>
+        <tr><th>问题</th><th>结论</th></tr>
+        <tr><td>交付内容</td><td>项目详情抽屉增加「服务范围」与「无权益提示策略」字段；小程序发起会诊页增加无权益疑似用户提示弹窗。</td></tr>
+        <tr><td>不纳入范围</td><td>不新增首页服务专区；不改变多权益随机默认；不重构权益分配；不做草稿跨项目迁移；不做在线申请表单和后台申请处理流。</td></tr>
+        <tr><td>影响端</td><td>管理后台项目详情页、小程序用户端发起会诊页。</td></tr>
+        <tr><td>是否新增入口</td><td>不新增后台菜单或项目详情右上角菜单项；在项目详情抽屉查看，底部点击“编辑”进入编辑状态。</td></tr>
+        <tr><td>新增字段</td><td>项目维度新增服务范围字段，当前版本支持多选医院；新增无权益提示策略字段。</td></tr>
+        <tr><td>权限控制</td><td>服务范围只用于识别，不代表用户应享权益；是否提示由项目策略决定。</td></tr>
+        <tr><td>兼容策略</td><td>历史项目服务范围为空，且无权益提示策略默认关闭，不影响现有发起链路。</td></tr>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>2. 问题与目标</h2>
+      <div class="grid-3">
+        <div class="card">
+          <span class="tag warn">权益漏配</span>
+          <p>toB 项目已启动，但部分地方医生未被及时配置权益，进入发起时容易走到自费路径。</p>
+        </div>
+        <div class="card">
+          <span class="tag warn">项目心智弱</span>
+          <p>地方医生通常只知道「发会诊」，不一定理解同舟工程、AZ 帮扶、健康横峰2026等项目名。</p>
+        </div>
+        <div class="card">
+          <span class="tag warn">返工成本高</span>
+          <p>不同权益服务对应字段不同，错误发起后无法完整平移数据，常需要取消重填。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>3. 交付范围与边界</h2>
+      <div class="grid-2">
+        <div class="card soft">
+          <h3>交付范围</h3>
+          <ul>
+            <li>后台项目详情抽屉增加非必填「服务范围」。</li>
+            <li>后台项目详情抽屉增加「无权益提示策略」，默认不提示。</li>
+            <li>服务范围当前版本仅支持多选系统医院。</li>
+            <li>用户点击「发会诊」后，先沿用现有权益与草稿判断。</li>
+            <li>无任何权益、命中服务范围，且项目开启提示策略时，展示权益未开通提示。</li>
+            <li>小程序端只新增提示弹窗；申请会诊页其他区域沿用现有页面。</li>
+            <li>提示提供“退出 / 自费发起”：退出离开申请会诊页；自费发起关闭弹窗并沿用现有自费流程。</li>
+            <li>弹窗引导用户联系项目经理确认权益；当前版本不展示电话，不提交在线申请表单。</li>
+          </ul>
+        </div>
+        <div class="card warn">
+          <h3>明确不做</h3>
+          <ul>
+            <li>不新增首页服务专区或项目专区。</li>
+            <li>不展示所有项目给用户选择。</li>
+            <li>不改变手动给用户分配权益的操作。</li>
+            <li>不因服务范围命中自动发权益。</li>
+            <li>不因用户命中其他项目服务范围而打扰已有权益用户。</li>
+            <li>不改变左下角权益/自费切换能力。</li>
+            <li>不新增权益开通申请表单、后台申请记录列表或申请状态流转。</li>
+            <li>不在当前版本展示客服电话或项目经理电话。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>4. 流程规则</h2>
+      <div class="flow">
+        <div class="step"><b>点击发会诊</b>用户从首页原入口进入。</div>
+        <div class="step"><b>权益判断</b>有权益则沿用现有默认规则。</div>
+        <div class="step"><b>草稿判断</b>待提交草稿优先弹窗。</div>
+        <div class="step"><b>疑似判断</b>无任何权益且新发起时，判断服务范围与提示策略。</div>
+        <div class="step"><b>进入发起</b>满足提示策略才提示；否则自费。</div>
+      </div>
+      <h3>关键规则</h3>
+      <table>
+        <tr><th>场景</th><th>处理方式</th></tr>
+        <tr><td>用户有任一可用权益</td><td>保持现状，直接进入权益发起逻辑；不再判断其他未分配项目的服务范围。</td></tr>
+        <tr><td>用户有多个权益</td><td>保持现状，随机默认一个；用户可从左下角切换权益或自费。</td></tr>
+        <tr><td>用户无任何权益且命中服务范围</td><td>仅当命中的项目开启「无权益提示策略」时，在新发起路径展示疑似提示。</td></tr>
+        <tr><td>同一医院关联多个项目</td><td>若用户已有其中一个项目权益，不提示其他未授权项目；若用户无权益，按开启提示策略的项目判断。</td></tr>
+        <tr><td>用户有待提交草稿</td><td>先展示草稿弹窗；若继续完善草稿，不展示疑似提示。</td></tr>
+        <tr><td>用户取消草稿后重新发起</td><td>若无权益、命中服务范围，且命中项目开启提示策略，再展示疑似提示。</td></tr>
+      </table>
+    </section>
+  </main>
+
+  <main id="prototype" class="page">
+    <div class="proto-toolbar">
+      <div class="proto-title" id="proto-title">PC 管理后台 <span>项目详情 / 服务范围配置</span></div>
+      <button class="toggle-anno" type="button">显示标注</button>
+    </div>
+
+    <section class="proto-page active" id="proto-boss">
+      <div class="canvas boss-state-view" id="canvas-boss">
+        <div class="boss-shell">
+          <div class="boss-bg">
+            <div class="boss-bg-top"><b>尤迈会诊</b><span>项目中心 › 项目管理 › 项目详情</span></div>
+            <div class="boss-bg-side">
+              <div>工作台</div><div>用户中心</div><div class="active">项目管理</div><div>订单管理</div><div>工单管理</div>
+            </div>
+            <div class="boss-bg-main">
+              <div class="project-name"><span>‹ 返回</span><span>AZ庄浪县人民医院2026</span><span class="progress"><span></span></span><span class="small">总完成量4%</span></div>
+              <div style="height:20px;"></div>
+              <div class="tag">专家案例培训</div>
+              <div style="height:18px;"></div>
+              <div class="fake-row"><b>工单号</b><b>服务</b><b>状态</b><b>操作</b></div>
+              <div class="fake-row"><span>HZ0708113219369551909</span><span>专家案例培训</span><span class="tag">已完成</span><span style="color:var(--green);">详情</span></div>
+              <div class="fake-row"><span>HZ0708154218578554480</span><span>专家案例培训</span><span class="tag">已完成</span><span style="color:var(--green);">详情</span></div>
+              <div class="fake-row"><span>HZ0710081023448558280</span><span>专家案例培训</span><span class="tag">已完成</span><span style="color:var(--green);">详情</span></div>
+            </div>
+          </div>
+          <div class="boss-mask"></div>
+          <div class="drawer">
+            <div class="drawer-head"><span>项目详情</span><span>×</span></div>
+            <div class="drawer-body">
+              <div class="drawer-row"><div class="drawer-label">项目名称</div><div>AZ庄浪县人民医院2026</div></div>
+              <div class="drawer-row">
+                <div class="drawer-label">服务配置</div>
+                <div class="drawer-table">
+                  <table>
+                    <tr><th>服务</th><th>所属服务包</th><th>所属合同</th><th>项目集产品总量</th><th>可分配数量</th><th>本项目分配数量</th></tr>
+                    <tr><td>专家案例培训</td><td>专家案例培训</td><td>AZ捐赠协议2026</td><td>2070</td><td>630</td><td>100</td></tr>
+                  </table>
+                </div>
+              </div>
+              <div class="drawer-row"><div class="drawer-label">服务限制</div><div class="drawer-table"><table><tr><th>服务</th><th>所属服务包</th><th>发起人使用限制</th></tr><tr><td>专家案例培训</td><td>专家案例培训</td><td>30次</td></tr></table></div></div>
+              <div class="drawer-row"><div class="drawer-label">开始时间</div><div>2026-07-01</div></div>
+              <div class="drawer-row"><div class="drawer-label">结束时间</div><div>2026-12-31</div></div>
+              <div class="drawer-row"><div class="drawer-label">项目经理</div><div>范峥</div></div>
+              <div class="drawer-row"><div class="drawer-label">医生端地址</div><div>-</div></div>
+              <div class="drawer-row">
+                <div class="drawer-label">服务范围</div>
+                <div>
+                  <div class="drawer-read"><span class="tag">庄浪县人民医院</span></div>
+                  <div class="drawer-edit">
+                    <div class="field-control"><span class="tag">庄浪县人民医院 ×</span><span class="tag gray">+ 选择医院</span></div>
+                    <div class="dropdown-panel">
+                      <div class="dropdown-search">搜索医院名称</div>
+                      <div class="dropdown-option active"><span>庄浪县人民医院</span><span>已选</span></div>
+                      <div class="dropdown-option"><span>庄浪县中医医院</span><span>选择</span></div>
+                      <div class="dropdown-option"><span>静宁县人民医院</span><span>选择</span></div>
+                    </div>
+                    <p class="small">支持多选系统医院；非必填。为空时不参与无权益疑似判断。</p>
+                  </div>
+                </div>
+              </div>
+              <div class="drawer-row">
+                <div class="drawer-label">无权益提示策略</div>
+                <div>
+                  <div class="drawer-read"><span class="tag gray">不提示</span></div>
+                  <div class="drawer-edit">
+                    <div class="radio-group">
+                      <div class="radio-option active"><span class="radio-dot"></span><div><b>不提示</b><span>默认选项。适用于名单制、定向授权或不希望扩大权益预期的项目。</span></div></div>
+                      <div class="radio-option"><span class="radio-dot"></span><div><b>命中服务范围时提示</b><span>仅适用于项目希望发现漏配权益或允许用户咨询开通的场景。</span></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="drawer-actions">
+              <span class="btn view-actions" id="drawer-edit-btn">编辑</span>
+              <span class="btn secondary edit-actions drawer-view-btn">取消</span>
+              <span class="btn edit-actions drawer-view-btn">保存</span>
+            </div>
+          </div>
+        </div>
+        <button class="anno-marker" style="right:330px;top:472px;" data-title="配置区：服务范围与提示策略" data-body="两个字段均放在项目详情抽屉内，不新增页面入口或菜单项。详情态只展示，底部点击“编辑”进入编辑态。服务范围从系统医院列表多选；无权益提示策略为单选。服务范围为空时，策略锁定为“不提示”，不可切换为“命中服务范围时提示”。服务范围只用于识别，不生成权益、不自动授权；是否弹小程序提示由提示策略决定。">1</button>
+        <div class="annotation-pop" id="annotation-pop-boss">
+          <div class="annotation-head"><b>标注说明</b><button class="annotation-close" type="button">×</button></div>
+          <div class="annotation-body"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="proto-page" id="proto-mini">
+      <div class="canvas state-tip" id="canvas-mini">
+        <div class="mini-dialog-board">
+          <div class="mini-page-bg">
+            <div class="mini-head"><span>‹</span><span>申请会诊</span><span>•••</span></div>
+            <div class="mini-body">
+              <div class="mini-card" style="text-align:center;color:var(--green);font-weight:900;">点击选择就诊人</div>
+              <div class="mini-card input"><b>会诊目的</b><span>请填写此次会诊需要解决的问题</span></div>
+              <div class="mini-card"><b>申请科室</b><span style="float:right;color:#999;">请选择 ›</span></div>
+              <div class="mini-card"><b><span style="color:red;">*</span>旁听人</b><span style="float:right;color:var(--green);">0/2 ›</span></div>
+            </div>
+            <div class="mini-bottom"><span class="small">自费会诊 ▾</span><span class="btn">下一步</span></div>
+          </div>
+          <div class="mini-mask"></div>
+          <div class="mini-dialog">
+            <div class="modal">
+              <h4>暂未查询到你的会诊权益</h4>
+              <p class="small">你所在医院可能已开通专属会诊服务，请联系项目经理确认权益。如需继续发起，也可选择自费发起。</p>
+              <div class="actions">
+                <span class="btn secondary">退出</span>
+                <span class="btn">自费发起</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="anno-marker" style="left:calc(50% + 150px);top:236px;" data-title="弹窗区：无权益疑似提示" data-body="仅当用户无任何权益、进入新发起路径、所属医院命中项目服务范围，且命中项目开启提示策略时展示。弹窗引导用户联系项目经理确认权益。当前版本不展示电话，不提供在线申请表单。退出：退出申请会诊页面。自费发起：关闭弹窗，使用现有系统流程继续以自费模式发起。若存在待提交草稿，仍先展示现有草稿弹窗，继续完善草稿时不展示本提示。">1</button>
+        <div class="annotation-pop" id="annotation-pop-mini">
+          <div class="annotation-head"><b>标注说明</b><button class="annotation-close" type="button">×</button></div>
+          <div class="annotation-body"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main id="prd" class="page">
+    <article class="doc">
+      <div class="doc-title">
+        <div class="eyebrow">PRD 文档</div>
+        <h1>发会诊入口权益识别优化需求文档</h1>
+        <div class="meta">
+          <span>版本：V1.0</span>
+          <span>日期：2026-07-13</span>
+          <span>范围：后台 + 小程序</span>
+          <span>状态：定稿</span>
+        </div>
+      </div>
+
+      <h2>1. 概要说明</h2>
+      <p>本需求用于优化小程序「发会诊」入口在 toB 权益漏配场景下的识别与提示能力。通过后台项目配置服务范围与无权益提示策略，小程序在用户无任何权益、所属医院命中服务范围且项目允许提示时进行提醒，引导用户联系项目经理确认权益，降低用户误走自费流程或错误项目字段的概率，同时避免打扰已授权用户或扩大名单制项目的权益预期。</p>
+
+      <h2>2. 用户故事</h2>
+      <ul>
+        <li>作为地方医生，我希望仍然从首页「发会诊」进入，不需要理解复杂项目名称。</li>
+        <li>作为已开通权益用户，我希望系统默认帮我选中权益，不增加发起步骤。</li>
+        <li>作为权益漏配用户，我希望在进入错误流程前被提醒，知道可以联系项目经理确认。</li>
+        <li>作为项目经理，我希望能通过服务范围发现可能漏配权益的用户。</li>
+        <li>作为名单制项目经理，我希望服务范围不会自动触发所有院内用户提示，避免造成权益误解。</li>
+        <li>作为已有权益用户，我不希望因为医院关联了其他项目而被未授权项目提示打扰。</li>
+        <li>作为后台管理员，我希望配置服务范围不影响现有权益手动分配逻辑。</li>
+      </ul>
+
+      <h2>3. 功能需求</h2>
+      <table>
+        <tr><th>模块</th><th>需求</th><th>说明</th></tr>
+        <tr><td>项目详情-查看态</td><td>展示服务范围与无权益提示策略</td><td>不新增菜单入口；在项目详情抽屉展示已配置医院与当前提示策略。</td></tr>
+        <tr><td>项目详情-编辑态</td><td>编辑服务范围字段</td><td>在项目详情抽屉底部点击“编辑”进入；字段非必填，当前版本支持多选医院；保存后用于小程序疑似判断。</td></tr>
+        <tr><td>项目详情-编辑态</td><td>编辑无权益提示策略</td><td>在项目详情抽屉底部点击“编辑”进入；默认不提示；开启后，才允许无权益且命中服务范围的用户看到疑似提示。</td></tr>
+        <tr><td>权益判断</td><td>保留现有权益默认逻辑</td><td>有多个权益时仍随机默认一个；左下角继续支持切换权益/自费。</td></tr>
+        <tr><td>疑似判断</td><td>仅通过服务范围与提示策略判断</td><td>用户无任何权益，所属医院命中项目服务范围，且项目开启提示策略时，判定为需要提示。</td></tr>
+        <tr><td>草稿弹窗</td><td>优先级高于疑似提示</td><td>待提交草稿先提示继续完善/取消；取消后新发起才展示疑似提示。</td></tr>
+        <tr><td>提示弹窗</td><td>提醒权益未开通</td><td>小程序端仅新增该弹窗；申请会诊页字段、底部权益/自费切换、草稿弹窗均沿用现有页面。弹窗提示用户联系项目经理确认权益，并提供「退出 / 自费发起」动作；退出离开申请会诊页，自费发起关闭弹窗并沿用现有自费流程。</td></tr>
+        <tr><td>当前不做</td><td>不做线上申请闭环</td><td>不新增在线申请表单、后台申请记录列表、申请处理状态；当前版本不展示客服电话或项目经理电话。</td></tr>
+        <tr><td>行为记录</td><td>记录命中服务范围但无权益</td><td>用于运营追踪疑似漏配权益情况，不作为用户提交的权益申请单。</td></tr>
+      </table>
+
+      <h2>4. 流程规则</h2>
+      <table>
+        <tr><th>场景</th><th>系统处理</th><th>用户感知</th></tr>
+        <tr><td>用户有 1 个权益</td><td>沿用现有逻辑，默认使用该权益；不再判断其他未授权项目。</td><td>直接进入发起页，左下角展示当前权益。</td></tr>
+        <tr><td>用户有多个权益</td><td>沿用现有逻辑，随机默认一个；不再判断其他未授权项目。</td><td>可通过左下角切换权益或自费。</td></tr>
+        <tr><td>用户无权益，且不命中服务范围</td><td>按普通自费发起。</td><td>不弹提示，减少自费用户干扰。</td></tr>
+        <tr><td>用户无权益，命中服务范围，但项目未开启提示</td><td>按普通自费发起。</td><td>不弹提示，避免误导名单制或定向授权项目用户。</td></tr>
+        <tr><td>用户无权益，命中服务范围，且项目开启提示，无草稿</td><td>进入发起页后展示疑似提示。</td><td>提示联系项目经理确认权益；可点击「退出」离开申请会诊页，或点击「自费发起」关闭弹窗并沿用现有自费流程。</td></tr>
+        <tr><td>用户无权益，命中服务范围，且项目开启提示，有待提交草稿</td><td>先弹草稿提示；用户取消草稿并新发起后，再展示疑似提示。</td><td>先处理未完成任务，不被连续弹窗打断。</td></tr>
+        <tr><td>同一医院关联多个项目，用户已有其中一个项目权益</td><td>直接走已有权益逻辑，不提示其他未分配项目。</td><td>不被未授权项目打扰。</td></tr>
+        <tr><td>同一医院关联多个项目，用户无任何权益</td><td>仅当至少一个命中项目开启提示策略时展示通用提示。</td><td>不展示具体项目列表。</td></tr>
+        <tr><td>用户继续完善草稿</td><td>默认不展示疑似提示。</td><td>回到原草稿继续完善。</td></tr>
+      </table>
+
+      <h2>5. 数据规则</h2>
+      <ul>
+        <li>项目新增字段：<span class="code">service_scope_hospital_ids</span>，类型为医院 ID 列表。</li>
+        <li>项目新增字段：<span class="code">no_benefit_tip_strategy</span>，枚举值为 <span class="code">off</span>、<span class="code">on_scope_hit</span>；默认值为 <span class="code">off</span>。</li>
+        <li>字段为空时，该项目不参与无权益疑似判断。</li>
+        <li>当 <span class="code">service_scope_hospital_ids</span> 为空时，<span class="code">no_benefit_tip_strategy</span> 必须锁定为 <span class="code">off</span>，不可切换为 <span class="code">on_scope_hit</span>。</li>
+        <li>服务范围仅用于识别，不产生用户权益记录，也不代表该范围内用户应享权益。</li>
+        <li>有可用权益用户不进入服务范围疑似判断，避免同院其他项目造成干扰。</li>
+        <li>若无权益用户同时命中多个项目服务范围，只有开启提示策略的项目参与提示判断；前端不展示项目列表，只提示「所在医院可能已开通专属会诊服务」。</li>
+        <li>埋点/日志记录包含：用户 ID、手机号、所属医院、命中项目 ID、进入时间、提示展示时间、关闭时间。</li>
+      </ul>
+
+      <h2>6. 权限与校验规则</h2>
+      <ul>
+        <li>拥有项目编辑权限的后台角色可维护服务范围。</li>
+        <li>仅可从系统医院列表中选择，避免手填造成数据不一致。</li>
+        <li>普通用户不可见后台项目名和项目集名。</li>
+        <li>选择医院后保存，应校验医院 ID 有效且未删除。</li>
+        <li>用户无所属医院或所属医院为空时，不命中服务范围。</li>
+        <li>同一用户同一次进入发起页，疑似提示只展示一次。</li>
+        <li>存量项目无权益提示策略默认关闭，避免上线后对既有名单制项目产生额外提示。</li>
+        <li>当前版本不展示电话，不提供在线申请表单；如后续展示电话，应以配置项方式展示，不写死在前端。</li>
+      </ul>
+
+      <h2>7. 验收标准</h2>
+      <table>
+        <tr><th>编号</th><th>验收场景</th><th>预期结果</th></tr>
+        <tr><td>AC-01</td><td>后台项目详情查看态</td><td>在项目详情抽屉可查看服务范围与无权益提示策略，不新增右上角菜单项。</td></tr>
+        <tr><td>AC-02</td><td>后台项目详情编辑服务范围</td><td>在项目详情抽屉底部点击“编辑”进入，可多选医院并保存，刷新后数据正确回显。</td></tr>
+        <tr><td>AC-03</td><td>后台项目详情配置无权益提示策略</td><td>在项目详情抽屉底部点击“编辑”进入，可保存开启/关闭状态；新建和存量项目默认关闭。</td></tr>
+        <tr><td>AC-04</td><td>项目服务范围为空</td><td>不影响任何用户发起流程。</td></tr>
+        <tr><td>AC-05</td><td>用户有权益</td><td>不展示疑似提示，沿用现有默认权益逻辑，且不判断其他未分配项目。</td></tr>
+        <tr><td>AC-06</td><td>用户无权益且所属医院命中服务范围，但项目提示策略关闭</td><td>直接进入自费发起页，不展示提示。</td></tr>
+        <tr><td>AC-07</td><td>用户无权益且所属医院命中服务范围，且项目提示策略开启</td><td>展示新增权益未开通提示弹窗，文案引导联系项目经理；申请会诊页其他区域不变。</td></tr>
+        <tr><td>AC-08</td><td>用户无权益且不命中服务范围</td><td>直接进入自费发起页，不展示提示。</td></tr>
+        <tr><td>AC-09</td><td>同一医院关联多个项目，用户已有其中一个项目权益</td><td>不提示其他未分配项目。</td></tr>
+        <tr><td>AC-10</td><td>同一医院关联多个项目，用户无权益且多个项目开启提示</td><td>只展示一次通用提示，不展示项目列表。</td></tr>
+        <tr><td>AC-11</td><td>用户有待提交草稿</td><td>先展示草稿弹窗，不先展示疑似提示。</td></tr>
+        <tr><td>AC-12</td><td>用户选择继续完善草稿</td><td>进入草稿流程，不展示疑似提示。</td></tr>
+        <tr><td>AC-13</td><td>用户取消草稿后重新发起且满足提示条件</td><td>展示疑似提示。</td></tr>
+        <tr><td>AC-14</td><td>用户在疑似提示中点击退出</td><td>退出申请会诊页面。</td></tr>
+        <tr><td>AC-15</td><td>用户在疑似提示中点击自费发起</td><td>关闭提示，使用现有系统流程继续以自费模式发起。</td></tr>
+        <tr><td>AC-16</td><td>当前版本联系入口</td><td>不展示电话，不提供在线申请表单，不在后台生成权益申请处理记录。</td></tr>
+      </table>
+
+      <h2>8. 埋点与运营记录</h2>
+      <table>
+        <tr><th>事件</th><th>触发时机</th><th>关键字段</th></tr>
+        <tr><td>consult_scope_hit_no_benefit</td><td>无权益且命中服务范围</td><td>userId、hospitalId、projectId、tipStrategy、source</td></tr>
+        <tr><td>consult_scope_tip_show</td><td>疑似提示展示</td><td>userId、hospitalId、hitProjectCount</td></tr>
+        <tr><td>consult_scope_tip_exit</td><td>点击退出</td><td>userId、hospitalId、projectId</td></tr>
+        <tr><td>consult_scope_tip_selfpay</td><td>点击自费发起</td><td>userId、hospitalId、projectId</td></tr>
+      </table>
+    </article>
+  </main>
+
+  <script>
+    const navButtons = document.querySelectorAll('.nav button');
+    const pages = document.querySelectorAll('.page');
+    const protoTitles = {
+      boss: 'PC 管理后台 <span>项目详情 / 服务范围配置</span>',
+      mini: '微信小程序 <span>申请会诊 / 无权益提示</span>'
+    };
+    const protoTitle = document.getElementById('proto-title');
+    const protoPages = document.querySelectorAll('.proto-page');
+
+    function activateProto(proto) {
+      if (!proto) return;
+      protoPages.forEach((page) => page.classList.remove('active'));
+      document.getElementById(`proto-${proto}`).classList.add('active');
+      protoTitle.innerHTML = protoTitles[proto];
+    }
+
+    navButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        navButtons.forEach((item) => item.classList.remove('active'));
+        pages.forEach((page) => page.classList.remove('active'));
+        button.classList.add('active');
+        document.getElementById(button.dataset.target).classList.add('active');
+        activateProto(button.dataset.proto);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    const toggle = document.querySelector('.toggle-anno');
+    toggle.addEventListener('click', () => {
+      document.querySelectorAll('.canvas').forEach((canvas) => canvas.classList.toggle('show-annotations'));
+      toggle.classList.toggle('active');
+      toggle.textContent = toggle.classList.contains('active') ? '隐藏标注' : '显示标注';
+    });
+
+    const bossCanvas = document.getElementById('canvas-boss');
+    const drawerEditBtn = document.getElementById('drawer-edit-btn');
+    function setBossState(state) {
+      bossCanvas.classList.remove('boss-state-view', 'boss-state-edit');
+      bossCanvas.classList.add(`boss-state-${state}`);
+    }
+    drawerEditBtn.addEventListener('click', () => setBossState('edit'));
+    document.querySelectorAll('.drawer-view-btn').forEach((button) => {
+      button.addEventListener('click', () => setBossState('view'));
+    });
+
+    function formatAnnotation(body) {
+      const parts = body.split('；').map((item) => item.trim()).filter(Boolean);
+      if (parts.length <= 1) return `<p>${body}</p>`;
+      return `<ul>${parts.map((item) => `<li>${item}</li>`).join('')}</ul>`;
+    }
+
+    document.querySelectorAll('.anno-marker').forEach((marker) => {
+      marker.addEventListener('click', () => {
+        const canvas = marker.closest('.canvas');
+        const pop = canvas.querySelector('.annotation-pop');
+        pop.querySelector('.annotation-head b').textContent = marker.dataset.title;
+        pop.querySelector('.annotation-body').innerHTML = formatAnnotation(marker.dataset.body);
+        pop.style.left = `${Math.min(marker.offsetLeft + 38, canvas.clientWidth - 390)}px`;
+        pop.style.top = `${Math.max(marker.offsetTop - 10, 12)}px`;
+        pop.classList.add('open');
+      });
+    });
+
+    document.querySelectorAll('.annotation-close').forEach((button) => {
+      button.addEventListener('pointerdown', (event) => event.stopPropagation());
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        button.closest('.annotation-pop').classList.remove('open');
+      });
+    });
+
+    document.querySelectorAll('.annotation-pop').forEach((pop) => {
+      const head = pop.querySelector('.annotation-head');
+      let dragging = false;
+      let startX = 0;
+      let startY = 0;
+      let baseX = 0;
+      let baseY = 0;
+      head.addEventListener('pointerdown', (event) => {
+        dragging = true;
+        startX = event.clientX;
+        startY = event.clientY;
+        baseX = parseFloat(pop.style.left || 0);
+        baseY = parseFloat(pop.style.top || 0);
+        head.setPointerCapture(event.pointerId);
+      });
+      head.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        pop.style.left = `${baseX + event.clientX - startX}px`;
+        pop.style.top = `${baseY + event.clientY - startY}px`;
+      });
+      head.addEventListener('pointerup', () => {
+        dragging = false;
+      });
+    });
+  </script>
+</body>
+</html>
