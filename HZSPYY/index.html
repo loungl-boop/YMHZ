@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f3f7f4" />
+    <meta
+      name="description"
+      content="尤迈线上系统录屏演示，点击即可在线播放。"
+    />
+    <title>尤迈线上系统｜录屏演示</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #12231e;
+        --muted: #62706b;
+        --accent: #08765d;
+        --accent-dark: #075d4b;
+        --paper: #ffffff;
+        --canvas: #f3f7f4;
+        --line: #dce7e2;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 4%, #dcefe6 0, transparent 28rem),
+          var(--canvas);
+      }
+
+      .page {
+        width: min(1120px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 28px 0 48px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--accent-dark);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 9px;
+        color: white;
+        background: var(--accent);
+        box-shadow: 0 7px 18px rgb(8 118 93 / 22%);
+      }
+
+      main {
+        margin-top: clamp(44px, 8vw, 86px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 14px;
+        color: var(--accent-dark);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .eyebrow::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #16a57f;
+        box-shadow: 0 0 0 5px rgb(22 165 127 / 11%);
+        content: "";
+      }
+
+      h1 {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(32px, 6vw, 58px);
+        line-height: 1.08;
+        letter-spacing: -0.035em;
+      }
+
+      .intro {
+        max-width: 650px;
+        margin: 18px 0 30px;
+        color: var(--muted);
+        font-size: clamp(15px, 2vw, 18px);
+        line-height: 1.75;
+      }
+
+      .player-shell {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: #08110e;
+        box-shadow:
+          0 28px 70px rgb(24 63 51 / 16%),
+          0 3px 12px rgb(24 63 51 / 8%);
+      }
+
+      video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        background: #08110e;
+        object-fit: contain;
+      }
+
+      .details {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .details strong {
+        color: var(--ink);
+        font-weight: 650;
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          width: min(100% - 24px, 1120px);
+          padding-top: 18px;
+        }
+
+        main {
+          margin-top: 44px;
+        }
+
+        .intro {
+          margin-bottom: 22px;
+        }
+
+        .player-shell {
+          border-radius: 14px;
+        }
+
+        .details {
+          display: block;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="brand" aria-label="尤迈线上系统">
+          <span class="brand-mark" aria-hidden="true">尤</span>
+          <span>尤迈线上系统</span>
+        </div>
+      </header>
+
+      <main>
+        <p class="eyebrow">在线演示 · 09:55</p>
+        <h1>线上系统录屏演示</h1>
+        <p class="intro">
+          本视频介绍尤迈线上系统的主要操作流程。点击下方播放器即可观看，支持电脑和手机浏览器。
+        </p>
+
+        <div class="player-shell">
+          <video
+            controls
+            controlslist="nodownload"
+            playsinline
+            preload="metadata"
+            poster="poster.jpg"
+            aria-label="尤迈线上系统录屏演示视频"
+          >
+            <source src="youmai-demo.mp4" type="video/mp4" />
+            你的浏览器暂不支持在线播放，请更换最新版浏览器后重试。
+          </video>
+        </div>
+
+        <div class="details">
+          <span><strong>播放提示：</strong>首次打开可能需要等待几秒加载。</span>
+          <span>建议在 Wi-Fi 或稳定网络环境下观看</span>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
