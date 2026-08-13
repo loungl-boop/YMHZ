@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>远程会诊服务平台｜中性字段展示改造产品方案</title>
+  <style>
+    :root {
+      --ink: #15251f;
+      --muted: #63736d;
+      --line: #dbe5e0;
+      --paper: #ffffff;
+      --canvas: #f3f7f5;
+      --soft: #edf6f1;
+      --green: #0b6b4f;
+      --green-2: #13815f;
+      --mint: #d8f0e4;
+      --amber: #a86512;
+      --amber-bg: #fff6e8;
+      --red: #9b4138;
+      --red-bg: #fff0ed;
+      --shadow: 0 18px 44px rgba(22, 65, 49, .08);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(11,107,79,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11,107,79,.025) 1px, transparent 1px),
+        var(--canvas);
+      background-size: 24px 24px;
+      font-family: var(--sans);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: grid;
+      grid-template-columns: minmax(210px, 1fr) auto minmax(210px, 1fr);
+      align-items: center;
+      gap: 18px;
+      min-height: 70px;
+      padding: 10px clamp(18px, 4vw, 60px);
+      border-bottom: 1px solid rgba(219,229,224,.9);
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      color: #fff;
+      background: var(--green);
+      font-weight: 800;
+      box-shadow: 0 8px 18px rgba(11,107,79,.2);
+    }
+    .brand-text { min-width: 0; }
+    .brand-title { font-weight: 760; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .brand-meta { color: var(--muted); font-size: 12px; }
+
+    .primary-nav {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #f8faf9;
+    }
+    .nav-btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 8px 15px;
+      color: #52635d;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 650;
+      white-space: nowrap;
+      transition: .18s ease;
+    }
+    .nav-btn:hover { color: var(--green); background: var(--soft); }
+    .nav-btn[aria-selected="true"] { color: #fff; background: var(--green); box-shadow: 0 5px 14px rgba(11,107,79,.18); }
+
+    .top-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .quiet-btn, .solid-btn, .copy-btn, .link-btn {
+      border-radius: 10px;
+      padding: 8px 13px;
+      font-weight: 650;
+      font-size: 13px;
+      transition: .18s ease;
+    }
+    .quiet-btn, .copy-btn, .link-btn { border: 1px solid var(--line); color: var(--green); background: #fff; }
+    .quiet-btn:hover, .copy-btn:hover, .link-btn:hover { border-color: #a9c9ba; background: var(--soft); }
+    .solid-btn { border: 1px solid var(--green); color: #fff; background: var(--green); }
+
+    .shell { width: min(1440px, calc(100% - 36px)); margin: 30px auto 70px; }
+    .view { display: none; animation: view-in .22s ease both; }
+    .view.active { display: block; }
+    @keyframes view-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(30px, 5vw, 64px);
+      border: 1px solid #cfe0d8;
+      border-radius: 26px;
+      background: linear-gradient(138deg, #fafdfe 0%, #f2faf6 58%, #e3f3eb 100%);
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -86px;
+      bottom: -160px;
+      width: 360px;
+      height: 360px;
+      border: 68px solid rgba(11,107,79,.065);
+      border-radius: 50%;
+    }
+    .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.35fr .65fr; gap: 42px; align-items: end; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    h1, h2, h3, h4, p { margin-top: 0; }
+    h1 { max-width: 850px; margin-bottom: 18px; font-size: clamp(34px, 5vw, 64px); line-height: 1.08; letter-spacing: -.045em; }
+    .hero-lead { max-width: 780px; margin: 0; color: #53655e; font-size: clamp(15px, 1.5vw, 18px); }
+    .hero-summary { padding: 18px; border: 1px solid rgba(11,107,79,.18); border-radius: 16px; background: rgba(255,255,255,.72); }
+    .hero-summary strong { display: block; margin-bottom: 8px; font-size: 15px; }
+    .hero-summary p { margin: 0; color: var(--muted); font-size: 13px; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid #cfe0d8; border-radius: 999px; color: #406158; background: rgba(255,255,255,.72); font-size: 12px; font-weight: 650; }
+    .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green-2); }
+
+    .section { margin-top: 28px; padding: clamp(22px, 3.4vw, 38px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: 0 8px 28px rgba(26, 70, 53, .045); }
+    .section-head { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 22px; }
+    .section-kicker { margin: 0 0 6px; color: var(--green); font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+    h2 { margin-bottom: 7px; font-size: clamp(24px, 3vw, 34px); line-height: 1.2; letter-spacing: -.025em; }
+    h3 { margin-bottom: 10px; font-size: 18px; line-height: 1.35; }
+    h4 { margin-bottom: 8px; font-size: 15px; }
+    .section-note { max-width: 700px; margin: 0; color: var(--muted); font-size: 14px; }
+
+    .review-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .review-card { min-height: 126px; padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: #fbfcfc; }
+    .review-card .label { color: var(--muted); font-size: 12px; }
+    .review-card strong { display: block; margin: 6px 0; color: var(--green); font-size: 18px; line-height: 1.35; }
+    .review-card small { color: #66776f; font-size: 12px; }
+
+    .scope-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .scope-card { position: relative; padding: 22px; border-radius: 15px; color: #f5fffa; background: #174c3d; overflow: hidden; }
+    .scope-card:nth-child(2) { background: #0d6a50; }
+    .scope-card:nth-child(3) { background: #2f5b50; }
+    .scope-card .count { position: absolute; right: 16px; top: 7px; color: rgba(255,255,255,.13); font-family: var(--mono); font-size: 56px; font-weight: 900; line-height: 1; }
+    .scope-card h3 { position: relative; margin-bottom: 7px; font-size: 18px; }
+    .scope-card p { position: relative; margin: 0; color: rgba(255,255,255,.72); font-size: 13px; }
+
+    .principle-grid, .two-col, .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .principle { display: grid; grid-template-columns: 34px 1fr; gap: 13px; padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    .principle-index { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--green); background: var(--soft); font-family: var(--mono); font-weight: 800; }
+    .principle p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 10px; }
+    .flow-node { padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdfc; }
+    .flow-node strong { display: block; margin-bottom: 5px; color: var(--green); }
+    .flow-node span { color: var(--muted); font-size: 12px; }
+    .flow-arrow { display: grid; place-items: center; color: #85a99b; font-size: 22px; }
+    .invariant { margin-top: 14px; padding: 14px 16px; border-left: 4px solid var(--green); border-radius: 0 10px 10px 0; color: #38594e; background: var(--soft); font-size: 13px; }
+
+    .boundary { padding: 18px; border-radius: 14px; }
+    .boundary.in { border: 1px solid #b9dccc; background: #f1faf5; }
+    .boundary.out { border: 1px solid #ead8bf; background: #fffaf1; }
+    .clean-list { margin: 0; padding: 0; list-style: none; }
+    .clean-list li { position: relative; padding-left: 20px; margin: 7px 0; color: #53645e; font-size: 13px; }
+    .clean-list li::before { content: ""; position: absolute; left: 2px; top: .72em; width: 7px; height: 7px; border-radius: 50%; background: var(--green-2); transform: translateY(-50%); }
+    .boundary.out .clean-list li::before { background: var(--amber); }
+
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+    .time-item { position: relative; padding: 25px 16px 0 0; border-top: 2px solid #bbd5c9; }
+    .time-item::before { content: ""; position: absolute; top: -6px; left: 0; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 1px var(--green); }
+    .time-item strong { display: block; margin-bottom: 5px; font-size: 14px; }
+    .time-item p { margin: 0; padding-right: 14px; color: var(--muted); font-size: 12px; }
+
+    .decision { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; padding: 20px; border: 1px solid #bedccc; border-radius: 15px; background: linear-gradient(135deg, #f5fbf8, #edf8f2); }
+    .decision-badge { padding: 7px 11px; border-radius: 9px; color: #fff; background: var(--green); font-weight: 800; white-space: nowrap; }
+    .decision p { margin: 0; color: #4f625b; font-size: 14px; }
+
+    .entry-overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .entry-overview-card { padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdfc; }
+    .entry-overview-card .entry-no { display: inline-grid; place-items: center; width: 27px; height: 27px; margin-bottom: 10px; border-radius: 8px; color: #fff; background: var(--green); font-family: var(--mono); font-size: 11px; font-weight: 800; }
+    .entry-overview-card h3 { margin-bottom: 6px; font-size: 15px; }
+    .entry-overview-card p { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .scenario-stack { display: grid; gap: 16px; }
+    .scenario-card { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+    .scenario-head { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: start; gap: 13px; padding: 18px 20px; border-bottom: 1px solid var(--line); background: #f7faf8; }
+    .scenario-no { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: #fff; background: var(--green); font-family: var(--mono); font-size: 12px; font-weight: 850; }
+    .scenario-head h3 { margin: 0 0 4px; }
+    .scenario-head p { margin: 0; color: var(--muted); font-size: 12px; }
+    .field-refs { padding: 5px 9px; border: 1px solid #bcd9cc; border-radius: 999px; color: var(--green); background: var(--soft); font-family: var(--mono); font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .path-row { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 13px 20px; border-bottom: 1px solid #e8eeeb; color: #52645d; font-size: 12px; }
+    .path-label { color: var(--muted); font-weight: 750; }
+    .path-step { padding: 4px 8px; border-radius: 7px; color: #31584b; background: var(--soft); font-weight: 700; }
+    .path-arrow { color: #91aa9f; }
+    .example-link { min-width: 0; color: var(--green); overflow-wrap: anywhere; text-decoration: underline; text-decoration-color: #a7cabb; text-underline-offset: 3px; }
+    .compare-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .compare-panel { min-width: 0; padding: 18px 20px 20px; }
+    .compare-panel + .compare-panel { border-left: 1px solid var(--line); background: #f7fcf9; }
+    .compare-label { display: inline-flex; margin-bottom: 11px; padding: 4px 8px; border-radius: 6px; color: var(--red); background: var(--red-bg); font-size: 11px; font-weight: 800; }
+    .compare-panel.after .compare-label { color: var(--green); background: var(--mint); }
+    .message-sample { margin: 0; padding: 14px; border: 1px solid #e1e9e5; border-radius: 10px; color: #40514a; background: #fff; font-family: var(--sans); font-size: 12px; line-height: 1.85; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .change-old, .change-new { display: inline; padding: 1px 4px; border-radius: 4px; box-decoration-break: clone; -webkit-box-decoration-break: clone; font-weight: 800; }
+    .change-old { color: #8f3933; background: #ffe3de; text-decoration: line-through; text-decoration-thickness: 1px; }
+    .change-new { color: #075f45; background: #cceede; box-shadow: inset 0 -2px 0 rgba(11,107,79,.22); }
+    .change-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; color: var(--muted); font-size: 11px; }
+    .change-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 3px; vertical-align: -1px; }
+    .change-legend .legacy::before { background: #ffe3de; }
+    .change-legend .target::before { background: #cceede; }
+    .scenario-note { padding: 0 20px 17px; color: var(--muted); font-size: 11px; }
+    .template-detail { margin: 18px 20px 20px; padding: 18px; border: 1px solid #b9dccc; border-radius: 13px; background: #f2faf6; overflow: hidden; }
+    .template-detail + .template-detail { margin-top: 0; }
+    .template-detail-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 13px; }
+    .template-detail-head h4 { margin: 0; color: #174f3e; font-size: 15px; }
+    .template-detail-tag { padding: 4px 8px; border-radius: 7px; color: var(--green); background: var(--mint); font-family: var(--mono); font-size: 10px; font-weight: 800; }
+    .template-detail .compare-grid { border: 1px solid #d8e7e0; border-radius: 11px; overflow: hidden; background: #fff; }
+    .template-detail .compare-panel { padding: 16px; }
+    .template-detail .message-sample { min-height: 100%; }
+
+    .matrix-hero { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; padding: 30px; border-radius: 20px; color: #f6fffa; background: linear-gradient(120deg, #143f34, #0b6b4f); }
+    .matrix-hero h1 { margin-bottom: 10px; font-size: clamp(30px, 4vw, 48px); }
+    .matrix-hero p { max-width: 760px; margin: 0; color: rgba(255,255,255,.7); }
+    .stats { display: flex; gap: 12px; }
+    .stat { min-width: 90px; padding: 14px; border: 1px solid rgba(255,255,255,.18); border-radius: 13px; background: rgba(255,255,255,.08); }
+    .stat strong { display: block; font-family: var(--mono); font-size: 26px; line-height: 1; }
+    .stat span { color: rgba(255,255,255,.66); font-size: 11px; }
+
+    .filter-bar { position: sticky; top: 82px; z-index: 20; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 18px 0; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.95); box-shadow: 0 8px 22px rgba(17,62,46,.06); backdrop-filter: blur(14px); }
+    .search-wrap { position: relative; flex: 1 1 280px; }
+    .search-wrap::before { content: "⌕"; position: absolute; left: 13px; top: 50%; color: #718079; transform: translateY(-52%); font-size: 20px; }
+    .search-input { width: 100%; min-height: 40px; padding: 8px 13px 8px 38px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); outline: 0; background: #fff; }
+    .search-input:focus { border-color: #75ae96; box-shadow: 0 0 0 3px rgba(11,107,79,.09); }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .filter-chip { border: 1px solid var(--line); border-radius: 999px; padding: 7px 11px; color: #56675f; background: #fff; font-size: 12px; font-weight: 700; }
+    .filter-chip.active { border-color: var(--green); color: #fff; background: var(--green); }
+    .result-count { min-width: 82px; text-align: right; color: var(--muted); font-size: 12px; }
+
+    .matrix-group { margin-top: 18px; border: 1px solid var(--line); border-radius: 16px; background: #fff; overflow: hidden; box-shadow: 0 7px 25px rgba(23,64,49,.04); }
+    .matrix-group[hidden] { display: none; }
+    .group-head { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 17px 20px; border-bottom: 1px solid var(--line); background: #f8fbf9; }
+    .group-head h2 { margin: 0; font-size: 19px; }
+    .group-head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .group-count { padding: 5px 9px; border-radius: 999px; color: var(--green); background: var(--soft); font-family: var(--mono); font-size: 12px; font-weight: 800; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th { position: sticky; top: 0; z-index: 2; padding: 11px 12px; border-bottom: 1px solid var(--line); color: #52645d; background: #f6f9f7; text-align: left; font-weight: 760; white-space: nowrap; }
+    td { padding: 13px 12px; border-bottom: 1px solid #e9efec; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fbfdfc; }
+    .code { color: var(--green); font-family: var(--mono); font-weight: 800; white-space: nowrap; }
+    .surface { min-width: 110px; font-weight: 680; }
+    .location { min-width: 150px; color: #40534c; }
+    .copy-cell { min-width: 200px; line-height: 1.55; }
+    .copy-old { color: #77655d; text-decoration-color: #d6b9af; }
+    .copy-new { color: #185f49; font-weight: 680; }
+    .rule-cell { min-width: 180px; color: #5a6c65; }
+    .verify-cell { min-width: 145px; color: #5a6c65; }
+    .copy-stack { display: flex; gap: 8px; align-items: start; }
+    .copy-stack span { flex: 1; }
+    .copy-btn { flex: 0 0 auto; padding: 4px 8px; font-size: 11px; }
+    .empty { display: none; margin: 18px 0; padding: 28px; border: 1px dashed #b9cbc3; border-radius: 14px; color: var(--muted); background: #fff; text-align: center; }
+
+    .route-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .route-card { padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdfc; }
+    .route-card.primary { border-color: #aad0bf; background: #f0faf5; }
+    .route-card.guard { border-color: #e4cfae; background: #fffaf1; }
+    .route-tag { display: inline-block; margin-bottom: 11px; padding: 4px 8px; border-radius: 7px; color: var(--green); background: var(--mint); font-family: var(--mono); font-size: 11px; font-weight: 800; }
+    .route-card.guard .route-tag { color: var(--amber); background: #f9ead1; }
+    .route-card p { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .test-table td:nth-child(1) { width: 70px; }
+    .test-table td:nth-child(2) { min-width: 150px; font-weight: 650; }
+    .status-pass { color: var(--green); font-weight: 750; }
+
+    .prd-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 22px; align-items: start; }
+    .doc-toc { position: sticky; top: 90px; padding: 17px; border: 1px solid var(--line); border-radius: 15px; background: #fff; }
+    .doc-toc strong { display: block; margin-bottom: 10px; font-size: 13px; }
+    .toc-btn { display: block; width: 100%; padding: 7px 8px; border: 0; border-radius: 7px; color: #61716b; background: transparent; text-align: left; font-size: 12px; }
+    .toc-btn:hover { color: var(--green); background: var(--soft); }
+    .prd-paper { padding: clamp(24px, 4.5vw, 60px); border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
+    .prd-cover { padding-bottom: 36px; border-bottom: 1px solid var(--line); }
+    .prd-cover h1 { margin-bottom: 14px; font-size: clamp(32px, 4vw, 50px); }
+    .prd-cover p { max-width: 800px; color: var(--muted); }
+    .doc-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 24px; }
+    .doc-meta div { padding: 12px; border-radius: 10px; background: #f5f8f6; }
+    .doc-meta span { display: block; color: var(--muted); font-size: 10px; }
+    .doc-meta strong { font-size: 13px; }
+    .doc-section { padding-top: 38px; scroll-margin-top: 90px; }
+    .doc-section > h2 { padding-bottom: 10px; border-bottom: 2px solid #d6e7df; font-size: 26px; }
+    .doc-section h3 { margin-top: 25px; }
+    .doc-section p, .doc-section li { color: #4e5f58; font-size: 14px; }
+    .doc-section ul, .doc-section ol { padding-left: 22px; }
+    .spec-table { margin-top: 12px; border: 1px solid var(--line); }
+    .spec-table th, .spec-table td { border-right: 1px solid var(--line); }
+    .spec-table th:last-child, .spec-table td:last-child { border-right: 0; }
+    .callout { margin: 16px 0; padding: 16px 18px; border-left: 4px solid var(--green); border-radius: 0 10px 10px 0; color: #3c574e; background: var(--soft); font-size: 13px; }
+    .callout.warn { border-left-color: var(--amber); background: var(--amber-bg); }
+    .story { margin: 12px 0; padding: 15px 17px; border: 1px solid var(--line); border-radius: 12px; background: #fbfcfc; }
+    .story strong { color: var(--green); }
+
+    .footer { margin-top: 28px; padding: 20px; color: var(--muted); text-align: center; font-size: 12px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 100; padding: 11px 15px; border-radius: 10px; color: #fff; background: #163f34; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: none; }
+
+    @media (max-width: 1060px) {
+      .topbar { grid-template-columns: 1fr auto; }
+      .primary-nav { grid-row: 2; grid-column: 1 / -1; justify-self: stretch; overflow-x: auto; }
+      .nav-btn { flex: 1; }
+      .hero-grid, .matrix-hero { grid-template-columns: 1fr; }
+      .review-grid { grid-template-columns: repeat(2, 1fr); }
+      .scope-grid, .route-grid, .entry-overview-grid { grid-template-columns: 1fr; }
+      .prd-layout { grid-template-columns: 1fr; }
+      .doc-toc { position: static; display: flex; overflow-x: auto; gap: 5px; }
+      .doc-toc strong { display: none; }
+      .toc-btn { width: auto; white-space: nowrap; }
+    }
+
+    @media (max-width: 720px) {
+      .shell { width: min(100% - 20px, 1440px); margin-top: 12px; }
+      .topbar { padding: 9px 12px; gap: 8px; }
+      .brand-meta, .top-actions { display: none; }
+      .primary-nav { padding: 4px; }
+      .nav-btn { padding: 8px 10px; font-size: 12px; }
+      .hero { padding: 26px 20px; border-radius: 18px; }
+      h1 { font-size: 34px; }
+      .section { padding: 20px 16px; }
+      .section-head { align-items: start; flex-direction: column; }
+      .review-grid, .principle-grid, .two-col, .risk-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow-arrow { transform: rotate(90deg); }
+      .timeline { grid-template-columns: 1fr; gap: 18px; }
+      .time-item { padding: 0 0 0 22px; border-top: 0; border-left: 2px solid #bbd5c9; }
+      .time-item::before { top: 4px; left: -6px; }
+      .decision { grid-template-columns: 1fr; }
+      .scenario-head { grid-template-columns: auto 1fr; }
+      .field-refs { grid-column: 2; justify-self: start; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .compare-panel + .compare-panel { border-left: 0; border-top: 1px solid var(--line); }
+      .matrix-hero { padding: 23px 18px; }
+      .stats { flex-wrap: wrap; }
+      .filter-bar { top: 112px; }
+      .doc-meta { grid-template-columns: repeat(2, 1fr); }
+      .prd-paper { padding: 24px 18px; }
+    }
+
+    @media print {
+      @page { size: A4; margin: 15mm 12mm; }
+      body { background: #fff; color: #111; }
+      .topbar, .filter-bar, .copy-btn, .doc-toc, .toast, .footer { display: none !important; }
+      .shell { width: 100%; margin: 0; }
+      .view { display: block !important; animation: none; }
+      .view + .view { break-before: page; }
+      .hero, .section, .matrix-group, .prd-paper { box-shadow: none; }
+      .hero, .section, .matrix-group, .prd-paper { break-inside: avoid-page; }
+      .hero::after { display: none; }
+      .matrix-hero { color: #111; background: #eef5f1; border: 1px solid #bbb; }
+      .matrix-hero p, .stat span { color: #555; }
+      .stat { border-color: #aaa; }
+      .scope-card { color: #111; background: #eef5f1 !important; border: 1px solid #bbb; }
+      .scope-card p { color: #555; }
+      .table-wrap { overflow: visible; }
+      table { font-size: 9px; }
+      th, td { padding: 6px; }
+      .copy-cell, .rule-cell, .verify-cell, .location { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">尤</div>
+      <div class="brand-text">
+        <div class="brand-title">远程会诊服务平台</div>
+        <div class="brand-meta">中性字段展示改造 · 产品方案 v1.2</div>
+      </div>
+    </div>
+    <nav class="primary-nav" aria-label="产品方案一级导航">
+      <button class="nav-btn" data-view="overview" aria-selected="true">整体方案说明</button>
+      <button class="nav-btn" data-view="matrix" aria-selected="false">开发对照</button>
+      <button class="nav-btn" data-view="prd" aria-selected="false">PRD 文档</button>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <section class="view active" id="overview" aria-labelledby="overview-title">
+      <div class="hero">
+        <div class="hero-grid">
+          <div>
+            <p class="eyebrow">Product solution · review baseline</p>
+            <h1 id="overview-title">中性字段展示改造产品方案</h1>
+            <p class="hero-lead">针对部分医院对专家院外执业和出诊表述的严格要求，将平台外显的“会诊、诊疗”相关字段替换为更中性的业务文案。本期只改展示，不改数据、流程与权限。</p>
+            <div class="meta-row">
+              <span class="pill">版本 v1.2</span>
+              <span class="pill">状态：可进入技术评审</span>
+              <span class="pill">基线日期：2026-08-13</span>
+              <span class="pill">共 20 个字段点</span>
+            </div>
+          </div>
+          <aside class="hero-summary">
+            <strong>一句话方案</strong>
+            <p>通过“统一中性文案 + 项目模板路由 + 新旧内容边界”的轻量改造，降低敏感表述风险，同时保证现有业务链路零迁移、低回归。</p>
+          </aside>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">01 / REVIEW DECISION</p>
+            <h2>技术评审先看结论</h2>
+            <p class="section-note">以下内容用于在评审开始前统一范围，避免将“文案改造”误解为字段、流程或业务模型调整。</p>
+          </div>
+        </div>
+        <div class="review-grid">
+          <article class="review-card"><span class="label">本次交付</span><strong>单文件 HTML 产品方案</strong><small>含整体说明、开发矩阵、完整 PRD 与测试基线</small></article>
+          <article class="review-card"><span class="label">影响端</span><strong>后台分享内容</strong><small>在线填写意见、生成图片、在线病历相关外显文案</small></article>
+          <article class="review-card"><span class="label">明确不改</span><strong>小程序、医生端</strong><small>小程序继续按系统配置展示；医生端本期无需求</small></article>
+          <article class="review-card"><span class="label">数据层</span><strong>不新增表或字段</strong><small>接口键、数据库列、状态值和埋点事件名保持不变</small></article>
+          <article class="review-card"><span class="label">权限与流程</span><strong>全部保持现状</strong><small>不调整访问控制、分享流程、提交逻辑和状态机</small></article>
+          <article class="review-card"><span class="label">历史内容</span><strong>不回刷、不重生成</strong><small>历史图片与已发送消息保留原文案，动态页按当前版本展示</small></article>
+          <article class="review-card"><span class="label">模板策略</span><strong>AZ / 通用 / 中意</strong><small>AZ原有2个项目集，新增4个项目集，最终适用范围为6个项目集；通用模板统一调整；中意模板不改</small></article>
+          <article class="review-card"><span class="label">原型判断</span><strong>本次无需原型</strong><small>无布局、控件、交互、入口与状态变化，以字段矩阵验收</small></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">02 / SCOPE</p>
+            <h2>交付范围</h2>
+            <p class="section-note">字段调整按用户触达链路归为三个模块，共 20 个修改点。</p>
+          </div>
+          <button class="link-btn" data-jump-view="matrix">打开完整开发矩阵 →</button>
+        </div>
+        <div class="scope-grid">
+          <article class="scope-card"><span class="count">08</span><h3>在线填写意见</h3><p>分享引导、页面标题、专家/时间/意见字段、输入提示及提交成功提示。</p></article>
+          <article class="scope-card"><span class="count">07</span><h3>生成图片</h3><p>AZ模板调整意见字段及适用项目集；通用模板调整记录、日期、专家、意见、签字及免责声明。</p></article>
+          <article class="scope-card"><span class="count">05</span><h3>在线病历</h3><p>待分诊与已分诊分享话术，以及页面标题、科室与申请目的等页面内容。</p></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><p class="section-kicker">03 / CHANGE PATH</p><h2>改造链路与不变量</h2></div>
+        </div>
+        <div class="flow" aria-label="字段展示改造链路">
+          <div class="flow-node"><strong>项目与模板识别</strong><span>根据项目配置、分享类型和模板类型确定展示分支</span></div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><strong>展示文案解析</strong><span>按统一字段映射输出中性文案；中意模板走原有分支</span></div>
+          <div class="flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><strong>用户可见内容</strong><span>在线页、分享消息、病历页和新生成图片展示目标文本</span></div>
+        </div>
+        <div class="invariant"><strong>链路不变量：</strong>业务字段键、接口参数、数据库存储、提交动作、权限判断、链接校验和业务状态均保持现状；本期仅替换最终展示层文字。</div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><p class="section-kicker">04 / ENTRY COVERAGE</p><h2>操作入口与页面覆盖</h2><p class="section-note">六类用户操作场景覆盖“在哪里操作、打开什么页面、最终看到什么内容”。完整前后对照位于“开发对照”页。</p></div>
+          <button class="link-btn" data-jump-view="matrix" data-jump-target="entry-paths">查看场景前后对照 →</button>
+        </div>
+        <div class="entry-overview-grid">
+          <article class="entry-overview-card"><span class="entry-no">01</span><h3>分享在线病历话术－待分诊</h3><p>待办、工单详情 · M-01</p></article>
+          <article class="entry-overview-card"><span class="entry-no">02</span><h3>分享在线病历话术－已分诊</h3><p>护士站、工单详情 · M-02</p></article>
+          <article class="entry-overview-card"><span class="entry-no">03</span><h3>在线病历页面</h3><p>分享链接打开后的页面 · M-03～M-05</p></article>
+          <article class="entry-overview-card"><span class="entry-no">04</span><h3>分享填写会诊意见链接话术</h3><p>护士站、工单详情 · O-01</p></article>
+          <article class="entry-overview-card"><span class="entry-no">05</span><h3>在线填写会诊意见链接页面</h3><p>填写链接打开后的页面 · O-02～O-07、O-09</p></article>
+          <article class="entry-overview-card"><span class="entry-no">06</span><h3>会诊意见生成的图片</h3><p>工单详情查看/生成 · G-01～G-07</p></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><p class="section-kicker">05 / PRINCIPLES</p><h2>方案原则</h2></div></div>
+        <div class="principle-grid">
+          <article class="principle"><span class="principle-index">01</span><div><h3>外显中性化</h3><p>对用户可见的“会诊、诊疗”敏感表述按清单逐项替换，不扩展到非目标词汇。</p></div></article>
+          <article class="principle"><span class="principle-index">02</span><div><h3>底层稳定</h3><p>避免改动字段键和业务模型，从根源上控制联调、迁移与兼容成本。</p></div></article>
+          <article class="principle"><span class="principle-index">03</span><div><h3>模板可追溯</h3><p>明确 AZ、通用和中意三类模板路由，测试时可按项目定位最终输出。</p></div></article>
+          <article class="principle"><span class="principle-index">04</span><div><h3>版本可回滚</h3><p>文案映射集中维护，发布时同步刷新缓存；发生异常可回退上一版本资源。</p></div></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><p class="section-kicker">06 / BOUNDARY</p><h2>范围与非目标</h2></div></div>
+        <div class="two-col">
+          <article class="boundary in">
+            <h3>本期纳入</h3>
+            <ul class="clean-list">
+              <li>后台生成的专家在线填写链接页面与分享话术</li>
+              <li>AZ模板原有2个项目集，新增4个项目集，最终适用范围为6个项目集；覆盖通用模板的新生成图片</li>
+              <li>在线病历页、待分诊分享话术和已分诊分享话术</li>
+              <li>缓存、静态资源与多实例发布一致性验证</li>
+            </ul>
+          </article>
+          <article class="boundary out">
+            <h3>本期不做</h3>
+            <ul class="clean-list">
+              <li>小程序字段配置及医生端任何页面修改</li>
+              <li>中意模板修改、历史图片重生成或历史消息回刷</li>
+              <li>数据库/API/状态/权限/埋点事件名调整</li>
+              <li>二期的项目级字段配置后台与运营操作入口</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><p class="section-kicker">07 / COMPATIBILITY</p><h2>新旧内容兼容策略</h2><p class="section-note">“动态页面”和“已固化内容”采用不同处理边界。</p></div></div>
+        <div class="timeline">
+          <article class="time-item"><strong>发布前已发送消息</strong><p>消息正文不追溯修改；其中仍有效的链接打开后加载当前页面文案。</p></article>
+          <article class="time-item"><strong>发布前生成图片</strong><p>作为静态产物保留原样，不批量重生成，不做历史数据处理。</p></article>
+          <article class="time-item"><strong>发布后动态页面</strong><p>统一展示目标文案，包含旧有效链接再次打开的场景。</p></article>
+          <article class="time-item"><strong>发布后新内容</strong><p>新分享消息和新生成图片均使用目标文案及对应模板路由。</p></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><p class="section-kicker">08 / PROTOTYPE DECISION</p><h2>本次不提供原型页面</h2></div></div>
+        <div class="decision">
+          <span class="decision-badge">结论：合理</span>
+          <p>本次需求没有新增页面、入口、控件、布局、交互流程或状态反馈，仅替换既有位置的可见文字。单独制作原型会重复表达字段矩阵，且容易形成第二套口径。因此以“页面/模板位置 + 现网文案 + 目标文案 + 实现规则 + 验收场景”作为唯一开发基线。若二期建设项目级字段配置后台，再补充配置页原型、权限和生效机制。</p>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="matrix" aria-labelledby="matrix-title">
+      <div class="matrix-hero">
+        <div>
+          <p class="eyebrow" style="color:#a8dfc7">Development matrix · single source of truth</p>
+          <h1 id="matrix-title">开发对照与测试基线</h1>
+          <p>字段 ID 是产品、研发和测试的共同索引。目标文案必须精确匹配；底层字段键和业务行为不得随展示文案改名。</p>
+        </div>
+        <div class="stats" aria-label="字段统计">
+          <div class="stat"><strong>20</strong><span>字段点</span></div>
+          <div class="stat"><strong>3</strong><span>业务模块</span></div>
+          <div class="stat"><strong>12</strong><span>测试场景</span></div>
+        </div>
+      </div>
+
+      <section class="section" id="entry-paths">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">ENTRY &amp; PAGE MAPPING</p>
+            <h2>操作入口与页面改动路径</h2>
+            <p class="section-note">按真实操作入口组织六类场景。红色为当前需替换字段，绿色为修改后字段；未高亮内容保持不变。</p>
+          </div>
+        </div>
+        <div class="change-legend"><span class="legacy">当前字段</span><span class="target">修改后字段</span><span>示例中的姓名、科室和链接值仅用于定位与验收，不属于本期改动。</span></div>
+
+        <div class="scenario-stack" style="margin-top:18px">
+          <article class="scenario-card">
+            <header class="scenario-head"><span class="scenario-no">01</span><div><h3>分享在线病历话术－待分诊</h3><p>在待分诊状态分享患者在线病历</p></div><span class="field-refs">M-01</span></header>
+            <div class="path-row"><span class="path-label">操作入口</span><span class="path-step">待办</span><span class="path-step">工单详情</span><span class="path-arrow">→</span><span>分享在线病历</span></div>
+            <div class="compare-grid">
+              <section class="compare-panel"><span class="compare-label">当前展示</span><div class="message-sample">患者姓名：测试Yxl5
+<span class="change-old">拟会诊科室：</span>精神心理科
+临床医生：-
+医生医院：-
+患者病历：https://umait.youmaijiankang.com/boss/#/pdfview?id=7053007064&amp;orderId=7053007062</div></section>
+              <section class="compare-panel after"><span class="compare-label">修改后展示</span><div class="message-sample">患者姓名：测试Yxl5
+<span class="change-new">拟邀科室：</span>精神心理科
+临床医生：-
+医生医院：-
+患者病历：https://umait.youmaijiankang.com/boss/#/pdfview?id=7053007064&amp;orderId=7053007062</div></section>
+            </div>
+            <div class="scenario-note">验收重点：两个入口生成的话术一致；仅字段名变化，患者数据、链接参数与分享动作不变。</div>
+          </article>
+
+          <article class="scenario-card">
+            <header class="scenario-head"><span class="scenario-no">02</span><div><h3>分享在线病历话术－已分诊</h3><p>在护士站或已分诊工单中分享患者在线病历</p></div><span class="field-refs">M-02</span></header>
+            <div class="path-row"><span class="path-label">操作入口</span><span class="path-step">护士站</span><span class="path-step">工单详情</span><span class="path-arrow">→</span><span>分享在线病历</span></div>
+            <div class="compare-grid">
+              <section class="compare-panel"><span class="compare-label">当前展示</span><div class="message-sample">患者姓名：王秀英
+<span class="change-old">会诊科室：</span>精神科
+临床医生：-
+医生医院：-
+患者病历：https://umait.youmaijiankang.com/boss/#/pdfview?id=7139028288&amp;orderId=7139028286</div></section>
+              <section class="compare-panel after"><span class="compare-label">修改后展示</span><div class="message-sample">患者姓名：王秀英
+<span class="change-new">邀请科室：</span>精神科
+临床医生：-
+医生医院：-
+患者病历：https://umait.youmaijiankang.com/boss/#/pdfview?id=7139028288&amp;orderId=7139028286</div></section>
+            </div>
+            <div class="scenario-note">验收重点：护士站与工单详情生成的话术一致；科室值和患者病历链接保持不变。</div>
+          </article>
+
+          <article class="scenario-card">
+            <header class="scenario-head"><span class="scenario-no">03</span><div><h3>在线病历页面</h3><p>通过分享话术中的患者病历链接进入</p></div><span class="field-refs">M-03～M-05</span></header>
+            <div class="path-row"><span class="path-label">页面路径</span><span class="path-step">分享在线病历</span><span class="path-arrow">→</span><span class="path-step">打开患者病历链接</span><span class="path-arrow">→</span><a class="example-link" href="https://umait.youmaijiankang.com/boss/#/pdfview?id=7139028288&amp;orderId=7139028286" target="_blank" rel="noopener noreferrer">/boss/#/pdfview?id=7139028288&amp;orderId=7139028286</a></div>
+            <div class="compare-grid">
+              <section class="compare-panel"><span class="compare-label">当前页面字段</span><div class="message-sample">页面标题：<span class="change-old">会诊平台</span>
+<span class="change-old">拟会诊科室：</span>精神科
+<span class="change-old">会诊目的：</span>患者当前病情咨询</div></section>
+              <section class="compare-panel after"><span class="compare-label">修改后页面字段</span><div class="message-sample">页面标题：<span class="change-new">尤迈平台</span>
+<span class="change-new">拟邀科室：</span>精神科
+<span class="change-new">申请目的：</span>患者当前病情咨询</div></section>
+            </div>
+            <div class="scenario-note">验收重点：页面标题及字段标签修改；科室值、申请内容、患者资料、链接鉴权和 PDF 展示保持原状。</div>
+          </article>
+
+          <article class="scenario-card">
+            <header class="scenario-head"><span class="scenario-no">04</span><div><h3>分享填写会诊意见链接话术</h3><p>在护士站或工单详情中生成专家填写链接</p></div><span class="field-refs">O-01</span></header>
+            <div class="path-row"><span class="path-label">操作入口</span><span class="path-step">护士站</span><span class="path-step">工单详情</span><span class="path-arrow">→</span><span>分享填写意见链接</span></div>
+            <div class="compare-grid">
+              <section class="compare-panel"><span class="compare-label">当前展示</span><div class="message-sample"><span class="change-old">教授您好，请您在线填写会诊单</span>
+患者姓名：测试付1
+填写链接：https://umait.youmaijiankang.com/diagnosis/#/home?id=7204025356</div></section>
+              <section class="compare-panel after"><span class="compare-label">修改后展示</span><div class="message-sample"><span class="change-new">教授您好，请您在线填写意见单</span>
+患者姓名：测试付1
+填写链接：https://umait.youmaijiankang.com/diagnosis/#/home?id=7204025356</div></section>
+            </div>
+            <div class="scenario-note">验收重点：两个入口的新生成分享话术一致；患者姓名、填写链接与打开权限不变。</div>
+          </article>
+
+          <article class="scenario-card">
+            <header class="scenario-head"><span class="scenario-no">05</span><div><h3>在线填写会诊意见链接页面</h3><p>专家打开分享的填写链接后查看并填写意见</p></div><span class="field-refs">O-02～O-07、O-09</span></header>
+            <div class="path-row"><span class="path-label">页面路径</span><span class="path-step">分享填写意见链接</span><span class="path-arrow">→</span><span class="path-step">打开填写链接</span><span class="path-arrow">→</span><a class="example-link" href="https://umait.youmaijiankang.com/diagnosis/#/home?id=7204025356" target="_blank" rel="noopener noreferrer">/diagnosis/#/home?id=7204025356</a></div>
+            <div class="compare-grid">
+              <section class="compare-panel"><span class="compare-label">当前页面字段</span><div class="message-sample">页面标题：<span class="change-old">会诊意见</span>
+PC 页签/卡片：<span class="change-old">会诊意见</span>
+<span class="change-old">会诊专家：</span>专家姓名
+<span class="change-old">会诊时间：</span>2026-08-13 10:00
+字段标签：<span class="change-old">诊疗意见</span>
+输入提示：<span class="change-old">请输入诊疗意见</span>
+成功提示：如有其他待填写的<span class="change-old">会诊总结</span>，请通过医助的分享链接进入。</div></section>
+              <section class="compare-panel after"><span class="compare-label">修改后页面字段</span><div class="message-sample">页面标题：<span class="change-new">尤迈平台</span>
+PC 页签/卡片：<span class="change-new">意见单</span>
+<span class="change-new">专家：</span>专家姓名
+<span class="change-new">时间：</span>2026-08-13 10:00
+字段标签：<span class="change-new">意见</span>
+输入提示：<span class="change-new">请输入意见</span>
+成功提示：如有其他待填写的<span class="change-new">意见单</span>，请通过医助的分享链接进入。</div></section>
+            </div>
+            <div class="scenario-note">验收重点：旧有效链接打开后也加载新字段；表单内容、校验、提交、成功状态和失效机制不变。</div>
+          </article>
+
+          <article class="scenario-card">
+            <header class="scenario-head"><span class="scenario-no">06</span><div><h3>会诊意见生成的图片</h3><p>在工单详情查看新生成的意见图片</p></div><span class="field-refs">G-01～G-07</span></header>
+            <div class="path-row"><span class="path-label">查看入口</span><span class="path-step">工单详情</span><span class="path-arrow">→</span><span>查看/生成意见图片</span><span class="path-label" style="margin-left:10px">模板</span><span class="path-step">AZ</span><span class="path-step">通用</span><span class="path-step">中意（不改）</span></div>
+            <div class="template-detail">
+              <div class="template-detail-head"><h4>通用模板改动说明</h4><span class="template-detail-tag">G-02～G-07 · 字段展示</span></div>
+              <div class="compare-grid">
+                <section class="compare-panel"><span class="compare-label">当前展示</span><div class="message-sample"><span class="change-old">会诊记录</span>
+<span class="change-old">会诊日期：</span>2026-08-13
+<span class="change-old">会诊专家：</span>专家姓名
+<span class="change-old">诊疗意见：</span>意见正文
+<span class="change-old">会诊专家签字：</span>签名
+<span class="change-old">线上诊疗，根据患者提供资料，专家会诊意见仅供参考。</span></div></section>
+                <section class="compare-panel after"><span class="compare-label">修改后展示</span><div class="message-sample"><span class="change-new">咨询记录</span>
+<span class="change-new">咨询日期：</span>2026-08-13
+<span class="change-new">专家：</span>专家姓名
+<span class="change-new">意见：</span>意见正文
+<span class="change-new">专家签字：</span>签名
+<span class="change-new">线上咨询，根据患者提供资料，专家意见仅供参考。</span></div></section>
+              </div>
+            </div>
+            <div class="template-detail">
+              <div class="template-detail-head"><h4>AZ 模板改动说明</h4><span class="template-detail-tag">G-01 · 字段 + 适用范围</span></div>
+              <div class="compare-grid">
+                <section class="compare-panel"><span class="compare-label">当前展示</span><div class="message-sample">图片展示字段：<span class="change-old">诊疗意见</span>
+
+原适用项目集：
+AZ帮扶项目2026
+AZ帮扶项目2025</div></section>
+                <section class="compare-panel after"><span class="compare-label">修改后展示</span><div class="message-sample">图片展示字段：<span class="change-new">意见</span>
+
+本次新增4个项目集：
+<span class="change-new">同舟工程2026、国家电网配捐、健康茫崖2026（石油）、健康嘉实2025</span>
+
+最终适用范围：<span class="change-new">共6个项目集</span></div></section>
+              </div>
+              <div class="scenario-note" style="padding:12px 0 0">范围说明：原有2个项目集，新增4个项目集，最终适用范围为6个项目集。</div>
+            </div>
+            <div class="scenario-note">模板差异：AZ 模板同时调整“意见”字段与项目集适用范围；通用模板按 G-02～G-07 修改；中意模板保持原样。历史图片不重生成。</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="field-details">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">FIELD CHANGE DETAILS</p>
+            <h2>字段对照明细</h2>
+            <p class="section-note">完成入口与页面定位后，再按字段 ID 核对现网文案、目标文案、实现约束和验证重点。</p>
+          </div>
+        </div>
+        <div class="filter-bar" aria-label="字段矩阵筛选">
+          <label class="search-wrap"><span style="position:absolute;left:-9999px">搜索字段</span><input id="matrixSearch" class="search-input" type="search" placeholder="搜索 ID、位置、现网或目标文案…"></label>
+          <div class="filter-chips" role="group" aria-label="按模块筛选">
+            <button class="filter-chip active" data-filter="all">全部</button>
+            <button class="filter-chip" data-filter="online">在线填写</button>
+            <button class="filter-chip" data-filter="image">生成图片</button>
+            <button class="filter-chip" data-filter="record">在线病历</button>
+          </div>
+          <span class="result-count" id="resultCount">20 / 20</span>
+        </div>
+        <div id="matrixGroups"></div>
+        <div class="empty" id="matrixEmpty">没有匹配的字段，请调整关键词或筛选条件。</div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><p class="section-kicker">TEMPLATE ROUTING</p><h2>图片模板路由</h2></div></div>
+        <div class="route-grid">
+          <article class="route-card primary"><span class="route-tag">AZ 模板</span><h3>字段与适用项目集调整</h3><p>字段：“诊疗意见”改为“意见”。原适用于 AZ帮扶项目2026、AZ帮扶项目2025；本次新增同舟工程2026、国家电网配捐、健康茫崖2026（石油）、健康嘉实2025。即原有2个项目集，新增4个项目集，最终适用范围为6个项目集。</p></article>
+          <article class="route-card"><span class="route-tag">通用模板</span><h3>其他通用项目</h3><p>按 G-02～G-07 统一替换标题、日期、专家、意见、签字和免责声明。</p></article>
+          <article class="route-card guard"><span class="route-tag">保护分支</span><h3>中意模板</h3><p>明确不修改。研发应保留原模板路由，测试需执行“不变性”回归。</p></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><p class="section-kicker">IMPLEMENTATION RULES</p><h2>统一实现约束</h2></div></div>
+        <div class="principle-grid">
+          <article class="principle"><span class="principle-index">A</span><div><h3>精确替换</h3><p>按字段 ID 对应位置修改，不允许全局盲替换“会诊”或“诊疗”，防止误伤中意模板和非目标业务。</p></div></article>
+          <article class="principle"><span class="principle-index">B</span><div><h3>展示层隔离</h3><p>仅修改模板、配置或前端展示文案；接口字段名、数据库字段及代码枚举保持原值。</p></div></article>
+          <article class="principle"><span class="principle-index">C</span><div><h3>内容边界</h3><p>历史静态内容不更新；发布后的动态页、新消息和新图片使用新文案。</p></div></article>
+          <article class="principle"><span class="principle-index">D</span><div><h3>发布一致性</h3><p>发布完成后刷新模板、配置、应用和 CDN 缓存，并验证所有实例返回一致。</p></div></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><p class="section-kicker">TEST BASELINE</p><h2>测试矩阵</h2><p class="section-note">以下 12 个场景全部通过，且无高优缺陷，方可发布。</p></div></div>
+        <div class="table-wrap">
+          <table class="test-table">
+            <thead><tr><th>ID</th><th>场景</th><th>前置/操作</th><th>预期结果</th></tr></thead>
+            <tbody>
+              <tr><td class="code">TC-01</td><td>在线填写会诊意见链接页面</td><td>打开有效的专家填写链接</td><td>O-02～O-07 全部展示目标文案，其中O-03需同时核对PC页签/卡片；布局与操作不变</td></tr>
+              <tr><td class="code">TC-02</td><td>在线填写提交成功提示</td><td>在在线填写会诊意见链接页面填写意见并成功提交</td><td>展示 O-09，链接失效与关闭提示逻辑保持原状</td></tr>
+              <tr><td class="code">TC-03</td><td>分享填写会诊意见链接话术</td><td>分别从护士站、工单详情生成并分享填写链接</td><td>两个入口的分享内容均按 O-01 展示，跳转与权限校验正常</td></tr>
+              <tr><td class="code">TC-04</td><td>AZ 模板图片</td><td>最终适用范围内的6个项目集各生成一张图片</td><td>原有2个项目集和新增4个项目集均命中 AZ 模板，并将“诊疗意见”展示为“意见”；项目标识、排版和下载功能不变</td></tr>
+              <tr><td class="code">TC-05</td><td>通用模板图片</td><td>使用非 AZ、非中意项目生成图片</td><td>G-02～G-07 全部正确，无截断、重叠和旧词残留</td></tr>
+              <tr><td class="code">TC-06</td><td>中意模板保护</td><td>使用中意模板生成图片</td><td>文案保持现状，未被全局替换误伤</td></tr>
+              <tr><td class="code">TC-07</td><td>分享在线病历话术</td><td>待分诊从待办、工单详情分享；已分诊从护士站、工单详情分享</td><td>待分诊话术按 M-01、已分诊话术按 M-02 精确展示，消息链接正常</td></tr>
+              <tr><td class="code">TC-08</td><td>在线病历页面</td><td>打开分享在线病历话术中的患者病历链接</td><td>页面标题及字段按 M-03～M-05 展示，数据值和字段顺序不变</td></tr>
+              <tr><td class="code">TC-09</td><td>旧链接兼容</td><td>打开发布前创建且仍有效的链接</td><td>动态页显示新文案；历史消息正文和历史图片不变</td></tr>
+              <tr><td class="code">TC-10</td><td>缓存与多实例</td><td>发布后跨实例、刷新及无痕访问</td><td>所有实例与静态资源一致，无新旧文案随机切换</td></tr>
+              <tr><td class="code">TC-11</td><td>不改端回归</td><td>检查小程序与医生端关键路径</td><td>小程序仍按系统配置显示；医生端无新增变化</td></tr>
+              <tr><td class="code">TC-12</td><td>全局文本扫描</td><td>扫描本期范围内页面、模板和分享内容</td><td>除中意及明确历史静态内容外，不残留目标旧词</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="prd" aria-labelledby="prd-title">
+      <div class="prd-layout">
+        <aside class="doc-toc" aria-label="PRD 目录">
+          <strong>PRD 目录</strong>
+          <button class="toc-btn" data-scroll="prd-1">1. 执行摘要</button>
+          <button class="toc-btn" data-scroll="prd-2">2. 用户体验与功能</button>
+          <button class="toc-btn" data-scroll="prd-3">3. AI 需求</button>
+          <button class="toc-btn" data-scroll="prd-4">4. 技术规格</button>
+          <button class="toc-btn" data-scroll="prd-5">5. 风险与路线图</button>
+          <button class="toc-btn" data-scroll="prd-6">6. 验收与发布</button>
+        </aside>
+
+        <article class="prd-paper">
+          <header class="prd-cover">
+            <p class="eyebrow">Product requirements document</p>
+            <h1 id="prd-title">远程会诊服务平台中性字段展示改造 PRD</h1>
+            <p>用于产品、研发、测试和项目团队统一理解本次外显字段调整的业务目标、实现边界、验收口径及上线策略。本文档与“开发对照”页共同构成唯一需求基线。</p>
+            <div class="doc-meta">
+              <div><span>版本</span><strong>v1.2</strong></div>
+              <div><span>状态</span><strong>待技术评审</strong></div>
+              <div><span>需求类型</span><strong>展示文案改造</strong></div>
+              <div><span>发布日期</span><strong>待排期确认</strong></div>
+            </div>
+          </header>
+
+          <section class="doc-section" id="prd-1">
+            <h2>1. 执行摘要</h2>
+            <h3>1.1 背景与问题</h3>
+            <p>部分合作医院对专家院外执业、出诊及相关宣传表述管理较为严格。现有远程会诊服务平台在专家填写链接、分享话术、在线病历和生成图片中，存在“会诊、诊疗”等直接外显字段，可能给项目落地和院方沟通带来额外解释成本。</p>
+            <h3>1.2 目标</h3>
+            <ul>
+              <li>将本期清单内的外显字段统一调整为中性表述，满足当前项目的展示要求。</li>
+              <li>维持原业务流程、数据结构、权限和接口兼容性，避免引入迁移成本。</li>
+              <li>建立字段 ID、模板路由和新旧内容边界，供研发实现和测试逐项验收。</li>
+            </ul>
+            <h3>1.3 成功标准</h3>
+            <table class="spec-table">
+              <thead><tr><th>维度</th><th>成功口径</th></tr></thead>
+              <tbody>
+                <tr><td>字段准确性</td><td>20 个字段点目标文案匹配率 100%，无错字、漏改、误改</td></tr>
+                <tr><td>业务稳定性</td><td>提交、分享、图片生成、链接校验和在线病历链路无回归</td></tr>
+                <tr><td>不改范围</td><td>小程序、医生端、中意模板、历史静态产物保持既定边界</td></tr>
+                <tr><td>技术兼容</td><td>不新增表/字段，不修改接口键、状态值、权限与埋点事件名</td></tr>
+                <tr><td>发布一致性</td><td>多实例、模板缓存和静态资源不存在新旧文案混用</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="doc-section" id="prd-2">
+            <h2>2. 用户体验与功能需求</h2>
+            <h3>2.1 角色与场景</h3>
+            <table class="spec-table">
+              <thead><tr><th>角色</th><th>核心场景</th><th>体验要求</th></tr></thead>
+              <tbody>
+                <tr><td>专家</td><td>通过链接在线填写意见</td><td>看到中性字段，仍能顺利理解页面并完成提交</td></tr>
+                <tr><td>医助/护士站</td><td>生成链接、分享话术、查看在线病历</td><td>分享内容和页面字段统一，无需解释不同端的称谓差异</td></tr>
+                <tr><td>患者/接收方</td><td>查看分享消息、页面或图片</td><td>内容清晰、完整，且不出现本期需规避的旧表述</td></tr>
+                <tr><td>项目运营</td><td>按项目使用图片模板</td><td>AZ、通用、中意模板路由可预测、可验证</td></tr>
+              </tbody>
+            </table>
+
+            <h3>2.2 用户故事</h3>
+            <div class="story"><strong>US-01 专家填写：</strong>作为受邀专家，我希望页面使用清晰中性的“意见、专家、时间”等字段，以便无需学习新流程即可完成填写和提交。</div>
+            <div class="story"><strong>US-02 医助分享：</strong>作为医助，我希望生成的引导话术和分享内容统一使用目标文案，以便在院方沟通时保持口径一致。</div>
+            <div class="story"><strong>US-03 项目输出：</strong>作为项目运营，我希望不同项目准确命中对应图片模板，既落实当前改造，又不影响明确无需修改的中意模板。</div>
+            <div class="story"><strong>US-04 历史兼容：</strong>作为系统维护人员，我希望历史静态内容无需重生成，旧有效链接仍可正常打开并加载当前页面文案，以控制上线风险。</div>
+
+            <h3>2.3 功能需求</h3>
+            <ol>
+              <li><strong>在线填写意见：</strong>按 O-01～O-07、O-09 修改分享话术、页面字段、输入提示和提交成功提示。</li>
+              <li><strong>生成图片：</strong>AZ模板按 G-01 同时修改“诊疗意见→意见”和适用项目集范围：原有2个项目集，新增4个项目集，最终适用范围为6个项目集。通用模板按 G-02～G-07 修改；中意模板保持不变。</li>
+              <li><strong>在线病历：</strong>按 M-01～M-05 修改待分诊/已分诊分享话术、页面标题与页面内容字段。</li>
+              <li><strong>系统边界：</strong>小程序继续使用现有系统配置展示名，医生端不修改。</li>
+            </ol>
+            <div class="callout">完整字段逐项映射位于本文件的“开发对照”页。字段 ID、位置、现网文案和目标文案为强制验收口径。</div>
+
+            <h3>2.4 操作入口与页面映射</h3>
+            <table class="spec-table">
+              <thead><tr><th>场景</th><th>操作/查看入口</th><th>目标载体</th><th>关联字段</th></tr></thead>
+              <tbody>
+                <tr><td>分享在线病历话术－待分诊</td><td>待办、工单详情</td><td>新生成的分享话术</td><td>M-01</td></tr>
+                <tr><td>分享在线病历话术－已分诊</td><td>护士站、工单详情</td><td>新生成的分享话术</td><td>M-02</td></tr>
+                <tr><td>在线病历页面</td><td>打开分享在线病历的链接</td><td>在线病历页面</td><td>M-03～M-05</td></tr>
+                <tr><td>分享填写会诊意见链接话术</td><td>护士站、工单详情</td><td>新生成的分享话术</td><td>O-01</td></tr>
+                <tr><td>在线填写会诊意见链接页面</td><td>打开分享填写会诊意见的链接</td><td>专家在线填写页面</td><td>O-02～O-07、O-09</td></tr>
+                <tr><td>会诊意见生成的图片</td><td>工单详情</td><td>新生成的图片</td><td>G-01～G-07</td></tr>
+              </tbody>
+            </table>
+            <div class="callout">研发定位和测试执行时，应先按上述入口进入对应载体，再按字段 ID 逐项核对。“开发对照”页的六张场景卡片提供完整当前/修改后示例及高亮差异。</div>
+
+            <h3>2.5 交互与视觉要求</h3>
+            <p>页面布局、字段顺序、字号、颜色、控件、校验提示、按钮、链接、提交反馈和响应式规则均保持现状。目标文案较长时，应复用现有自动换行能力，不得因替换造成截断、遮挡、图片溢出或换行异常。</p>
+
+            <h3>2.6 非目标</h3>
+            <p>本期不建设配置管理页面，不允许项目人员自行维护字段；不调整小程序和医生端；不回刷历史消息，不重生成历史图片；不对“会诊、诊疗”执行无差别全局替换。</p>
+          </section>
+
+          <section class="doc-section" id="prd-3">
+            <h2>3. AI 需求</h2>
+            <div class="callout">本需求不包含 AI 能力，不涉及模型调用、提示词、知识库、自动生成、内容审核模型或 AI 指标。所有目标文案均为产品确认后的确定性配置。</div>
+          </section>
+
+          <section class="doc-section" id="prd-4">
+            <h2>4. 技术规格</h2>
+            <h3>4.1 建议实现方式</h3>
+            <p>在现有页面资源、服务端模板或配置层集中维护展示文案。以“模块/页面 + 模板类型 + 项目路由”为解析条件，输出目标文案。不得因中文展示名称变化而重命名接口字段、数据库列、状态枚举或埋点事件。</p>
+            <table class="spec-table">
+              <thead><tr><th>层级</th><th>要求</th><th>备注</th></tr></thead>
+              <tbody>
+                <tr><td>前端页面</td><td>替换页面标题、字段标签、placeholder和成功提示</td><td>保留 DOM 结构、校验和行为</td></tr>
+                <tr><td>分享消息</td><td>新生成的引导/分享内容使用目标文案</td><td>历史已发送正文不回刷</td></tr>
+                <tr><td>服务端图片</td><td>按项目与模板路由输出目标字段</td><td>验证换行、字体宽度和图片边界</td></tr>
+                <tr><td>配置/缓存</td><td>发布后主动刷新各层缓存</td><td>验证多实例一致性</td></tr>
+              </tbody>
+            </table>
+
+            <h3>4.2 数据与接口</h3>
+            <ul>
+              <li>不新增或修改数据库表、字段、索引和存量数据。</li>
+              <li>不修改 API 地址、请求/响应字段名、字段类型与业务状态值。</li>
+              <li>不修改表单提交内容、分享链接参数、鉴权方式与链接失效机制。</li>
+              <li>如现有文案由配置中心提供，可更新展示值，但配置键保持稳定。</li>
+            </ul>
+
+            <h3>4.3 权限、安全与隐私</h3>
+            <p>沿用现有登录、链接访问、患者信息脱敏和数据权限策略。本次文案改造不扩大任何角色的数据可见范围。发布检查需确认异常日志、分享内容和图片输出未新增敏感患者信息。</p>
+
+            <h3>4.4 历史与兼容</h3>
+            <table class="spec-table">
+              <thead><tr><th>对象</th><th>处理策略</th></tr></thead>
+              <tbody>
+                <tr><td>历史图片</td><td>保持原样，不批量重生成</td></tr>
+                <tr><td>已发送消息正文</td><td>保持原样，不回刷第三方会话内容</td></tr>
+                <tr><td>历史有效链接</td><td>链接参数和权限不变；打开后动态页面展示当前版本文案</td></tr>
+                <tr><td>已失效链接</td><td>继续执行原失效逻辑，相关提示按 O-09 验收</td></tr>
+              </tbody>
+            </table>
+
+            <h3>4.5 非功能要求</h3>
+            <ul>
+              <li><strong>性能：</strong>文案解析不得新增远程调用；页面加载和图片生成耗时不应有可感知增加。</li>
+              <li><strong>可维护性：</strong>同一目标文案避免在多处散落硬编码；重复免责声明建议共享常量或同源配置。</li>
+              <li><strong>可观测性：</strong>沿用现有错误日志和成功率监控；发布期间关注链接打开、提交和图片生成异常。</li>
+              <li><strong>可回滚性：</strong>应用、模板和配置版本可整体回退，并在回退后刷新缓存。</li>
+            </ul>
+          </section>
+
+          <section class="doc-section" id="prd-5">
+            <h2>5. 风险与路线图</h2>
+            <h3>5.1 主要风险</h3>
+            <table class="spec-table">
+              <thead><tr><th>风险</th><th>影响</th><th>控制措施</th></tr></thead>
+              <tbody>
+                <tr><td>全局替换误伤</td><td>中意模板或非目标业务被修改</td><td>按字段 ID 和模板分支精确修改，执行 TC-06 与全局扫描</td></tr>
+                <tr><td>缓存不一致</td><td>用户随机看到新旧文案</td><td>制定缓存清单，发布后跨实例、无痕和刷新验证</td></tr>
+                <tr><td>图片排版异常</td><td>长文案截断、遮挡或换行错位</td><td>覆盖不同长度资料和所有模板生成实图验收</td></tr>
+                <tr><td>历史边界误解</td><td>产生不必要的数据修复或客诉</td><td>发布说明明确动态页与历史静态内容的边界</td></tr>
+              </tbody>
+            </table>
+
+            <h3>5.2 分期规划</h3>
+            <table class="spec-table">
+              <thead><tr><th>阶段</th><th>方案</th><th>本次状态</th></tr></thead>
+              <tbody>
+                <tr><td>一期</td><td>统一改为本 PRD 的通用中性字段，用于快速过渡并降低项目风险</td><td class="status-pass">本期实施</td></tr>
+                <tr><td>二期</td><td>按项目配置字段展示名，并补充配置后台、权限、校验、预览与生效机制</td><td>后续另立需求</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="doc-section" id="prd-6">
+            <h2>6. 验收、发布与回滚</h2>
+            <h3>6.1 验收条件</h3>
+            <ul>
+              <li>“开发对照”页 20 个字段点逐项验收通过。</li>
+              <li>TC-01～TC-12 全部通过，无阻断或高优缺陷。</li>
+              <li>产品确认目标文案，研发确认无数据与接口变更，测试确认模板与历史边界。</li>
+              <li>图片产物经过实图检查，页面在主流桌面与移动浏览器下无展示异常。</li>
+            </ul>
+
+            <h3>6.2 发布步骤</h3>
+            <ol>
+              <li>在测试环境完成字段矩阵和模板路由全量验收。</li>
+              <li>确认配置、模板、静态资源和应用服务的发布顺序及缓存刷新方式。</li>
+              <li>生产发布后执行核心冒烟：在线填写、提交成功、分享、三类图片模板、在线病历。</li>
+              <li>观察现有错误日志和关键链路指标；确认多实例展示一致后结束发布窗口。</li>
+            </ol>
+
+            <h3>6.3 回滚策略</h3>
+            <p>如出现页面不可用、模板排版异常、路由误命中或大面积新旧文案混用，整体回退至上一版本应用/模板/配置，刷新全部相关缓存，再执行核心冒烟。由于本期无数据迁移，回滚不涉及数据恢复。</p>
+
+            <h3>6.4 原型结论</h3>
+            <div class="callout warn">本期不提供原型。原因是需求不改变页面结构与交互，制作原型不能增加实现信息，反而可能形成独立口径。若二期进入项目级配置功能，再针对配置页、角色权限、预览与生效流程补充原型。</div>
+
+            <h3>6.5 需求追溯</h3>
+            <p>字段来源为《平台字段修改》梳理图。本文档已将图中内容转换为可检索的字段 ID、模板路由和测试场景；开发与测试以本 HTML 为主基线。</p>
+          </section>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">远程会诊服务平台 · 中性字段展示改造产品方案 · v1.2</footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">已复制</div>
+
+  <script>
+    const FIELD_GROUPS = [
+      {
+        key: 'online', title: '在线填写意见', code: 'O', description: '专家在线填写链接、分享引导及提交反馈',
+        rows: [
+          ['O-01','后台分享内容','分享引导话术','教授您好，请您在线填写会诊单','教授您好，请您在线填写意见单','复核并固化目标话术；不得出现旧敏感词','新生成分享消息内容及跳转'],
+          ['O-02','在线填写意见单','页面标题','会诊意见','尤迈平台','仅修改页面可见标题','有效链接打开后的页面标题'],
+          ['O-03','PC 端页面','页签/卡片标题','会诊意见','意见单','保持页面结构与路由不变','浏览器页签及页面标题'],
+          ['O-04','在线填写意见单','专家字段','会诊专家','专家','字段键和人员数据不变','标签与专家姓名对应关系'],
+          ['O-05','在线填写意见单','时间字段','会诊时间','时间','时间值、格式与时区不变','标签及日期时间显示'],
+          ['O-06','在线填写意见单','意见字段','诊疗意见','意见','提交字段与校验规则不变','标签、已填内容和提交'],
+          ['O-07','在线填写意见单','输入框 placeholder','请输入诊疗意见','请输入意见','覆盖为指定提示语','空值状态与输入后状态'],
+          ['O-09','在线填写意见单','提交成功提示','为保护信息安全，当前链接已失效，请关闭页面。如有其他待填写的会诊总结，请通过医助的分享链接进入。','为保护信息安全，当前链接已失效，请关闭页面。如有其他待填写的意见单，请通过医助的分享链接进入。','仅替换后半句名词，失效逻辑不变','提交成功、刷新与再次访问']
+        ]
+      },
+      {
+        key: 'image', title: '生成图片', code: 'G', description: 'AZ 项目模板与通用模板；中意模板为保护分支',
+        rows: [
+          ['G-01','生成图片 · AZ 模板','意见字段及适用项目集','诊疗意见；原适用于：AZ帮扶项目2026、AZ帮扶项目2025','意见；新增4个项目集：同舟工程2026、国家电网配捐、健康茫崖2026（石油）、健康嘉实2025','原有2个项目集，新增4个项目集，最终适用范围为6个项目集','最终适用范围内的6个项目集各生成实图检查'],
+          ['G-02','生成图片 · 通用模板','标题','会诊记录','咨询记录','非 AZ、非中意模板使用','标题完整且排版无偏移'],
+          ['G-03','生成图片 · 通用模板','日期字段','会诊日期','咨询日期','日期值与格式保持不变','不同日期长度实图检查'],
+          ['G-04','生成图片 · 通用模板','专家字段（2处）','会诊专家','专家','图中两处均须修改','两处标签均无旧词残留'],
+          ['G-05','生成图片 · 通用模板','意见字段','诊疗意见','意见','仅改标签，不改意见正文','长短意见内容实图检查'],
+          ['G-06','生成图片 · 通用模板','签字字段','会诊专家签字','专家签字','签名图片、签字时间不变','有/无签名两种状态'],
+          ['G-07','生成图片 · 通用模板','免责声明','线上诊疗，根据患者提供资料，专家会诊意见仅供参考。','线上咨询，根据患者提供资料，专家意见仅供参考。','整句精确替换，验证自动换行','多分辨率图片边界检查']
+        ]
+      },
+      {
+        key: 'record', title: '在线病历', code: 'M', description: '待分诊、已分诊分享话术及在线病历页面内容',
+        rows: [
+          ['M-01','在线病历','待分诊分享话术','拟会诊科室','拟邀科室','只改待分诊分享话术字段名','待办、工单详情生成的待分诊分享内容'],
+          ['M-02','在线病历','已分诊分享话术','会诊科室','邀请科室','只改已分诊分享话术字段名','护士站、工单详情生成的已分诊分享内容'],
+          ['M-03','在线病历','页面标题','会诊平台','尤迈平台','页面标题替换，入口与路由不变','页面标题与返回路径'],
+          ['M-04','在线病历','页面内容 · 科室','拟会诊科室','拟邀科室','科室数据源和取值不变','标签与科室值对应关系'],
+          ['M-05','在线病历','页面内容 · 目的','会诊目的','申请目的','目的内容、长度与展示规则不变','空值和长文本展示']
+        ]
+      }
+    ];
+
+    const matrixGroups = document.getElementById('matrixGroups');
+    const searchInput = document.getElementById('matrixSearch');
+    const resultCount = document.getElementById('resultCount');
+    const emptyState = document.getElementById('matrixEmpty');
+    let activeFilter = 'all';
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    }
+
+    function renderMatrix() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+      const html = FIELD_GROUPS.map(group => {
+        const enabled = activeFilter === 'all' || activeFilter === group.key;
+        const rows = enabled ? group.rows.filter(row => row.join(' ').toLowerCase().includes(keyword)) : [];
+        visible += rows.length;
+        if (!rows.length) return '';
+        return `
+          <section class="matrix-group" data-group="${group.key}">
+            <div class="group-head">
+              <div><h2>${group.title}</h2><p>${group.description}</p></div>
+              <span class="group-count">${rows.length} 项</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>端/载体</th><th>位置</th><th>现网文案</th><th>目标文案</th><th>实现约束</th><th>验证重点</th></tr></thead>
+                <tbody>
+                  ${rows.map(row => `
+                    <tr>
+                      <td class="code">${escapeHtml(row[0])}</td>
+                      <td class="surface">${escapeHtml(row[1])}</td>
+                      <td class="location">${escapeHtml(row[2])}</td>
+                      <td class="copy-cell copy-old">${escapeHtml(row[3])}</td>
+                      <td class="copy-cell"><div class="copy-stack"><span class="copy-new">${escapeHtml(row[4])}</span><button class="copy-btn" data-copy="${escapeHtml(row[4])}" aria-label="复制 ${escapeHtml(row[0])} 目标文案">复制</button></div></td>
+                      <td class="rule-cell">${escapeHtml(row[5])}</td>
+                      <td class="verify-cell">${escapeHtml(row[6])}</td>
+                    </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </section>`;
+      }).join('');
+      matrixGroups.innerHTML = html;
+      const total = FIELD_GROUPS.reduce((sum, group) => sum + group.rows.length, 0);
+      resultCount.textContent = `${visible} / ${total}`;
+      emptyState.style.display = visible ? 'none' : 'block';
+    }
+
+    function activateView(viewId, updateHash = true) {
+      const next = document.getElementById(viewId) || document.getElementById('overview');
+      document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === next));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.setAttribute('aria-selected', String(btn.dataset.view === next.id)));
+      if (updateHash) history.replaceState(null, '', `#${next.id}`);
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(button => {
+      button.addEventListener('click', () => activateView(button.dataset.view));
+    });
+    document.querySelectorAll('[data-jump-view]').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.dataset.jumpTarget;
+        activateView(button.dataset.jumpView);
+        if (target) window.setTimeout(() => document.getElementById(target)?.scrollIntoView({behavior: 'smooth', block: 'start'}), 260);
+      });
+    });
+    document.querySelectorAll('.filter-chip').forEach(button => {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll('.filter-chip').forEach(item => item.classList.toggle('active', item === button));
+        renderMatrix();
+      });
+    });
+    searchInput.addEventListener('input', renderMatrix);
+    document.querySelectorAll('.toc-btn').forEach(button => {
+      button.addEventListener('click', () => document.getElementById(button.dataset.scroll).scrollIntoView({behavior: 'smooth', block: 'start'}));
+    });
+
+    document.addEventListener('click', async event => {
+      const button = event.target.closest('[data-copy]');
+      if (!button) return;
+      const value = button.dataset.copy;
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch (_) {
+        const area = document.createElement('textarea');
+        area.value = value;
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        area.remove();
+      }
+      const toast = document.getElementById('toast');
+      toast.textContent = '目标文案已复制';
+      toast.classList.add('show');
+      window.clearTimeout(window.copyToastTimer);
+      window.copyToastTimer = window.setTimeout(() => toast.classList.remove('show'), 1500);
+    });
+
+    renderMatrix();
+    const initialView = location.hash.replace('#','');
+    if (['overview','matrix','prd'].includes(initialView)) activateView(initialView, false);
+  </script>
+</body>
+</html>
