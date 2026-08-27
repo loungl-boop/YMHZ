@@ -1,0 +1,1530 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>护士资源看板｜完整产品方案</title>
+  <style>
+    :root {
+      --brand: #00876a;
+      --brand-dark: #006d56;
+      --brand-deep: #123c34;
+      --brand-soft: #e8f6f2;
+      --brand-faint: #f3faf8;
+      --ink: #1e2423;
+      --ink-2: #4f5957;
+      --muted: #7d8785;
+      --line: #e4e8e7;
+      --line-strong: #d6dcda;
+      --canvas: #f5f6f6;
+      --surface: #fff;
+      --warning: #a96b06;
+      --warning-bg: #fff7e7;
+      --danger: #d74747;
+      --danger-bg: #fff1f1;
+      --blue: #3976c8;
+      --blue-bg: #edf4ff;
+      --purple: #7666d7;
+      --purple-bg: #f2f0ff;
+      --orange: #bc7412;
+      --orange-bg: #fff5e7;
+      --track-width: 2688px;
+      --hour-width: 112px;
+      --quarter-width: 28px;
+      --label-width: 176px;
+      --shadow: 0 12px 32px rgba(28, 54, 47, .08);
+      --font: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      min-width: 1060px;
+      color: var(--ink);
+      background: var(--canvas);
+      font: 14px/1.5 var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    svg { display: block; }
+    :focus-visible { outline: 3px solid rgba(0, 135, 106, .18); outline-offset: 2px; }
+    ::selection { background: #bfe9de; }
+
+    .icon {
+      width: 17px;
+      height: 17px;
+      display: inline-block;
+      vertical-align: -3px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .prototype-bar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 120;
+      height: 44px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,.82);
+      background: var(--brand-deep);
+      box-shadow: 0 2px 12px rgba(18,60,52,.18);
+    }
+    .prototype-title { display: flex; align-items: center; gap: 9px; color: #fff; font-weight: 700; }
+    .prototype-dot { width: 8px; height: 8px; border-radius: 50%; background: #50d0ad; box-shadow: 0 0 0 5px rgba(80,208,173,.13); }
+    .prototype-meta { color: rgba(255,255,255,.52); font-size: 12px; }
+    .prototype-tools { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .artifact-nav { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .artifact-nav-divider { width: 1px; height: 22px; background: rgba(255,255,255,.18); }
+    .artifact-tab, .annotation-toggle {
+      height: 34px;
+      padding: 0 13px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      color: rgba(255,255,255,.7);
+      background: transparent;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .artifact-tab:hover, .annotation-toggle:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .artifact-tab.active { color: var(--brand-deep); background: #fff; }
+    .annotation-toggle { border-color: rgba(255,255,255,.24); color: #fff; }
+    .annotation-toggle.active { border-color: #69d7ba; color: #dffbf4; background: rgba(80,208,173,.15); }
+    .artifact-hidden { display: none !important; }
+
+    .prototype-subnav {
+      position: fixed;
+      inset: 44px 0 auto 0;
+      z-index: 90;
+      height: 44px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: #53615d;
+      border-bottom: 1px solid #d5e1de;
+      background: #f2f7f5;
+      box-shadow: 0 2px 7px rgba(25, 63, 54, .05);
+    }
+    .prototype-subnav-label { flex: none; display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+    .prototype-subnav-label strong { color: var(--brand-dark); font-size: 12px; }
+    .prototype-subnav-label span { color: #8a9692; font-size: 11px; }
+    .prototype-subnav-tabs { min-width: 0; height: 100%; display: flex; align-items: stretch; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+    .prototype-subnav-tabs::-webkit-scrollbar { display: none; }
+    .prototype-scene-tab {
+      min-width: max-content;
+      padding: 0 13px;
+      position: relative;
+      border: 0;
+      color: #64716d;
+      background: transparent;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .prototype-scene-tab:hover { color: var(--brand-dark); background: rgba(0, 135, 106, .05); }
+    .prototype-scene-tab.active { color: var(--brand-dark); background: #e4f2ee; font-weight: 700; }
+    .prototype-scene-tab.active:after { content: ""; position: absolute; right: 10px; bottom: 0; left: 10px; height: 2px; border-radius: 2px 2px 0 0; background: var(--brand); }
+
+    .doc-panel { min-height: 100vh; padding: 76px 24px 48px; background: #f2f6f5; }
+    .doc-shell { width: min(1180px, calc(100vw - 48px)); margin: 0 auto; }
+    .doc-hero { position: relative; overflow: hidden; padding: 45px 48px 42px; border-radius: 16px; color: #fff; background: linear-gradient(120deg,#08775f,#123f36); box-shadow: var(--shadow); }
+    .doc-hero:after { content:""; position:absolute; right:-70px; top:-105px; width:330px; height:330px; border:1px solid rgba(255,255,255,.14); border-radius:50%; box-shadow:0 0 0 48px rgba(255,255,255,.035),0 0 0 96px rgba(255,255,255,.025); }
+    .doc-kicker { position: relative; z-index: 1; color:#a9e7d7; font-size:12px; font-weight:750; letter-spacing:.22em; }
+    .doc-hero h1 { position:relative; z-index:1; margin:11px 0 6px; font-size:34px; letter-spacing:-.03em; }
+    .doc-hero p { position:relative; z-index:1; max-width:790px; margin:0; color:rgba(255,255,255,.76); font-size:15px; line-height:1.9; }
+    .doc-meta { position:relative; z-index:1; margin-top:22px; display:flex; gap:22px; flex-wrap:wrap; color:rgba(255,255,255,.66); font-size:12px; }
+    .doc-meta strong { color:#fff; }
+    .doc-section { margin-top:20px; padding:28px 30px; border:1px solid #dfe7e4; border-radius:13px; background:#fff; box-shadow:0 4px 18px rgba(29,58,50,.04); }
+    .doc-section h2 { margin:0 0 20px; padding-left:13px; position:relative; font-size:20px; }
+    .doc-section h2:before { content:""; position:absolute; left:0; top:3px; bottom:3px; width:4px; border-radius:3px; background:var(--brand); }
+    .doc-section h3 { margin:22px 0 10px; color:var(--brand-dark); font-size:15px; }
+    .doc-section p, .doc-section li { color:#4d5956; line-height:1.8; }
+    .doc-section ul, .doc-section ol { margin:9px 0; padding-left:22px; }
+    .doc-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .doc-grid.cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .doc-card { padding:17px 18px; border:1px solid #e0e7e5; border-radius:9px; background:#fbfcfc; }
+    .doc-card.accent { border-color:#b9ded4; background:#f2faf8; }
+    .doc-card .label { color:#82908c; font-size:11px; }
+    .doc-card strong { display:block; margin-top:7px; line-height:1.7; }
+    .doc-table-wrap { overflow:auto; border:1px solid #dfe6e4; border-radius:8px; }
+    .doc-table { width:100%; border-collapse:collapse; min-width:760px; font-size:12px; }
+    .doc-table th { padding:10px 12px; color:#52605c; background:#f3f7f6; text-align:left; white-space:nowrap; }
+    .doc-table td { padding:10px 12px; border-top:1px solid #e6ebe9; color:#485450; vertical-align:top; line-height:1.65; }
+    .doc-table code { color:#086d57; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .doc-flow { display:flex; align-items:stretch; gap:8px; overflow:auto; }
+    .doc-flow-step { min-width:145px; flex:1; padding:14px; border:1px solid #cfe2dc; border-radius:8px; background:#f5fbf9; }
+    .doc-flow-arrow { display:grid; place-items:center; color:#8aa19b; }
+    .scope-list { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .scope-box { padding:16px 18px; border-radius:9px; background:#f5faf8; }
+    .scope-box.out { background:#faf7f3; }
+    .doc-note { padding:12px 14px; border-left:4px solid var(--brand); border-radius:4px; color:#426058; background:#f0faf7; line-height:1.75; }
+    .doc-note.warning { border-color:#d39221; color:#79530d; background:#fff8ea; }
+    .doc-footer { padding:26px 0 0; color:#87928f; font-size:11px; text-align:center; }
+
+    .annotation-pin { position:fixed; z-index:220; width:24px; height:24px; padding:0; border:2px solid #fff; border-radius:50%; color:#fff; background:#1769e0; box-shadow:0 3px 9px rgba(23,105,224,.35); font-size:11px; font-weight:750; cursor:pointer; }
+    .annotation-pin:hover, .annotation-pin.active { transform:scale(1.08); background:#074aa6; }
+    .annotation-target { outline:2px solid rgba(23,105,224,.85) !important; outline-offset:-2px; }
+    .annotation-panel { position:fixed; top:102px; right:14px; z-index:260; width:min(430px,calc(100vw - 28px)); max-height:calc(100vh - 118px); overflow:hidden; border:1px solid #bdd2f1; border-radius:10px; background:#fff; box-shadow:0 18px 55px rgba(24,52,87,.24); }
+    .annotation-panel-head { min-height:54px; padding:11px 12px 11px 16px; display:flex; align-items:center; justify-content:space-between; color:#fff; background:#1769e0; }
+    .annotation-panel-head strong { font-size:14px; }
+    .annotation-panel-body { max-height:calc(100vh - 176px); overflow:auto; padding:15px 16px 20px; }
+    .annotation-panel-body h4 { margin:15px 0 7px; color:#1f4f8f; font-size:12px; }
+    .annotation-panel-body h4:first-child { margin-top:0; }
+    .annotation-panel-body p, .annotation-panel-body li { margin:5px 0; color:#43516a; font-size:12px; line-height:1.7; }
+    .annotation-dev-table { width:100%; border-collapse:collapse; font-size:11px; }
+    .annotation-dev-table th, .annotation-dev-table td { padding:7px 8px; border:1px solid #dce5f2; text-align:left; vertical-align:top; line-height:1.55; }
+    .annotation-dev-table th { color:#315c95; background:#f2f6fc; }
+
+    @media (max-width: 1180px) {
+      .prototype-meta, .prototype-subnav-label span { display:none; }
+      .artifact-tab, .annotation-toggle { padding:0 9px; }
+      .doc-grid.cols-4 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    .topbar {
+      position: fixed;
+      inset: 88px 0 auto 0;
+      z-index: 70;
+      height: 58px;
+      display: grid;
+      grid-template-columns: 184px 1fr auto;
+      align-items: center;
+      background: rgba(255,255,255,.98);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { height: 100%; padding: 0 18px; display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 29px;
+      height: 29px;
+      position: relative;
+      border: 2px solid var(--brand);
+      border-radius: 50% 46% 50% 44%;
+      transform: rotate(-8deg);
+    }
+    .brand-mark:before {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 21px;
+      left: 8px;
+      top: 2px;
+      border-left: 3px solid var(--brand);
+      border-radius: 50%;
+      transform: rotate(12deg);
+    }
+    .brand-name { font-family: "STSong", "Songti SC", serif; font-size: 19px; font-weight: 700; letter-spacing: .08em; }
+    .topbar-center { min-width: 0; display: flex; align-items: center; gap: 16px; }
+    .icon-button {
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+      color: var(--ink-2);
+      background: transparent;
+      cursor: pointer;
+    }
+    .icon-button:hover { color: var(--brand-dark); background: var(--brand-faint); }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; color: var(--muted); white-space: nowrap; }
+    .breadcrumb strong { color: var(--ink); font-weight: 650; }
+    .breadcrumb .icon { width: 13px; height: 13px; color: #a2aaa8; }
+    .topbar-actions { padding-right: 18px; display: flex; align-items: center; gap: 12px; }
+    .notification { position: relative; }
+    .notification:after { content: ""; position: absolute; width: 6px; height: 6px; right: 7px; top: 6px; border: 2px solid #fff; border-radius: 50%; background: #e85353; }
+    .user-trigger { height: 36px; padding: 0 8px; border: 0; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: transparent; cursor: pointer; }
+    .user-trigger:hover { background: #f1f5f4; }
+    .avatar { width: 27px; height: 27px; border-radius: 50%; display: grid; place-items: center; color: var(--brand-dark); background: var(--brand-soft); font-size: 12px; font-weight: 750; }
+
+    .sidebar {
+      position: fixed;
+      top: 146px;
+      bottom: 0;
+      left: 0;
+      z-index: 60;
+      width: 184px;
+      overflow: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+      transition: width .2s ease;
+    }
+    .sidebar.collapsed { width: 64px; }
+    .nav-section { padding: 15px 9px; }
+    .nav-caption { padding: 9px 11px 7px; color: #a1aaa8; font-size: 11px; letter-spacing: .1em; }
+    .nav-item {
+      min-height: 43px;
+      padding: 0 10px;
+      margin: 3px 0;
+      border: 0;
+      border-radius: 6px;
+      width: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: #5f6866;
+      background: transparent;
+      text-align: left;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .nav-item .icon { width: 18px; height: 18px; flex: none; }
+    .nav-item:hover { color: var(--ink); background: #f5f8f7; }
+    .nav-item.active { color: var(--brand-dark); background: var(--brand-soft); font-weight: 650; }
+    .nav-item.active:before { content: ""; position: absolute; left: -9px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--brand); }
+    .sidebar.collapsed .nav-caption, .sidebar.collapsed .nav-item span { display: none; }
+    .sidebar.collapsed .nav-item { justify-content: center; padding: 0; }
+
+    .app-main {
+      min-height: 100%;
+      margin-left: 184px;
+      padding-top: 146px;
+      transition: margin-left .2s ease;
+    }
+    .app-main.expanded { margin-left: 64px; }
+    .workspace { padding: 16px 18px 24px; }
+    .content-card {
+      overflow: hidden;
+      border: 1px solid #e9edec;
+      border-radius: 9px;
+      background: var(--surface);
+      box-shadow: 0 2px 7px rgba(28,44,40,.025);
+    }
+    .card-toolbar {
+      min-height: 64px;
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .toolbar-left, .toolbar-right, .toolbar-cluster { display: flex; align-items: center; gap: 9px; }
+    .toolbar-right { justify-content: flex-end; flex-wrap: wrap; }
+    .date-nav { height: 36px; display: inline-flex; align-items: center; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; }
+    .date-nav button { width: 36px; height: 100%; border: 0; display: grid; place-items: center; color: var(--ink-2); background: transparent; cursor: pointer; }
+    .date-nav button:hover { color: var(--brand); background: var(--brand-faint); }
+    .date-field-wrap { position: relative; width: 168px; height: 100%; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+    .date-label { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; font-weight: 650; letter-spacing: .01em; }
+    .date-field { width: 100%; height: 100%; border: 0; opacity: 0; cursor: pointer; }
+    .btn {
+      min-height: 35px;
+      padding: 0 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--ink-2);
+      background: #fff;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .btn:hover { color: var(--ink); border-color: #acb7b4; background: #fafcfc; }
+    .btn-primary { color: #fff; border-color: var(--brand); background: var(--brand); }
+    .btn-primary:hover { color: #fff; border-color: var(--brand-dark); background: var(--brand-dark); }
+    .btn-ghost { border-color: transparent; background: transparent; }
+    .btn-sm { min-height: 30px; padding: 0 10px; font-size: 12px; }
+    .update-meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .update-meta strong { color: var(--ink-2); font-weight: 600; }
+    .refreshing-copy { color: var(--brand-dark); }
+    .refresh-btn.is-refreshing { color: var(--brand-dark); border-color: #a9d8cb; background: var(--brand-faint); }
+    .refresh-btn.is-refreshing .icon { animation: spin .8s linear infinite; }
+
+    .publication-strip { min-height: 36px; padding: 7px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); color: var(--muted); background: #fbfcfc; font-size: 11px; }
+    .publication-strip strong { color: var(--brand-dark); font-weight: 650; }
+    .publication-strip .icon { width: 14px; height: 14px; color: var(--brand); }
+    .publication-divider { width: 1px; height: 13px; margin: 0 3px; background: var(--line-strong); }
+    .stale-banner { min-height: 38px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; color: #8f5a05; border-bottom: 1px solid #f0d89e; background: var(--warning-bg); font-size: 12px; }
+    .stale-banner .icon { flex: none; }
+
+    .summary-strip { padding: 13px 16px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; border-bottom: 1px solid var(--line); background: #fbfcfc; }
+    .summary-item { min-height: 72px; padding: 12px 14px; border: 1px solid #e2e8e6; border-radius: 7px; background: #fff; }
+    .summary-label { color: var(--muted); font-size: 12px; }
+    .summary-value { margin-top: 4px; font-size: 22px; line-height: 1.15; font-weight: 750; letter-spacing: -.02em; }
+    .summary-value small { margin-left: 4px; color: var(--muted); font-size: 12px; font-weight: 500; }
+    .summary-item.alert { border-color: #f0cccc; background: #fffafa; }
+    .summary-item.alert .summary-value { color: var(--danger); }
+    .summary-caption { margin-top: 4px; color: #9aa3a1; font-size: 11px; }
+
+    .legend-bar { min-height: 45px; padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); background: #fff; color: var(--muted); font-size: 12px; }
+    .legend-title { color: var(--ink-2); font-weight: 650; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+    .legend-swatch.available { border: 1px solid #8dcebb; background: #e8f7f2; }
+    .legend-swatch.unavailable { border: 1px solid #c8cecc; background: #f0f2f1; }
+    .legend-line { width: 19px; height: 11px; border: 2px solid var(--blue); border-radius: 3px; background: #f3f7ff; }
+    .legend-line.simulated { border-style: dashed; }
+    .legend-line.abnormal { border-color: var(--danger); background: var(--danger-bg); }
+    .legend-divider { width: 1px; height: 18px; background: var(--line); }
+    .product-legend { margin-left: auto; display: flex; align-items: center; gap: 11px; flex-wrap: wrap; }
+    .product-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .order-empty-banner { margin: 12px 16px 0; padding: 11px 13px; border: 1px solid #cfe7df; border-radius: 6px; display: flex; align-items: center; gap: 9px; color: #45645d; background: #f4fbf9; font-size: 12px; }
+    .order-empty-banner .icon { color: var(--brand); }
+
+    .timeline-shell { position: relative; }
+    .timeline-scroll {
+      max-height: calc(100vh - 414px);
+      min-height: 410px;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-color: #bdc8c5 #f4f6f5;
+    }
+    .timeline-scroll::-webkit-scrollbar { width: 10px; height: 11px; }
+    .timeline-scroll::-webkit-scrollbar-track { background: #f4f6f5; }
+    .timeline-scroll::-webkit-scrollbar-thumb { border: 2px solid #f4f6f5; border-radius: 9px; background: #bdc8c5; }
+    .timeline-board { width: calc(var(--label-width) + var(--track-width)); min-width: 100%; }
+    .timeline-row { display: grid; grid-template-columns: var(--label-width) var(--track-width); min-width: calc(var(--label-width) + var(--track-width)); }
+    .timeline-label {
+      position: sticky;
+      left: 0;
+      z-index: 8;
+      padding: 0 13px;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfc;
+      box-shadow: 5px 0 8px rgba(34,49,45,.025);
+    }
+    .timeline-header { position: sticky; top: 0; z-index: 25; height: 54px; }
+    .timeline-header .timeline-label { z-index: 30; color: var(--ink-2); font-size: 12px; font-weight: 650; background: #f7f9f8; }
+    .hour-axis { position: relative; height: 54px; border-bottom: 1px solid var(--line-strong); background: #f7f9f8; }
+    .hour-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: #dce3e1; }
+    .hour-tick span { position: absolute; top: 17px; left: 6px; color: #6f7977; font-size: 11px; white-space: nowrap; }
+    .hour-tick.last span { left: auto; right: 6px; }
+    .grid-track {
+      position: relative;
+      border-bottom: 1px solid var(--line);
+      background-color: #fff;
+      background-image:
+        repeating-linear-gradient(to right, transparent 0, transparent calc(var(--quarter-width) - 1px), #eff2f1 calc(var(--quarter-width) - 1px), #eff2f1 var(--quarter-width)),
+        repeating-linear-gradient(to right, transparent 0, transparent calc(var(--hour-width) - 1px), #dce3e1 calc(var(--hour-width) - 1px), #dce3e1 var(--hour-width));
+    }
+    .capacity-row { height: 66px; }
+    .capacity-row .timeline-label { background: #f3faf8; }
+    .capacity-label strong { display: block; color: var(--brand-dark); font-size: 13px; }
+    .capacity-label small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .capacity-track { height: 66px; background-color: #fbfdfc; }
+    .capacity-segment { position: absolute; top: 10px; height: 44px; min-width: 2px; padding: 0; border: 0; border-right: 1px solid rgba(255,255,255,.8); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+    .capacity-segment:hover { filter: brightness(.975); box-shadow: inset 0 0 0 1px rgba(37,82,70,.12); z-index: 2; }
+    .capacity-segment.level-high { color: #096b54; background: #dff3ed; }
+    .capacity-segment.level-mid { color: #8b5e0a; background: #fff0c9; }
+    .capacity-segment.level-zero { color: #b93131; background: #ffe1e1; }
+    .capacity-segment .capacity-number { min-width: 25px; height: 24px; padding: 0 6px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.82); font-size: 11px; font-weight: 750; box-shadow: 0 1px 3px rgba(20,40,35,.08); }
+    .capacity-segment.too-narrow .capacity-number { display: none; }
+
+    .exception-row { min-height: 78px; }
+    .exception-row .timeline-label { color: var(--danger); background: #fff8f8; }
+    .exception-label { display: flex; align-items: center; gap: 8px; }
+    .exception-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; display: grid; place-items: center; color: #fff; background: var(--danger); font-size: 11px; font-weight: 700; }
+    .exception-track { min-height: 78px; background-color: #fffafa; }
+
+    .nurse-row { min-height: 104px; }
+    .nurse-row:hover .grid-track { background-color: #fbfdfc; }
+    .nurse-row .timeline-label { min-height: 104px; background: #fff; }
+    .nurse-row.unscheduled-row .timeline-label { background: #fafbfb; }
+    .nurse-row.unscheduled-row .grid-track { background-color: #fafbfb; }
+    .nurse-row.unscheduled-row:hover .grid-track { background-color: #f8faf9; }
+    .unscheduled-row .nurse-avatar { color: #7e8986; background: #e9edec; }
+    .unscheduled-row .nurse-name { color: #687270; }
+    .nurse-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .nurse-avatar { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; color: var(--brand-dark); background: #dff1ec; font-size: 11px; font-weight: 750; }
+    .nurse-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; }
+    .nurse-state { margin-top: 3px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .nurse-track { min-height: 104px; }
+    .shift-band { position: absolute; top: 9px; height: 85px; min-width: 2px; padding: 0; border: 1px solid; border-radius: 5px; overflow: hidden; text-align: left; cursor: pointer; }
+    .shift-band:hover { filter: brightness(.98); box-shadow: inset 0 0 0 1px rgba(0,135,106,.08); }
+    .shift-band.available { border-color: #9bd6c5; background: rgba(224,245,239,.66); }
+    .shift-band.unavailable { border-color: #cbd1cf; background: rgba(239,242,241,.82); }
+    .shift-band-label { position: absolute; left: 7px; top: 5px; max-width: calc(100% - 14px); overflow: hidden; color: #5c6d68; font-size: 10px; white-space: nowrap; text-overflow: ellipsis; }
+    .shift-band.unavailable .shift-band-label { color: #89918f; }
+    .no-available-note { position: absolute; top: 42px; left: 12px; color: #a0aaa7; font-size: 12px; }
+
+    .work-card {
+      position: absolute;
+      z-index: 4;
+      height: 40px;
+      min-width: 10px;
+      padding: 4px 7px;
+      border: 1.5px solid;
+      border-radius: 5px;
+      overflow: hidden;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(28,44,40,.1);
+      transition: filter .14s ease, transform .14s ease, box-shadow .14s ease;
+    }
+    .work-card:hover { z-index: 12; filter: brightness(.985); transform: translateY(-1px); box-shadow: 0 5px 12px rgba(28,44,40,.16); }
+    .work-card.simulated { border-style: dashed; box-shadow: none; }
+    .work-card.abnormal { border-color: var(--danger) !important; background: var(--danger-bg) !important; color: #b33232 !important; box-shadow: 0 0 0 2px rgba(215,71,71,.1); }
+    .work-card.compact { padding: 4px; }
+    .work-card.micro { padding: 0; border-radius: 3px; }
+    .work-card-title { display: block; overflow: hidden; font-size: 11px; line-height: 16px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
+    .work-card-time { display: block; overflow: hidden; opacity: .78; font-size: 9px; line-height: 13px; white-space: nowrap; text-overflow: ellipsis; }
+    .work-card.compact .work-card-time, .work-card.micro .work-card-title, .work-card.micro .work-card-time { display: none; }
+    .simulated-mark { margin-right: 3px; }
+    .abnormal-mark { margin-right: 3px; }
+
+    .current-time-line { position: absolute; top: 0; bottom: 0; z-index: 20; width: 0; border-left: 1px dashed rgba(215,71,71,.42); pointer-events: none; }
+    .current-time-line.labelled { border-left-style: solid; border-left-color: rgba(215,71,71,.64); }
+    .current-time-line.labelled:before { content: ""; position: absolute; top: 0; left: -3px; width: 6px; height: 6px; border-radius: 50%; background: #db5a5a; }
+    .current-time-line.labelled:after { content: attr(data-time); position: absolute; top: 10px; left: 5px; padding: 1px 4px; border-radius: 3px; color: #b94646; background: #fff1f1; font-size: 9px; white-space: nowrap; }
+
+    .inline-help { width: 20px; height: 20px; margin-left: 5px; padding: 0; border: 1px solid #c8d7d3; border-radius: 50%; display: inline-grid; place-items: center; color: var(--brand-dark); background: #fff; font-size: 11px; cursor: pointer; vertical-align: -1px; }
+    .inline-help:hover { border-color: var(--brand); background: var(--brand-faint); }
+
+    .state-wrap { min-height: calc(100vh - 182px); padding: 24px; }
+    .state-card { min-height: 310px; padding: 42px 24px; border: 1px dashed #cfd8d5; border-radius: 8px; display: grid; place-items: center; text-align: center; background: #fbfcfc; }
+    .state-card .state-icon { width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; color: var(--brand); background: var(--brand-soft); }
+    .state-card .state-icon .icon { width: 25px; height: 25px; }
+    .state-card.error .state-icon { color: var(--danger); background: var(--danger-bg); }
+    .state-card h2 { margin: 0; font-size: 18px; }
+    .state-card p { max-width: 530px; margin: 8px auto 18px; color: var(--muted); line-height: 1.7; }
+    .audit-list { width: min(920px, 100%); margin: 18px auto 0; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: #fff; text-align: left; }
+    .audit-head, .audit-row { display: grid; grid-template-columns: 1.1fr 1.2fr .9fr 1fr 1.3fr; align-items: center; }
+    .audit-head { min-height: 38px; color: var(--muted); background: #f7f9f8; font-size: 11px; font-weight: 650; }
+    .audit-row { min-height: 52px; border-top: 1px solid var(--line); font-size: 12px; }
+    .audit-head span, .audit-row span { padding: 8px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .audit-reason { color: var(--danger); }
+
+    .spinner { width: 20px; height: 20px; border: 2px solid #c8e7df; border-top-color: var(--brand); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .modal-layer { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 22px; background: rgba(22,34,31,.32); animation: fadeIn .14s ease; }
+    .modal { width: min(480px, calc(100vw - 44px)); max-height: calc(100vh - 70px); overflow: hidden; border: 1px solid rgba(255,255,255,.5); border-radius: 9px; background: #fff; box-shadow: 0 20px 60px rgba(20,43,37,.25); animation: modalIn .16s ease; }
+    .modal.modal-wide { width: min(720px, calc(100vw - 44px)); }
+    @keyframes fadeIn { from { opacity: 0; } }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(8px) scale(.985); } }
+    .modal-head { min-height: 56px; padding: 12px 15px 12px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .modal-title { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 700; }
+    .modal-type-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .modal-body { max-height: calc(100vh - 205px); overflow: auto; padding: 17px 18px; }
+    .modal-tags { margin-bottom: 14px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .tag { min-height: 24px; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); background: #f1f4f3; font-size: 11px; }
+    .tag.confirmed { color: var(--brand-dark); background: var(--brand-soft); }
+    .tag.simulated { color: var(--blue); background: var(--blue-bg); border: 1px dashed #8bb0df; }
+    .tag.abnormal { color: var(--danger); background: var(--danger-bg); }
+    .detail-grid { display: grid; grid-template-columns: 94px 1fr; border-top: 1px solid var(--line); }
+    .detail-grid dt, .detail-grid dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); }
+    .detail-grid dt { color: var(--muted); font-size: 12px; }
+    .detail-grid dd { color: var(--ink); font-size: 12px; word-break: break-word; }
+    .modal-notice { margin-top: 13px; padding: 10px 11px; border-radius: 5px; display: flex; gap: 8px; color: #49635d; background: #f3faf8; font-size: 11px; line-height: 1.65; }
+    .modal-notice.warning { color: #8f5a05; background: var(--warning-bg); }
+    .modal-notice.danger { color: #a62f2f; background: var(--danger-bg); }
+    .modal-foot { min-height: 58px; padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); background: #fbfcfc; }
+    .modal-foot-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .modal-foot-meta { color: var(--muted); font-size: 10px; }
+    .detail-section-title { margin: 16px 0 8px; display: flex; align-items: center; gap: 7px; color: var(--ink-2); font-size: 12px; font-weight: 700; }
+    .detail-section-title:first-of-type { margin-top: 0; }
+    .detail-section-title:before { content: ""; width: 3px; height: 13px; border-radius: 2px; background: var(--brand); }
+    .metric-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
+    .metric-box { padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: #fbfcfc; }
+    .metric-box span { display: block; color: var(--muted); font-size: 10px; }
+    .metric-box strong { display: block; margin-top: 3px; font-size: 18px; }
+    .flow-line { display: flex; align-items: center; gap: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; }
+    .flow-node { flex: 1; min-height: 48px; padding: 8px; position: relative; display: grid; align-content: center; color: var(--muted); background: #fafbfb; font-size: 10px; text-align: center; }
+    .flow-node + .flow-node { border-left: 1px solid var(--line); }
+    .flow-node.done { color: var(--brand-dark); background: var(--brand-faint); }
+    .flow-node.current { color: #fff; background: var(--brand); font-weight: 650; }
+
+    .user-menu { position: fixed; top: 136px; right: 18px; z-index: 180; width: 185px; padding: 7px; border: 1px solid var(--line); border-radius: 7px; background: #fff; box-shadow: var(--shadow); }
+    .user-menu-head { padding: 9px 10px; border-bottom: 1px solid var(--line); }
+    .user-menu-head strong { display: block; }
+    .user-menu-head small { color: var(--muted); }
+    .user-menu button { width: 100%; min-height: 34px; padding: 0 10px; border: 0; border-radius: 5px; display: flex; align-items: center; gap: 8px; background: transparent; cursor: pointer; }
+    .user-menu button:hover { background: #f3f7f6; }
+
+    .toast-stack { position: fixed; top: 160px; left: 50%; z-index: 500; transform: translateX(-50%); display: grid; gap: 8px; pointer-events: none; }
+    .toast { min-width: 260px; max-width: 460px; min-height: 42px; padding: 10px 14px; border: 1px solid #bee0d6; border-radius: 7px; display: flex; align-items: center; gap: 9px; color: #225d4e; background: #f4fcf9; box-shadow: 0 10px 28px rgba(24,61,52,.16); animation: toastIn .18s ease; }
+    .toast.error { color: #9e3030; border-color: #efc1c1; background: #fff5f5; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-7px); } }
+
+    @media (max-height: 760px) {
+      .summary-strip { padding-top: 9px; padding-bottom: 9px; }
+      .summary-item { min-height: 62px; padding: 9px 12px; }
+      .timeline-scroll { max-height: calc(100vh - 384px); }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 8A7 7 0 0 1 18 6l2 1M17.9 16A7 7 0 0 1 6 18l-2-1"/></symbol>
+    <symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5M12 18h.01"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-empty" viewBox="0 0 24 24"><path d="M4 7h16v13H4zM8 4h8v3M8 12h8M8 16h5"/></symbol>
+  </svg>
+
+  <div class="prototype-bar">
+    <div class="prototype-title"><span class="prototype-dot"></span>护士资源看板完整产品方案</div>
+    <span class="prototype-meta">开发基线 · V1.1 · 2026-08-27</span>
+    <div class="artifact-nav">
+      <button class="annotation-toggle" data-action="toggle-annotations">显示标注</button>
+      <span class="artifact-nav-divider"></span>
+      <button class="artifact-tab active" data-action="switch-panel" data-panel="solution">整体方案说明</button>
+      <button class="artifact-tab" data-action="switch-panel" data-panel="prototype">原型-PC端</button>
+      <button class="artifact-tab" data-action="switch-panel" data-panel="prd">PRD文档</button>
+    </div>
+  </div>
+
+  <section class="doc-panel" id="solutionPanel">
+    <div class="doc-shell">
+      <header class="doc-hero">
+        <div class="doc-kicker">PRODUCT SOLUTION · PHASE 1</div>
+        <h1>护士资源看板</h1>
+        <p>面向相关服务人员的只读日视图。把已发布排班与现有工单合并到同一时间轴，回答“这个时段是否还有护士可承接工作”，帮助前序人员调整服务开始时间。</p>
+        <div class="doc-meta"><span>产品形态 <strong>PC端</strong></span><span>业务范围 <strong>护士资源查看</strong></span><span>核心用户 <strong>相关服务人员、护士长</strong></span><span>文档状态 <strong>开发基线</strong></span></div>
+      </header>
+
+      <section class="doc-section">
+        <h2>评审结论</h2>
+        <div class="doc-grid cols-4">
+          <div class="doc-card accent"><span class="label">交付内容</span><strong>独立菜单、日时间轴、容量测算、工单缩略信息及完整异常态</strong></div>
+          <div class="doc-card"><span class="label">数据来源</span><strong>当前有效发布版本，以及现有产品、服务和工单数据</strong></div>
+          <div class="doc-card"><span class="label">展示口径</span><strong>00:00–24:00；15分钟辅助网格；班次与工单按分钟定位</strong></div>
+          <div class="doc-card"><span class="label">权限方式</span><strong>开发注册菜单、按钮权限点；管理员或运营人员通过现有体系分配</strong></div>
+          <div class="doc-card"><span class="label">资源口径</span><strong>仅“资源可用”班次参与容量计算；未排班护士仍展示</strong></div>
+          <div class="doc-card"><span class="label">工单时间</span><strong>一期统一使用预计开始时间和预计服务时长</strong></div>
+          <div class="doc-card"><span class="label">未分配护士工单</span><strong>按确定性规则模拟占位，不回写工单护士ID</strong></div>
+          <div class="doc-card"><span class="label">非本期范围</span><strong>不提供派单、筛选、周月视图、实际时间和实时推送</strong></div>
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <h2>统一术语与展示名称</h2>
+        <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>统一名称</th><th>定义</th><th>禁止混用</th></tr></thead><tbody>
+          <tr><td>当前有效发布版本</td><td>所选日期生效且当前未被后续发布或撤回替代的排班发布快照。</td><td>不写“当前排班”“有效草稿”。</td></tr>
+          <tr><td>资源可用班次</td><td>班次的资源状态为可用，可参与工单承接和容量计算。</td><td>不写“可工作状态”“可分配班次”。</td></tr>
+          <tr><td>资源不可用班次</td><td>班次的资源状态为不可用，仅展示，不参与容量。</td><td>不单独写“休息功能”；“休息”只是模板名称示例。</td></tr>
+          <tr><td>已确认护士工单</td><td>工单原始护士ID非空；页面按该护士显示。</td><td>统计说明可写“已分配护士单数”，但不写“已确认工单”。</td></tr>
+          <tr><td>未分配护士工单</td><td>工单原始护士ID为空；进入模拟占位计算。</td><td>不写“未确认工单”作为页面展示名称。</td></tr>
+          <tr><td>模拟占位工单</td><td>未分配护士工单已按规则找到临时展示护士；仅影响看板容量，不回写工单。</td><td>不写“模拟测算”“预分配工单”。</td></tr>
+          <tr><td>无可用护士工单</td><td>未分配护士工单无法找到完整可承接护士，进入独立轨道且不扣减容量。</td><td>不写“溢出工单”；<code>overflow</code>仅可作为技术枚举。</td></tr>
+          <tr><td>安排异常工单</td><td>已确认护士工单未完整落入资源可用班次，或与同护士其他已确认护士工单重叠。</td><td>不自动改派，不归入无可用护士工单。</td></tr>
+          <tr><td>剩余资源容量</td><td>某连续时段内仍可完整承接工作的去重护士人数。</td><td>不写“剩余工位”“剩余班次数”。</td></tr>
+        </tbody></table></div>
+      </section>
+
+      <section class="doc-section">
+        <h2>背景、问题与目标</h2>
+        <div class="doc-grid">
+          <div class="doc-card"><span class="label">业务现状</span><ul><li>当前团队护士长1人，护士不足10人。</li><li>排班已发布，但相关服务人员无法在安排服务时直观看到护士占用。</li><li>护士不能同时承接多项工作，服务开始时间需要结合当日资源调配。</li></ul></div>
+          <div class="doc-card accent"><span class="label">一期目标</span><ul><li>让有权限人员快速判断任意时段剩余可承接护士人数。</li><li>统一展示已确认护士工单、模拟占位工单和无可用护士工单。</li><li>安排异常可见、可追溯，但不在看板内修改业务数据。</li></ul></div>
+        </div>
+        <h3>成功标准</h3>
+        <div class="doc-note">当日范围内的有效班次与符合业务状态的工单均可被展示或归入明确异常；相同输入产生相同的模拟分配结果；页面不得返回或展示患者姓名、联系方式、诊断和病历内容。</div>
+      </section>
+
+      <section class="doc-section">
+        <h2>用户、入口与权限</h2>
+        <div class="doc-grid">
+          <div class="doc-card"><strong>相关服务人员</strong><p>查看护士整体资源容量、工单占用和无可用时段，不关心具体应指派哪名护士；可在具备既有按钮权限时进入工单详情。</p></div>
+          <div class="doc-card"><strong>护士长</strong><p>查看已发布排班与实际工单安排是否存在冲突，识别需要协调的服务时间；看板只读，排班维护仍在“护士排班”。</p></div>
+        </div>
+        <p><strong>菜单层级：</strong>“护士资源看板”与“护士排班”同级。系统已有菜单、按钮级权限配置，本期开发只新增权限资源，不硬编码角色；权限分配由管理员或运营人员完成。</p>
+      </section>
+
+      <section class="doc-section">
+        <h2>核心业务口径</h2>
+        <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>主题</th><th>一期规则</th><th>页面结果</th></tr></thead><tbody>
+          <tr><td>护士范围</td><td>读取账号体系中角色为“护士”的全部账号；是否参与本月排班不影响名单展示。</td><td>未排班护士显示“当日未排班”，不计入容量。</td></tr>
+          <tr><td>排班版本</td><td>仅取所选日期当前有效的已发布版本；草稿、已撤回版本不参与。</td><td>版本及发布时间显示于看板顶部。</td></tr>
+          <tr><td>可用资源</td><td>仅班次模板标记为“资源可用”的实际班次区间参与计算。</td><td>可用/不可用班次采用不同底色。</td></tr>
+          <tr><td>已确认护士工单</td><td>工单护士ID非空；按该护士实际展示。即使冲突或不在可用班次内，也不改派。</td><td>安排异常卡片标红并计入异常。</td></tr>
+          <tr><td>未分配护士工单</td><td>工单护士ID为空；按开始时间、创建时间、工单号顺序模拟占位。</td><td>成功时显示模拟占位工单；不回写工单护士ID。</td></tr>
+          <tr><td>可承接条件</td><td>工单完整预计区间必须落在同一连续资源可用班次内，且与已占用区间完全无重叠。</td><td>无候选护士时进入“无可用护士”轨道。</td></tr>
+          <tr><td>剩余资源容量</td><td>资源可用护士数减去该时段被已确认护士工单或模拟占位工单占用的去重护士数。</td><td>按班次/工单开始结束等资源变化点分段，相邻同值合并。</td></tr>
+        </tbody></table></div>
+      </section>
+
+      <section class="doc-section">
+        <h2>工单纳入范围</h2>
+        <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>产品</th><th>服务示例</th><th>纳入的工单状态</th></tr></thead><tbody>
+          <tr><td>会诊</td><td>大病会诊、专家再诊断、专家案例教学等</td><td>待会诊、待上传会诊意见、待审核会诊意见、待修改会诊意见、待复审会诊意见、已完成</td></tr>
+          <tr><td>诊所服务</td><td>癫痫门诊、脑电图、癫痫开药、外出、陪诊等</td><td>待服务、待总结、已完成</td></tr>
+          <tr><td>远程门诊</td><td>远程门诊、科室会议等</td><td>待出诊、出诊中、待总结、部分总结、已完成</td></tr>
+          <tr><td>绿通</td><td>门诊绿通、住院绿通、手术绿通等</td><td>待总结、已完成</td></tr>
+        </tbody></table></div>
+        <p>产品与服务的对应关系、业务流程及工单状态均使用现有配置，不新增维护页面。服务名称直接取现有服务展示名称。</p>
+      </section>
+
+      <section class="doc-section">
+        <h2>页面与交互方案</h2>
+        <div class="doc-flow"><div class="doc-flow-step"><strong>1. 进入看板</strong><p>默认打开今天并定位当前时间；其他日期定位06:00。</p></div><div class="doc-flow-arrow">→</div><div class="doc-flow-step"><strong>2. 查看容量</strong><p>横向滚动00:00–24:00，点击容量分段查看组成。</p></div><div class="doc-flow-arrow">→</div><div class="doc-flow-step"><strong>3. 识别占用</strong><p>已确认护士、模拟占位、安排异常和无可用护士工单分别展示。</p></div><div class="doc-flow-arrow">→</div><div class="doc-flow-step"><strong>4. 查看工单</strong><p>点击卡片打开缩略弹窗，按权限进入现有详情。</p></div></div>
+        <h3>刷新与失败保护</h3><p>每60秒自动刷新，手动刷新不遮挡页面；更新期间继续显示旧数据。单次请求10秒超时，失败后保留最后成功数据并展示更新时间，避免弱网卡死。</p>
+        <h3>空态</h3><ul><li>无有效发布版本：不计算容量或模拟占位，并列出符合范围的工单审计信息。</li><li>当日无符合状态工单：保留班次和完整容量，仅显示说明条。</li><li>护士未排班：保留护士行，显示“当日未排班”。</li><li>首次加载失败且无成功数据：展示错误态和重新加载按钮。</li></ul>
+      </section>
+
+      <section class="doc-section">
+        <h2>范围边界与迭代</h2>
+        <div class="scope-list"><div class="scope-box"><strong>一期包含</strong><ul><li>独立只读菜单与日视图</li><li>发布排班、工单聚合和分钟级时间轴</li><li>模拟占位、异常校验、容量分段</li><li>缩略弹窗、详情跳转、空态和刷新保护</li></ul></div><div class="scope-box out"><strong>一期不包含</strong><ul><li>看板内指派或改派护士</li><li>筛选、周/月模式和资源预约</li><li>产品、服务、流程的新配置</li><li>实际服务时间、消息推送和智能推荐</li></ul></div></div>
+        <p><strong>后续：</strong>可在数据完备后增加实际开始/结束时间、临近可用时间建议、实时推送及调度优化；均不改变一期“只读辅助决策”的定位。</p>
+      </section>
+      <div class="doc-footer">护士资源看板完整产品方案 · V1.1 · 2026-08-27</div>
+    </div>
+  </section>
+
+  <section class="doc-panel artifact-hidden" id="prdPanel">
+    <div class="doc-shell">
+      <header class="doc-hero"><div class="doc-kicker">PRODUCT REQUIREMENTS DOCUMENT</div><h1>护士资源看板 PRD</h1><p>本文为研发、测试和验收基线。页面标注说明局部交互，本 PRD 定义跨模块数据口径、接口、算法、异常处理及非功能要求；二者冲突时以本版本 PRD 为准并同步修订原型。</p><div class="doc-meta"><span>版本 <strong>V1.1</strong></span><span>发布日期 <strong>2026-08-27</strong></span><span>优先级 <strong>一期</strong></span><span>终端 <strong>PC端</strong></span></div></header>
+
+      <section class="doc-section">
+        <h2>1. Executive Summary</h2>
+        <h3>1.1 Problem Statement</h3>
+        <p>相关服务人员在安排服务开始时间时，无法把已发布排班和当日工单占用放在同一时间轴判断，容易高估护士资源；护士不能同时承接多项工作，因此需要统一、可解释的剩余容量视图。</p>
+        <h3>1.2 Proposed Solution</h3>
+        <p>新增与“护士排班”同级的只读“护士资源看板”，以所选日期的当前有效发布版本为资源基线，聚合现有工单，服务端完成异常校验、模拟占位和容量分段，前端按分钟展示00:00–24:00。</p>
+        <h3>1.3 Success Criteria</h3>
+        <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>指标</th><th>验收标准</th></tr></thead><tbody>
+          <tr><td>数据完整性</td><td>与所选自然日有时间交集且状态符合范围的工单，100%归入已确认护士工单、模拟占位工单或无可用护士工单；角色为“护士”的账号100%展示。</td></tr>
+          <tr><td>算法确定性</td><td>相同排班、工单、护士顺序和算法版本重复计算结果完全一致；任何正时长交集均判为重叠，边界相接不算重叠。</td></tr>
+          <tr><td>隐私</td><td>看板聚合接口、页面DOM和看板日志均不包含患者姓名、联系方式、诊断、病历。</td></tr>
+          <tr><td>可用性</td><td>刷新不阻断浏览；10秒超时保留最后成功数据；首次无成功数据时提供重新加载。</td></tr>
+          <tr><td>性能</td><td>护士≤20、所选日相关工单≤500时，聚合接口P95≤2秒，页面首次可交互P95≤3秒。</td></tr>
+        </tbody></table></div>
+        <h3>1.4 Dependencies</h3>
+        <ul><li>账号体系及现有菜单、按钮权限配置。</li><li>护士排班当前有效发布版本、护士和实际班次。</li><li>现有产品、服务、工单、预计时间及业务流程状态。</li></ul>
+      </section>
+
+      <section class="doc-section">
+        <h2>2. User Experience &amp; Functionality</h2>
+        <h3>2.1 User Personas</h3>
+        <div class="doc-grid"><div class="doc-card"><strong>相关服务人员</strong><p>主要查看某个时间段是否仍有护士可承接，不以确定具体护士为目标。</p></div><div class="doc-card"><strong>护士长</strong><p>查看已确认护士工单是否与班次或其他工单冲突，并进行线下协调。</p></div></div>
+        <h3>2.2 User Stories</h3>
+        <ul><li>作为相关服务人员，我希望按日查看各时段剩余资源容量，以便调整服务开始时间。</li><li>作为相关服务人员，我希望未分配护士工单先模拟占位，以免高估资源。</li><li>作为护士长，我希望看到已确认护士工单的冲突或越界安排，以便协调。</li><li>作为有详情权限的用户，我希望从卡片查看缩略信息并进入现有工单详情。</li></ul>
+        <h3>2.3 Acceptance Criteria</h3>
+        <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>ID</th><th>完成定义</th></tr></thead><tbody>
+          <tr><td>AC-01 权限</td><td>有菜单权限可进入；无权限前端不显示入口且接口返回403；详情按钮继续使用既有按钮权限。</td></tr>
+          <tr><td>AC-02 日期</td><td>默认今天；今天定位当前时间，其他日期定位06:00；时间轴固定00:00–24:00并可横向滚动。</td></tr>
+          <tr><td>AC-03 数据</td><td>使用当前有效发布版本；全部护士均展示；未排班护士显示“当日未排班”且不计入容量。</td></tr>
+          <tr><td>AC-04 分配</td><td>已确认护士工单不改派；未分配护士工单按确定性顺序模拟；完整区间未被同一资源可用班次包含或存在重叠时不得分配。</td></tr>
+          <tr><td>AC-05 显示</td><td>班次、工单均按分钟定位；15分钟格不取整；同轨道重叠卡片分层且可点击，不相互遮盖。</td></tr>
+          <tr><td>AC-06 容量</td><td>按变化点分段；相邻同值合并；点击分段可查看构成；不展示空闲护士姓名。</td></tr>
+          <tr><td>AC-07 状态</td><td>完整支持正常、刷新失败保留旧数据、无工单、无有效发布版本、首次加载失败五种页面场景。</td></tr>
+          <tr><td>AC-08 工单</td><td>点击工单打开缩略弹窗；仅有既有权限时显示详情按钮；看板接口和缩略弹窗无患者敏感字段。</td></tr>
+        </tbody></table></div>
+        <h3>2.4 Page Structure</h3>
+        <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>区域</th><th>统一展示名称与行为</th></tr></thead><tbody>
+          <tr><td>日期工具栏</td><td>上一天、日期选择、下一天、今天、定位当前时间/定位06:00。</td></tr>
+          <tr><td>刷新区</td><td>最近成功更新时间、60秒自动刷新和“刷新”按钮。</td></tr>
+          <tr><td>版本条</td><td>当前有效发布版本、发布时间、参与排班、全部护士、班次数及工单口径。</td></tr>
+          <tr><td>概览</td><td>当日排班护士、资源可用时长、当日工单、模拟占位工单、待协调/异常工单。</td></tr>
+          <tr><td>时间轴</td><td>整点标签、每小时4个15分钟辅助格、当日当前时间线。</td></tr>
+          <tr><td>容量轨道</td><td>剩余资源容量，按资源变化点分段。</td></tr>
+          <tr><td>异常轨道</td><td>无可用护士工单；同时间或冲突时间多条数据分层展示。</td></tr>
+          <tr><td>护士轨道</td><td>全部护士、资源可用/不可用班次、已确认护士工单、模拟占位工单及安排异常工单。</td></tr>
+        </tbody></table></div>
+        <h3>2.5 Interaction Feedback</h3>
+        <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>操作</th><th>成功</th><th>失败/限制</th></tr></thead><tbody>
+          <tr><td>切换日期</td><td>重新加载并按日期规则定位。</td><td>400时保留原视图并提示“查看日期格式不正确”。</td></tr>
+          <tr><td>刷新</td><td>Toast“资源数据已更新”，更新时间更新。</td><td>Toast“刷新失败，已保留当前数据”或“刷新超时，已保留当前数据”。</td></tr>
+          <tr><td>点击工单</td><td>打开工单缩略信息弹窗。</td><td>刷新后工单退出范围时关闭弹窗并提示“该工单已不在当前看板展示范围”。</td></tr>
+          <tr><td>查看详情</td><td>进入现有工单详情。</td><td>无按钮权限不显示；详情接口独立鉴权。</td></tr>
+        </tbody></table></div>
+        <h3>2.6 Empty &amp; Boundary States</h3>
+        <ul><li>无工单：继续展示排班和容量，概览相关指标为0。</li><li>无有效发布版本：不计算容量或模拟占位，保留工单审计列表。</li><li>未排班护士：保留护士行，不计入容量。</li><li>跨日班次/工单：页面裁切显示，完整区间参与包含与冲突判断。</li><li>边界相接：A.end_at = B.start_at 时不算重叠。</li></ul>
+        <h3>2.7 Non-Goals</h3>
+        <p>一期不支持派单/改派、筛选、周月视图、修改排班、资源预约、实际服务时间、消息推送、患者信息展示或新增产品服务配置。</p>
+      </section>
+
+      <section class="doc-section"><h2>3. AI System Requirements</h2><p>不适用。本期不使用生成式AI、机器学习或概率推荐；模拟占位为可解释、确定性的规则算法，相同输入必须产生相同输出并可由算法版本和聚合日志还原。</p></section>
+
+      <section class="doc-section"><h2>4. Technical Specifications</h2><h3>4.1 Architecture Overview</h3><div class="doc-flow"><div class="doc-flow-step"><strong>现有权限体系</strong><p>校验菜单及详情按钮权限</p></div><div class="doc-flow-arrow">→</div><div class="doc-flow-step"><strong>看板聚合服务</strong><p>读取发布快照、护士、班次和工单</p></div><div class="doc-flow-arrow">→</div><div class="doc-flow-step"><strong>规则计算</strong><p>校验、模拟占位、容量分段</p></div><div class="doc-flow-arrow">→</div><div class="doc-flow-step"><strong>PC前端</strong><p>只负责视图渲染和分钟定位</p></div></div><p>聚合服务是安排结果与容量的唯一计算方；前端不得复制业务算法。接口以Asia/Shanghai解释自然日，单次响应使用同一读取快照并返回<code>updated_at</code>和<code>algorithm_version</code>。</p><h3>4.2 Integration Points &amp; Permissions</h3><div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>资源</th><th>权限码/来源</th><th>开发规则</th></tr></thead><tbody><tr><td>菜单</td><td><code>nurse_resource_board:view</code></td><td>开发注册到现有菜单权限体系；前端按配置显示，聚合接口校验同一权限；不绑定固定角色。</td></tr><tr><td>查看工单详情按钮</td><td>复用各产品现有详情权限</td><td>前端无权限隐藏按钮；后端详情接口继续独立鉴权。</td></tr><tr><td>护士</td><td>现有账号/角色数据</td><td>返回角色为“护士”的全部账号；按账号体系稳定显示顺序，其次按nurse_id升序。</td></tr><tr><td>排班</td><td>当前有效发布版本</td><td>只读发布快照；草稿、已撤回和非当前版本不得进入计算。</td></tr><tr><td>产品/服务/工单</td><td>现有业务数据</td><td>复用现有产品流程和服务配置，不新增对应关系维护。</td></tr></tbody></table></div><h3>4.3 Data Flow &amp; Calculation Ownership</h3><ol><li>服务端校验日期和菜单权限，生成请求ID。</li><li>按半开区间<code>[day_start, day_end)</code>读取与所选自然日有交集的当前发布班次和工单；跨日数据必须带原始起止时间。</li><li>过滤四类产品及对应状态，规范空白护士ID为null。</li><li>服务端完成已确认护士校验、未分配护士工单模拟占位、容量分段和异常归类。</li><li>服务端返回统一只读视图模型；前端只裁切所选日、计算像素位置和渲染。</li><li>点击详情复用各产品现有详情路由和后端鉴权。</li></ol><h3>4.4 Query API</h3><p><code>GET /api/nurse-resource-board?date=YYYY-MM-DD</code>；不分页，一次返回所选日完整视图；请求与响应Content-Type为<code>application/json; charset=utf-8</code>。</p><div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>请求字段</th><th>必填</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>date</td><td>是</td><td>字符串；ISO日期YYYY-MM-DD；必须为Asia/Shanghai下的有效自然日；一期不限制历史/未来范围。</td><td>400：查看日期格式不正确</td></tr></tbody></table></div><h3>4.5 Response Model</h3><div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>对象.字段</th><th>类型/必填</th><th>规则</th></tr></thead><tbody>
+        <tr><td>request_id</td><td>string/是</td><td>1–64字符；单次请求唯一，用于前后端日志关联。</td></tr><tr><td>algorithm_version</td><td>string/是</td><td>1–20字符；规则变更必须升级版本并保留兼容说明。</td></tr><tr><td>updated_at</td><td>datetime/是</td><td>ISO 8601且包含+08:00；本次聚合完成时间，刷新失败时前端保留上次值。</td></tr><tr><td>publication.status</td><td>enum/是</td><td><code>effective</code>当前有效；<code>none</code>无有效发布版本。none时版本字段为空。</td></tr><tr><td>publication.version_id</td><td>string/条件必填</td><td>1–64字符；effective时必填。</td></tr><tr><td>publication.version_name</td><td>string/条件必填</td><td>1–30字符；effective时必填，仅展示。</td></tr><tr><td>publication.published_at</td><td>datetime/条件必填</td><td>ISO 8601且包含时区；effective时必填。</td></tr><tr><td>summary.*</td><td>integer/是</td><td>返回<code>scheduled_nurse_count</code>、<code>available_minutes</code>、<code>order_count</code>、<code>confirmed_order_count</code>、<code>simulated_order_count</code>、<code>overflow_order_count</code>、<code>abnormal_order_count</code>；均≥0。</td></tr><tr><td>nurses[].nurse_id</td><td>string/是</td><td>1–64字符；账号体系唯一ID；同一响应内唯一。</td></tr><tr><td>nurses[].display_name</td><td>string/是</td><td>1–50字符；不得返回工号；前端超出列宽省略并通过title展示原值。</td></tr><tr><td>nurses[].avatar_text</td><td>string/是</td><td>1–2个中文字符；优先取姓名末2字，不足则全名。</td></tr><tr><td>nurses[].sort_index</td><td>integer/是</td><td>≥0；账号体系稳定顺序；相同则按nurse_id升序。</td></tr><tr><td>nurses[].scheduled</td><td>boolean/是</td><td>是否存在与所选自然日相交的班次；false仍返回护士行。</td></tr><tr><td>shifts[].shift_id</td><td>string/是</td><td>1–64字符；发布快照内唯一。</td></tr><tr><td>shifts[].nurse_id</td><td>string/是</td><td>必须引用nurses中的护士。</td></tr><tr><td>shifts[].name</td><td>string/是</td><td>1–20字符；取发布快照值。</td></tr><tr><td>shifts[].start_at/end_at</td><td>datetime/是</td><td>ISO 8601且end_at晚于start_at；允许跨日，返回原始完整区间。</td></tr><tr><td>shifts[].resource_available</td><td>boolean/是</td><td>true为资源可用班次，参与容量；false为资源不可用班次，仅展示且不参与容量。</td></tr><tr><td>orders[].order_id</td><td>string/是</td><td>1–64字符；现有工单唯一ID；同一响应内唯一。</td></tr><tr><td>orders[].product_type</td><td>enum/是</td><td><code>consult</code>会诊、<code>clinic</code>诊所服务、<code>remote</code>远程门诊、<code>green</code>绿通。</td></tr><tr><td>orders[].service_name</td><td>string/是</td><td>1–50字符；取现有服务展示名称；卡片溢出省略，弹窗显示完整值。</td></tr><tr><td>orders[].workflow_status</td><td>string/是</td><td>必须属于对应产品纳入状态枚举。</td></tr><tr><td>orders[].expected_start_at</td><td>datetime/是</td><td>ISO 8601且包含时区；一期占用开始时间。</td></tr><tr><td>orders[].expected_duration_minutes</td><td>integer/是</td><td>正整数；当前来源数据最短10分钟；不按15分钟取整。</td></tr><tr><td>orders[].created_at</td><td>datetime/是</td><td>ISO 8601且包含时区；用于模拟占位第二排序键。</td></tr><tr><td>orders[].source_nurse_id</td><td>string/null/是</td><td>工单原护士ID；空字符串先规范为null；非空表示已确认护士，null表示未分配护士。</td></tr><tr><td>orders[].display_nurse_id</td><td>string/null/是</td><td>确认护士或模拟护士；无可用护士时为null。</td></tr><tr><td>orders[].allocation_type</td><td>enum/是</td><td><code>confirmed</code>已确认护士、<code>simulated</code>模拟占位、<code>overflow</code>无可用护士。</td></tr><tr><td>orders[].abnormal</td><td>boolean/是</td><td>仅confirmed可能为true；simulated和overflow固定false。</td></tr><tr><td>orders[].reason_code</td><td>enum/null/是</td><td><code>outside_available_shift</code>未完整落入可用班次、<code>confirmed_overlap</code>确认安排重叠、<code>no_covering_shift</code>无人完整覆盖、<code>all_candidates_busy</code>候选均冲突；正常时null。</td></tr><tr><td>capacity_segments[].start_at/end_at</td><td>datetime/是</td><td>连续、无交叠并覆盖所选自然日；相邻同人数段必须合并。</td></tr><tr><td>capacity_segments[].remaining_count</td><td>integer/是</td><td>≥0；可承接护士去重计数。</td></tr>
+      </tbody></table></div>
+<h3>4.6 Product &amp; Workflow Status Enums</h3><div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>product_type</th><th>统一产品名称</th><th>纳入状态</th></tr></thead><tbody><tr><td>consult</td><td>会诊</td><td>待会诊、待上传会诊意见、待审核会诊意见、待修改会诊意见、待复审会诊意见、已完成</td></tr><tr><td>clinic</td><td>诊所服务</td><td>待服务、待总结、已完成</td></tr><tr><td>remote</td><td>远程门诊</td><td>待出诊、出诊中、待总结、部分总结、已完成</td></tr><tr><td>green</td><td>绿通</td><td>待总结、已完成</td></tr></tbody></table></div><h3>4.7 Deterministic Simulation Algorithm</h3><ol><li>先装载全部已确认护士工单；无论是否安排异常，均占用原护士时间且不自动改派。</li><li>未分配护士工单按预计开始时间升序、创建时间升序、工单号字典序依次处理。</li><li>候选护士必须存在一个连续资源可用班次完整包含工单区间，且与已确认护士工单及此前模拟占位工单完全无重叠。</li><li>候选排序：包含该工单的空闲窗口结束时间最早者优先；相同则按护士稳定显示顺序，再按护士ID升序。</li><li>有候选则生成<code>simulated</code>并参与后续容量；无候选生成<code>overflow</code>和原因。两者均不写回工单。</li></ol><h3>4.8 Capacity Algorithm</h3><p>变化点集合=自然日边界+资源可用班次开始/结束+已确认护士工单及模拟占位工单开始/结束。每个相邻区间计算“存在资源可用班次的护士集合 − 被工单占用的护士集合”的差集人数；同一护士多条重叠工单只扣减1人，相邻同值区间合并。安排异常工单仍按原护士占用，但剩余容量不得小于0。</p><h3>4.9 Errors &amp; Invalid Source Data</h3><div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>情形</th><th>接口/页面处理</th></tr></thead><tbody><tr><td>400</td><td>日期非法；页面保留原日期并提示“查看日期格式不正确”。</td></tr><tr><td>401</td><td>进入现有登录失效流程。</td></tr><tr><td>403</td><td>展示现有无权限页；不得返回看板业务数据。</td></tr><tr><td>200 + publication.none</td><td>展示无有效发布版本空态，不作为接口错误。</td></tr><tr><td>5xx/网络失败，已有成功数据</td><td>保留最后成功数据和更新时间，显示顶部警示和失败Toast。</td></tr><tr><td>5xx/网络失败，无成功数据</td><td>展示首次加载失败空态及“重新加载”。</td></tr><tr><td>前端10秒未收到结果</td><td>取消本次视图更新，保留旧数据；迟到响应不得覆盖更新结果。</td></tr><tr><td>工单缺少预计开始或时长≤0</td><td>不进入容量计算；服务端记录<code>invalid_order_time</code>告警并计数，不向前端返回该工单。</td></tr><tr><td>未知产品或状态不在枚举</td><td>按“不在展示范围”排除并记录统计，不作为页面错误。</td></tr><tr><td>已确认护士ID不在当前护士名单</td><td>视为数据完整性错误，聚合接口返回5xx；已有成功数据时前端保留旧数据，无成功数据时展示首次加载失败空态。</td></tr><tr><td>重复工单ID</td><td>聚合失败并记录数据完整性错误，不允许前端自行去重。</td></tr></tbody></table></div><h3>4.10 Security, Privacy &amp; Non-Functional Requirements</h3><ul><li><strong>安全：</strong>聚合接口使用字段白名单；菜单和详情接口均服务端鉴权；所有页面输出先HTML转义。</li><li><strong>隐私：</strong>看板及缩略弹窗只返回工单号、产品、服务、状态、预计时间、护士资源结果和创建时间。</li><li><strong>一致性：</strong>单次聚合使用同一逻辑快照；响应带<code>request_id</code>、<code>updated_at</code>和<code>algorithm_version</code>。</li><li><strong>可访问性：</strong>按钮可键盘聚焦；弹窗使用dialog语义、Esc关闭；状态同时使用文字、颜色和线型。</li><li><strong>兼容性：</strong>一期PC端，遵循项目现行浏览器基线；宽度不足时横向滚动，不压缩时间精度。</li><li><strong>可观测性：</strong>记录耗时、发布版本ID、护士数、班次数、工单数、模拟数、overflow数、异常数、排除数和失败原因；不得记录患者敏感字段。</li></ul></section>
+
+      <section class="doc-section"><h2>5. Risks &amp; Roadmap</h2><div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>风险</th><th>影响</th><th>控制措施</th></tr></thead><tbody><tr><td>预计时间不准确</td><td>容量与实际占用存在偏差</td><td>一期明确标注预计口径；后续接入实际时间。</td></tr><tr><td>发布排班与工单更新非同一事务</td><td>瞬时结果不一致</td><td>响应返回统一updated_at和版本；60秒刷新；服务端单次快照聚合。</td></tr><tr><td>已确认护士工单本身冲突</td><td>容量可能被高估或现场撞单</td><td>保留原安排并显著标红；计入占用与异常，不自动修正。</td></tr><tr><td>跨日边界</td><td>只看当日切片可能误判</td><td>展示裁切、校验用完整区间；纳入相邻日跨界数据。</td></tr><tr><td>权限只在前端隐藏</td><td>数据越权</td><td>菜单与详情接口均服务端鉴权。</td></tr></tbody></table></div><h3>5.1 里程碑</h3><ol><li><strong>一期：</strong>只读日看板、预计时间、轮询刷新、规则模拟、异常及空态。</li><li><strong>后续1：</strong>接入实际开始/结束时间并区分预计/实际占用。</li><li><strong>后续2：</strong>临近可用时段建议、实时推送和调度优化；需另立项评审。</li></ol><h3>5.2 验收清单</h3><ul><li>使用固定数据集校验排序、完整包含、边界相接、多任务重叠、跨日、未排班、无发布、无工单和刷新失败。</li><li>核对四类产品全部状态枚举，确认没有额外状态进入看板。</li><li>验证无菜单权限、无详情权限和接口直调三种鉴权场景。</li><li>检查接口响应、页面DOM、错误日志中均无患者敏感字段。</li></ul></section>
+      <div class="doc-footer">护士资源看板 PRD · V1.1 · 技术开发与测试验收基线</div>
+    </div>
+  </section>
+
+  <section id="prototypePanel" class="artifact-hidden">
+
+  <nav class="prototype-subnav" aria-label="原型演示场景">
+    <div class="prototype-subnav-label"><strong>原型场景</strong><span>仅用于原型验收，不属于正式产品界面</span></div>
+    <div class="prototype-subnav-tabs">
+      <button class="prototype-scene-tab active" data-action="switch-scene" data-scene="full" aria-current="page">综合业务日</button>
+      <button class="prototype-scene-tab" data-action="switch-scene" data-scene="stale">刷新失败（保留旧数据）</button>
+      <button class="prototype-scene-tab" data-action="switch-scene" data-scene="empty-orders">当日无工单</button>
+      <button class="prototype-scene-tab" data-action="switch-scene" data-scene="no-schedule">无有效发布版本</button>
+      <button class="prototype-scene-tab" data-action="switch-scene" data-scene="error">数据加载失败</button>
+    </div>
+  </nav>
+
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark"></span><span class="brand-name">尤迈会诊</span></div>
+    <div class="topbar-center">
+      <button class="icon-button" data-action="toggle-sidebar" aria-label="收起侧边栏"><svg class="icon"><use href="#i-menu"/></svg></button>
+      <div class="breadcrumb"><span>运营管理</span><svg class="icon"><use href="#i-chevron"/></svg><strong>护士资源看板</strong></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-button notification" data-action="notification" aria-label="消息通知"><svg class="icon"><use href="#i-bell"/></svg></button>
+      <button class="user-trigger" data-action="toggle-user"><span class="avatar">护</span><strong>护士长</strong><svg class="icon" style="width:13px"><use href="#i-down"/></svg></button>
+    </div>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <nav class="nav-section" aria-label="本期功能">
+      <div class="nav-caption">本期功能</div>
+      <button class="nav-item" data-action="out-of-scope"><svg class="icon"><use href="#i-calendar"/></svg><span>护士排班</span></button>
+      <button class="nav-item active"><svg class="icon"><use href="#i-clock"/></svg><span>护士资源看板</span></button>
+    </nav>
+  </aside>
+
+  <main class="app-main" id="appMain">
+    <div class="workspace">
+      <section class="content-card" id="resourceCard">
+        <div class="card-toolbar">
+          <div class="toolbar-left">
+            <div class="date-nav">
+              <button data-action="change-date" data-step="-1" aria-label="上一天"><svg class="icon" style="transform:rotate(180deg)"><use href="#i-chevron"/></svg></button>
+              <label class="date-field-wrap" title="选择日期">
+                <span class="date-label" id="dateLabel"></span>
+                <input class="date-field" type="date" id="dateField" value="2026-09-05" aria-label="选择查看日期">
+              </label>
+              <button data-action="change-date" data-step="1" aria-label="下一天"><svg class="icon"><use href="#i-chevron"/></svg></button>
+            </div>
+            <button class="btn" data-action="go-today"><svg class="icon"><use href="#i-calendar"/></svg>今天</button>
+            <button class="btn" data-action="locate-time" id="locateButton"><svg class="icon"><use href="#i-locate"/></svg><span>定位 06:00</span></button>
+          </div>
+          <div class="toolbar-right">
+            <span class="update-meta" id="updateMeta">每60秒自动刷新 · <strong id="updateTime">数据更新于 10:18:36</strong></span>
+            <button class="btn btn-primary refresh-btn" id="refreshButton" data-action="refresh"><svg class="icon"><use href="#i-refresh"/></svg><span>刷新</span></button>
+          </div>
+        </div>
+        <div id="viewRoot"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="modalRoot"></div>
+  <div id="menuRoot"></div>
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  </section>
+  <div id="annotationOverlayRoot"></div>
+  <div id="annotationPanelRoot"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var TRACK_WIDTH = 2688;
+      var App = {
+        date: '2026-09-05',
+        scene: 'full',
+        activePanel: 'solution',
+        annotationsVisible: false,
+        activeAnnotation: null,
+        sidebarCollapsed: false,
+        loading: false,
+        refreshFailed: false,
+        refreshToken: 0,
+        updateTime: '10:18:36',
+        activeOrderId: null,
+        autoRefreshTimer: null
+      };
+
+      var annotationSpecs = [
+        { title:'系统顶栏', selector:'.topbar', summary:'复用现有系统顶栏，不新增品牌、消息或账号能力。原型中的“护士长”仅为登录账号示例，不作为看板权限判断条件。', fields:[['品牌','固定显示现有系统品牌“尤迈会诊”。'],['面包屑','运营管理 / 护士资源看板；末级为当前页面。'],['账号','展示现有登录账号名称与头像，字段及长度沿用账号体系。']], actions:[['菜单按钮','沿用系统侧栏展开/收起交互。'],['消息按钮','沿用现有消息中心；本期不新增消息。'],['账号菜单','沿用现有账号菜单；看板权限由权限资源控制，不按页面展示角色硬编码。']] },
+        { title:'左侧菜单与权限', selector:'.sidebar', summary:'本期新增“护士资源看板”菜单，与“护士排班”同级；原型仅保留本期相关菜单。', fields:[['菜单名称','护士资源看板；固定名称，不支持业务端维护。'],['逻辑权限','nurse_resource_board:view；开发注册到现有权限资源表。'],['分配对象','由管理员或运营人员在现有权限体系配置，不限定角色。']], actions:[['点击护士资源看板','进入当前只读日看板。'],['点击护士排班','进入现有排班模块；不属于本文件开发范围。'],['无菜单权限','前端不显示入口；接口直调仍返回403。']] },
+        { title:'日期与定位工具栏', selector:'.toolbar-left', summary:'选择资源看板唯一查询日期并控制时间轴定位；一期只提供日视图。', fields:[['查看日期','必填；有效自然日；格式YYYY-MM-DD；默认今天。'],['时间范围','固定00:00–24:00，不提供自定义范围。'],['默认定位','今天定位当前时间；其他日期定位06:00。']], actions:[['上一天/下一天','日期增减1个自然日并重新请求；成功后按日期规则定位。'],['选择日期','确认后请求；取消不触发；400时保留原数据并提示“查看日期格式不正确”。'],['今天','切换为系统当前日期并Toast“已返回今天”。'],['定位按钮','只改变横向滚动位置，不重新请求数据。']] },
+        { title:'刷新与数据时效', selector:'#refreshButton', summary:'手动刷新和60秒自动刷新共用同一聚合接口；更新期间不遮挡或清空当前页面。', fields:[['自动刷新','页面打开期间每60秒触发；已有请求未完成则跳过。'],['超时','10秒；迟到响应不得覆盖更晚请求结果。'],['更新时间','最近一次成功聚合时间，格式HH:mm:ss，时区Asia/Shanghai。']], actions:[['点击刷新','按钮显示“更新中”，禁止重复提交，旧数据继续可查看。'],['刷新成功','替换数据并Toast“资源数据已更新”。'],['刷新失败','保留旧数据，显示失败警示并Toast“刷新失败，已保留当前数据”。'],['刷新超时','保留旧数据并Toast“刷新超时，已保留当前数据”。']] },
+        { title:'当前有效发布版本', selector:'.publication-strip', summary:'说明本页排班数据快照和工单汇总口径。', fields:[['有效版本','仅取所选日期当前有效发布版本；版本名称1–30字符。'],['参与排班','所选日存在至少1条班次的去重护士数。'],['全部护士','账号体系中角色为“护士”的账号总数，包含未排班护士。'],['班次数','发布快照与所选自然日有交集的班次切片数。'],['工单口径','四类产品中，状态在PRD枚举且预计区间与所选自然日有交集的工单。']], actions:[['无有效版本','不展示时间轴，进入“无有效发布版本”空态；草稿和已撤回版本不得替代。']] },
+        { title:'刷新失败警示', selector:'.stale-banner', summary:'已有成功数据时刷新失败的非阻断状态，仅在失败后显示。', fields:[['数据内容','继续展示最后一次成功响应，不混入失败响应的部分数据。'],['更新时间','显示最后成功更新时间，不改为失败发生时间。']], actions:[['后续刷新成功','自动移除警示并替换为新数据。'],['继续操作','日期、滚动、弹窗等只读操作保持可用。']] },
+        { title:'概览指标', selector:'.summary-strip', summary:'全部指标由同一聚合响应生成，只读展示，点击不筛选。', fields:[['当日排班护士','存在当日班次的去重护士数。'],['资源可用时长','全部资源可用班次在当日的有效分钟合计÷60；允许1位小数。'],['当日工单','符合产品、状态和日期交集条件的工单数。'],['已分配护士单数','source_nurse_id非空的工单数，显示在“当日工单”说明中。'],['模拟占位工单','source_nurse_id为空且成功生成display_nurse_id的工单数。'],['待协调/异常工单','无可用护士工单数+已确认护士安排异常工单数。']], actions:[['指标卡','数据为0仍显示0；一期不跳转、不筛选。']] },
+        { title:'图例与显示编码', selector:'.legend-bar', summary:'颜色、边框和线型共同表达状态，不能只依赖颜色。', fields:[['资源可用班次','浅绿色底+绿色边框，参与容量。'],['资源不可用班次','浅灰底+灰色边框，不参与容量。'],['已确认护士工单','产品色实线边框；source_nurse_id非空。'],['模拟占位工单','产品色虚线边框；source_nurse_id为空，只用于测算。'],['异常安排','红色实线边框+“!”前缀。'],['产品颜色','会诊蓝、诊所服务绿、远程门诊紫、绿通橙。']], actions:[['容量问号','打开“剩余资源容量说明”弹窗。']] },
+        { title:'时间刻度与当前时间线', selector:'.hour-axis', summary:'时间轴固定覆盖所选自然日00:00–24:00，整点显示文字，每小时分为4个15分钟辅助格。', fields:[['定位精度','班次和工单按分钟计算像素位置，不按15分钟取整。'],['当前时间线','仅查看今天时显示；线条使用弱化红色，仅表头显示1个时间标签。'],['跨日数据','页面裁切展示所选日期部分，完整包含与冲突校验使用原始起止时间。']], actions:[['横向滚动','可查看全天其他时段；固定左侧护士列与顶部时间表头。']] },
+        { title:'剩余资源容量', selector:'.capacity-row', summary:'容量不按整点切分，而按班次或工单造成的资源变化点切分。', fields:[['变化点','自然日边界、资源可用班次开始/结束、已确认护士工单及模拟占位工单开始/结束。'],['公式','资源可用护士集合减去被工单占用的护士集合，按护士去重。'],['合并','相邻区间剩余人数相同必须合并。'],['颜色','0人红色、1人黄色、≥2人绿色；窄区间可隐藏数字但保留点击区域。']], actions:[['点击分段','打开时段资源详情，展示排班可用、已确认占用、模拟占位、剩余可用和计算时段。']] },
+        { title:'无可用护士轨道', selector:'.exception-row', summary:'展示未分配护士且无法生成模拟占位的工单。', fields:[['纳入条件','不存在完整覆盖工单预计区间的资源可用班次，或所有候选护士均与已有占用重叠。'],['计数','左侧显示该轨道工单总数。'],['重叠布局','相同开始或区间重叠的卡片分配到不同垂直层；轨道随层数增高。'],['容量影响','未成功分配，不扣减剩余容量。']], actions:[['点击工单','打开工单缩略信息并显示无法占位原因。']] },
+        { title:'护士列表', selector:'.nurse-row', summary:'按照账号体系返回的稳定顺序展示全部护士；不展示工号，也不提供工号搜索。', fields:[['护士姓名','必填；1–50字符；展示完整姓名，超出列宽省略并保留title。'],['文字头像','优先取姓名末2个中文字符；不足2字显示全名。'],['班次摘要','显示当日各班次时间；多段班次使用逗号分隔。'],['未排班护士','仍显示护士行、灰色头像和“未排班”，不参与容量。'],['行高','基础104px；同一护士工单重叠时按层数自动增高。']], actions:[['行悬停','仅弱化高亮，不触发详情或筛选。']] },
+        { title:'班次区间', selector:'.shift-band', summary:'班次是时间轴底层资源背景，可用与不可用班次均展示。', fields:[['班次名称','1–20字符；宽度允许时显示名称与当日区间。'],['资源状态','resource_available=true参与容量；false只展示。'],['多班次','同一护士一天允许多段不重叠班次。'],['跨日','只绘制与所选日期相交部分；详情说明完整区间。']], actions:[['点击班次','打开班次详情弹窗；看板内不允许编辑。']] },
+        { title:'工单时间卡片', selector:'.work-card', summary:'使用预计开始时间和预计服务时长按分钟定位；15分钟格仅辅助阅读。', fields:[['卡片主信息','服务名称；空间足够时显示预计开始–结束。'],['已确认护士','source_nurse_id非空，显示在对应护士行。'],['模拟占位','source_nurse_id为空；display_nurse_id由算法生成；虚线显示且不回写。'],['异常确认','保留原护士位置并占用时间；红色显示原因。'],['重叠','同一轨道重叠卡片必须分层，不得遮盖。'],['极窄卡片','仍保留最小可点击宽度和完整title，不强行显示被截断文字。']], actions:[['点击','打开“工单缩略信息”小弹窗。'],['悬停','轻微抬升并提高层级，不改变数据。']] },
+        { title:'当日无工单说明', selector:'.order-empty-banner', summary:'所选日期存在有效发布版本，但没有符合产品、状态和日期交集条件的工单。', fields:[['时间轴','继续展示全部护士、班次和完整剩余资源容量。'],['概览','当日工单、模拟占位工单、待协调/异常工单均显示0。']], actions:[['日期或刷新后出现工单','移除说明条并按完整场景渲染。']] },
+        { title:'无有效发布版本空态', selector:'.no-schedule-state', summary:'所选日期没有当前有效发布版本；不能计算容量或模拟占位。', fields:[['空态标题','当日暂无有效的已发布排班。'],['审计列表','展示符合工单范围的数据：工单编号、产品/服务、预计时段、护士分配状态、处理结果。'],['处理结果','已分配护士工单标记“安排异常：护士无有效排班”；未分配护士工单标记“无法模拟占位”。']], actions:[['页面操作','日期切换和刷新仍可用；不提供在此发布排班的快捷操作。']] },
+        { title:'首次加载失败空态', selector:'.initial-error-state', summary:'首次请求失败且页面没有任何成功数据时显示；与“刷新失败保留旧数据”区分。', fields:[['标题','资源数据加载失败。'],['说明','明确当前没有可保留的成功数据，不展示伪造或过期容量。']], actions:[['重新加载','重新请求当前日期；成功进入完整/无工单/无发布版本场景，失败保持空态并提示。']] },
+        { title:'容量计算口径弹窗', selector:'.modal[data-modal-kind="capacity-rule"]', summary:'解释容量变化点、公式、分钟精度和相邻同值合并规则。', fields:[['展示字段','分段边界、计算公式、时间精度、相邻时段规则及示例。']], actions:[['关闭','右上角、底部“知道了”、遮罩或Esc关闭。']] },
+        { title:'时段资源详情弹窗', selector:'.modal[data-modal-kind="capacity-detail"]', summary:'展示所点击容量分段的构成，不展示具体空闲护士姓名。', fields:[['指标','排班可用、已确认占用、模拟占位、剩余可用。'],['时段','分段开始–结束及分段原因。'],['可承接判断','只说明剩余人数；新工单仍需按完整预计区间重新校验。']], actions:[['查看计算口径','切换为容量计算口径弹窗。'],['关闭','右上角、底部按钮、遮罩或Esc关闭。']] },
+        { title:'班次详情弹窗', selector:'.modal[data-modal-kind="shift-detail"]', summary:'只读展示当前有效发布版本中的班次信息。', fields:[['指标','班次时长、已确认护士工单数、模拟占位工单数、预计占用分钟。'],['详情','护士、班次名称、当日展示区间、资源状态、跨日说明、数据来源。'],['隐私','不展示护士工号、联系方式。']], actions:[['关闭','右上角、底部按钮、遮罩或Esc关闭；不提供编辑入口。']] },
+        { title:'工单缩略信息弹窗', selector:'.modal[data-modal-kind="order-summary"]', summary:'提供资源判断所需的工单摘要，禁止展示患者敏感信息。', fields:[['展示字段','工单编号、产品/服务、预计日期、预计起止与时长、业务节点、护士分配状态、时间轴位置、创建时间。'],['敏感字段','接口和DOM均不得返回患者姓名、联系方式、诊断、病历。'],['状态提示','已确认护士、模拟占位、无可用护士或安排异常须显示对应标签和原因。']], actions:[['关闭','右上角、底部按钮、遮罩或Esc关闭。'],['查看工单详情','仅有既有按钮权限时显示；点击进入现有详情，后端再次鉴权。'],['刷新期间','弹窗保持；若工单退出范围则关闭并提示“该工单已不在当前看板展示范围”。']] },
+        { title:'工单详情入口示意', selector:'.modal[data-modal-kind="order-detail"]', summary:'原型用于说明跳转关系；正式产品复用各产品现有工单详情，不新建详情页面。', fields:[['原型示意','展示工单基本信息、现有业务流程、护士资源安排与异常校验。'],['正式实现','从缩略弹窗调用现有详情路由；字段和编辑能力由现有详情权限决定。'],['看板边界','看板本身仍不得传递患者敏感字段给无详情权限用户。']], actions:[['返回缩略信息','回到同一工单缩略弹窗。'],['关闭','关闭详情示意并返回看板。']] },
+        { title:'账号菜单', selector:'.user-menu', summary:'复用现有账号菜单。本原型只展示权限说明入口，用于说明权限来自系统配置。', fields:[['账号角色','示例为护士长，不作为菜单授权依据。']], actions:[['查看权限说明','Toast“菜单和工单详情按钮均由现有权限体系控制”。']] }
+      ];
+
+      var products = {
+        consult: { name: '会诊', color: '#3976c8', bg: '#edf4ff' },
+        clinic: { name: '诊所服务', color: '#00876a', bg: '#e8f6f2' },
+        remote: { name: '远程门诊', color: '#7666d7', bg: '#f2f0ff' },
+        green: { name: '绿通', color: '#bc7412', bg: '#fff5e7' }
+      };
+      var productFlows = {
+        consult: ['待会诊','待上传会诊意见','待审核会诊意见','待修改会诊意见','待复审会诊意见','已完成'],
+        clinic: ['待服务','待总结','已完成'],
+        remote: ['待出诊','出诊中','待总结','部分总结','已完成'],
+        green: ['待总结','已完成']
+      };
+
+      var nurses = [
+        { id: 'n1', name: '张晓岚', avatar: '晓岚' },
+        { id: 'n2', name: '李雨桐', avatar: '雨桐' },
+        { id: 'n3', name: '陈可欣', avatar: '可欣' },
+        { id: 'n4', name: '周敏', avatar: '周敏' },
+        { id: 'n5', name: '赵琳', avatar: '赵琳' },
+        { id: 'n6', name: '林悦', avatar: '林悦' },
+        { id: 'n7', name: '孙晓芳', avatar: '晓芳' },
+        { id: 'n8', name: '郑雅', avatar: '郑雅' }
+      ];
+
+      var baseShifts = [
+        { id:'s1', nurseId:'n1', name:'白班', start:480, end:960, available:true },
+        { id:'s2', nurseId:'n2', name:'早班', start:480, end:720, available:true },
+        { id:'s3', nurseId:'n2', name:'下午班', start:840, end:1080, available:true },
+        { id:'s4', nurseId:'n3', name:'白班', start:540, end:1020, available:true },
+        { id:'s5', nurseId:'n4', name:'中班', start:720, end:1200, available:true },
+        { id:'s6', nurseId:'n5', name:'夜班（跨日）', start:1200, end:1440, available:true },
+        { id:'s7', nurseId:'n6', name:'夜班（跨日）', start:0, end:480, available:true },
+        { id:'s8', nurseId:'n6', name:'休息', start:480, end:960, available:false }
+      ];
+
+      var baseOrders = [
+        { id:'WO-ZS-260905-018', product:'clinic', service:'癫痫门诊', status:'待服务', start:525, duration:60, nurseId:'n1', createdAt:'08:01' },
+        { id:'WO-HZ-260905-021', product:'consult', service:'专家再诊断', status:'待会诊', start:570, duration:50, nurseId:'n2', createdAt:'08:05' },
+        { id:'WO-YC-260905-011', product:'remote', service:'远程门诊', status:'出诊中', start:600, duration:80, nurseId:'n3', createdAt:'08:08' },
+        { id:'WO-LT-260905-006', product:'green', service:'住院绿通', status:'待总结', start:840, duration:70, nurseId:'n4', createdAt:'08:13' },
+        { id:'WO-HZ-260905-026', product:'consult', service:'专家案例教学', status:'待上传会诊意见', start:820, duration:50, nurseId:'n1', createdAt:'08:20' },
+        { id:'WO-LT-260905-014', product:'green', service:'手术绿通', status:'已完成', start:1095, duration:90, nurseId:'n4', createdAt:'08:28' },
+        { id:'WO-YC-260905-019', product:'remote', service:'科室会议', status:'待总结', start:1260, duration:60, nurseId:'n5', createdAt:'08:31' },
+        { id:'WO-ZS-260905-004', product:'clinic', service:'外出', status:'已完成', start:120, duration:60, nurseId:'n6', createdAt:'07:46' },
+        { id:'WO-ZS-260905-031', product:'clinic', service:'癫痫开药', status:'待服务', start:750, duration:45, nurseId:'n2', createdAt:'09:10' },
+        { id:'WO-HZ-260905-032', product:'consult', service:'专家再诊断', status:'待会诊', start:600, duration:40, nurseId:'n3', createdAt:'09:12' },
+        { id:'WO-ZS-260905-033', product:'clinic', service:'脑电图', status:'待服务', start:540, duration:40, nurseId:null, createdAt:'08:03' },
+        { id:'WO-HZ-260905-037', product:'consult', service:'大病会诊', status:'待审核会诊意见', start:690, duration:60, nurseId:null, createdAt:'08:16' },
+        { id:'WO-LT-260905-041', product:'green', service:'门诊绿通', status:'待总结', start:930, duration:60, nurseId:null, createdAt:'08:22' },
+        { id:'WO-ZS-260905-045', product:'clinic', service:'陪诊', status:'待服务', start:450, duration:60, nurseId:null, createdAt:'08:27' },
+        { id:'WO-YC-260905-048', product:'remote', service:'远程门诊', status:'待出诊', start:1110, duration:60, nurseId:null, createdAt:'08:35' },
+        { id:'WO-HZ-260905-052', product:'consult', service:'专家案例教学', status:'待会诊', start:1110, duration:50, nurseId:null, createdAt:'08:36' },
+        { id:'WO-ZS-260905-053', product:'clinic', service:'陪诊', status:'待服务', start:1125, duration:45, nurseId:null, createdAt:'08:37' }
+      ];
+
+      function icon(id) { return '<svg class="icon"><use href="#i-' + id + '"/></svg>'; }
+      function esc(value) { return String(value == null ? '' : value).replace(/[&<>'"]/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'})[c]; }); }
+      function pad(n) { return String(n).padStart(2, '0'); }
+      function minuteLabel(minute) { if (minute === 1440) return '24:00'; return pad(Math.floor(minute / 60)) + ':' + pad(minute % 60); }
+      function px(minute) { return minute / 1440 * TRACK_WIDTH; }
+      function parseDate(value) { var parts = value.split('-').map(Number); return new Date(parts[0], parts[1] - 1, parts[2]); }
+      function dateKey(date) { return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()); }
+      function addDays(value, amount) { var date = parseDate(value); date.setDate(date.getDate() + amount); return dateKey(date); }
+      function todayKey() { return dateKey(new Date()); }
+      function isToday() { return App.date === todayKey(); }
+      function weekdayName(value) { return ['周日','周一','周二','周三','周四','周五','周六'][parseDate(value).getDay()]; }
+      function dateTitle(value) { var parts = value.split('-').map(Number); return parts[0] + '年' + parts[1] + '月' + parts[2] + '日 ' + weekdayName(value); }
+      function overlaps(aStart, aEnd, bStart, bEnd) { return aStart < bEnd && aEnd > bStart; }
+
+      function getData() {
+        var shifts = baseShifts.map(function (item) { return Object.assign({}, item); });
+        var orders = App.scene === 'empty-orders' ? [] : baseOrders.map(function (item) { return Object.assign({}, item, { end: item.start + item.duration }); });
+        return { shifts: shifts, orders: orders };
+      }
+
+      function availableShiftFor(nurseId, start, end, shifts) {
+        return shifts.filter(function (shift) {
+          return shift.nurseId === nurseId && shift.available && shift.start <= start && shift.end >= end;
+        }).sort(function (a,b) { return a.end - b.end; })[0] || null;
+      }
+
+      function buildAllocation(data) {
+        var confirmed = data.orders.filter(function (order) { return !!order.nurseId; });
+        var unconfirmed = data.orders.filter(function (order) { return !order.nurseId; }).sort(function (a,b) {
+          if (a.start !== b.start) return a.start - b.start;
+          if (a.createdAt !== b.createdAt) return a.createdAt.localeCompare(b.createdAt);
+          return a.id.localeCompare(b.id);
+        });
+        confirmed.forEach(function (order) {
+          var shift = availableShiftFor(order.nurseId, order.start, order.end, data.shifts);
+          var other = confirmed.find(function (candidate) {
+            return candidate.id !== order.id && candidate.nurseId === order.nurseId && overlaps(order.start, order.end, candidate.start, candidate.end);
+          });
+          if (!shift) {
+            order.abnormal = true;
+            order.abnormalReason = '工单时段未完整落入该护士的资源可用班次';
+          } else if (other) {
+            order.abnormal = true;
+            order.abnormalReason = '与该护士的其他已确认护士工单发生时间重叠';
+          }
+        });
+        var allocated = confirmed.slice();
+        var overflow = [];
+        unconfirmed.forEach(function (order) {
+          var candidates = [];
+          nurses.forEach(function (nurse, nurseIndex) {
+            var shift = availableShiftFor(nurse.id, order.start, order.end, data.shifts);
+            if (!shift) return;
+            var blocks = allocated.filter(function (item) { return item.nurseId === nurse.id; }).sort(function (a,b) { return a.start - b.start; });
+            if (blocks.some(function (item) { return overlaps(order.start, order.end, item.start, item.end); })) return;
+            var nextBlock = blocks.find(function (item) { return item.start >= order.end && item.start < shift.end; });
+            var windowEnd = nextBlock ? nextBlock.start : shift.end;
+            candidates.push({ nurseId:nurse.id, windowEnd:windowEnd, nurseIndex:nurseIndex });
+          });
+          candidates.sort(function (a,b) { return a.windowEnd - b.windowEnd || a.nurseIndex - b.nurseIndex; });
+          if (candidates.length) {
+            order.simulated = true;
+            order.nurseId = candidates[0].nurseId;
+            order.simulatedNurseId = candidates[0].nurseId;
+            allocated.push(order);
+          } else {
+            order.overflow = true;
+            order.overflowReason = overflowReason(order, data, allocated);
+            overflow.push(order);
+          }
+        });
+        return { confirmed:confirmed, simulated:unconfirmed.filter(function (o) { return o.simulated; }), overflow:overflow, displayed:allocated };
+      }
+
+      function overflowReason(order, data, allocated) {
+        var containing = nurses.filter(function (nurse) { return !!availableShiftFor(nurse.id, order.start, order.end, data.shifts); });
+        if (!containing.length) return '无护士的连续资源可用班次能够完整覆盖该工单时段';
+        var busy = containing.every(function (nurse) {
+          return allocated.some(function (item) { return item.nurseId === nurse.id && overlaps(order.start, order.end, item.start, item.end); });
+        });
+        return busy ? '可用护士均与已有工单时间重叠' : '连续可用时段不足';
+      }
+
+      function capacitySegments(data, allocation) {
+        var points = new Set([0,1440]);
+        data.shifts.filter(function (s) { return s.available; }).forEach(function (s) { points.add(s.start); points.add(s.end); });
+        allocation.displayed.forEach(function (o) { points.add(Math.max(0,o.start)); points.add(Math.min(1440,o.end)); });
+        var sorted = Array.from(points).filter(function (m) { return m >= 0 && m <= 1440; }).sort(function (a,b) { return a-b; });
+        var segments = [];
+        for (var i = 0; i < sorted.length - 1; i += 1) {
+          var start = sorted[i], end = sorted[i+1], probe = start + (end-start)/2;
+          var availableNurses = nurses.filter(function (nurse) {
+            return data.shifts.some(function (shift) { return shift.nurseId === nurse.id && shift.available && shift.start <= probe && shift.end > probe; });
+          });
+          var free = availableNurses.filter(function (nurse) {
+            return !allocation.displayed.some(function (order) { return order.nurseId === nurse.id && order.start <= probe && order.end > probe; });
+          }).length;
+          var last = segments[segments.length - 1];
+          if (last && last.free === free) last.end = end;
+          else segments.push({ start:start, end:end, free:free });
+        }
+        return segments;
+      }
+
+      function render(options) {
+        options = options || {};
+        var previousScroll = document.getElementById('timelineScroll');
+        var savedScrollLeft = options.preserveScroll && previousScroll ? previousScroll.scrollLeft : null;
+        document.getElementById('dateLabel').textContent = dateTitle(App.date);
+        document.getElementById('dateField').value = App.date;
+        document.querySelector('#locateButton span').textContent = isToday() ? '定位当前时间' : '定位 06:00';
+        var updateTimeNode = document.getElementById('updateTime');
+        if (updateTimeNode) updateTimeNode.textContent = '数据更新于 ' + App.updateTime;
+        if (App.scene === 'error') renderError();
+        else if (App.scene === 'no-schedule') renderNoSchedule();
+        else renderBoard();
+        updateRefreshUI();
+        requestAnimationFrame(function () {
+          var nextScroll = document.getElementById('timelineScroll');
+          if (savedScrollLeft != null && nextScroll) nextScroll.scrollLeft = savedScrollLeft;
+          else locateTime(false);
+          scheduleAnnotations();
+        });
+      }
+
+      function renderBoard() {
+        var data = getData();
+        var allocation = buildAllocation(data);
+        var availableMinutes = data.shifts.filter(function (s) { return s.available; }).reduce(function (sum,s) { return sum + (s.end-s.start); },0);
+        var scheduledNurseCount = nurses.filter(function (nurse) { return data.shifts.some(function (shift) { return shift.nurseId === nurse.id; }); }).length;
+        var abnormalCount = allocation.confirmed.filter(function (o) { return o.abnormal; }).length;
+        var issueCount = allocation.overflow.length + abnormalCount;
+        var root = document.getElementById('viewRoot');
+        root.innerHTML =
+          '<div class="publication-strip">' + icon('check') + '<strong>当前有效发布版本 V2</strong><span>发布于 2026-08-21 10:18</span><span class="publication-divider"></span><span>参与排班 ' + scheduledNurseCount + ' 人 · 全部护士 ' + nurses.length + ' 人 · 班次 8 条</span><span class="publication-divider"></span><span>工单数据按产品流程状态实时汇总</span></div>' +
+          (App.scene === 'stale' || App.refreshFailed ? '<div class="stale-banner">' + icon('alert') + '<span><strong>最近一次刷新失败。</strong>当前仍展示 ' + esc(App.updateTime) + ' 获取的数据，请根据更新时间谨慎安排工作；页面操作不受影响。</span></div>' : '') +
+          '<div class="summary-strip">' +
+            summaryItem('当日排班护士', scheduledNurseCount, '人', '按当前有效发布版本') +
+            summaryItem('资源可用时长', formatHours(availableMinutes), '小时', '资源可用班次合计') +
+            summaryItem('当日工单', data.orders.length, '单', '已分配护士单数 ' + allocation.confirmed.length + ' 单') +
+            summaryItem('模拟占位工单', allocation.simulated.length, '单', '未分配护士工单') +
+            summaryItem('待协调/异常工单', issueCount, '单', allocation.overflow.length + '单无可用护士 · ' + abnormalCount + '单安排异常', issueCount > 0) +
+          '</div>' +
+          renderLegend() +
+          (!data.orders.length ? '<div class="order-empty-banner">' + icon('info') + '<span>当日暂无符合展示状态的工单，时间轴仅展示已发布班次及完整剩余资源容量。</span></div>' : '') +
+          '<div class="timeline-shell"><div class="timeline-scroll" id="timelineScroll"><div class="timeline-board">' +
+            renderHourHeader() + renderCapacity(data, allocation) + renderExceptionRow(allocation.overflow) + renderNurseRows(data, allocation) +
+          '</div></div></div>';
+      }
+
+      function summaryItem(label, value, unit, caption, alert) {
+        return '<div class="summary-item' + (alert ? ' alert' : '') + '"><div class="summary-label">' + esc(label) + '</div><div class="summary-value">' + esc(value) + '<small>' + esc(unit) + '</small></div><div class="summary-caption">' + esc(caption) + '</div></div>';
+      }
+
+      function formatHours(minutes) { var value = minutes / 60; return value % 1 ? value.toFixed(1) : String(value); }
+
+      function renderLegend() {
+        return '<div class="legend-bar">' +
+          '<span class="legend-title">图例</span>' +
+          '<span class="legend-item"><i class="legend-swatch available"></i>资源可用班次</span>' +
+          '<span class="legend-item"><i class="legend-swatch unavailable"></i>资源不可用班次</span>' +
+          '<span class="legend-item"><i class="legend-line"></i>已确认护士工单</span>' +
+          '<span class="legend-item"><i class="legend-line simulated"></i>模拟占位工单</span>' +
+          '<span class="legend-item"><i class="legend-line abnormal"></i>异常安排</span>' +
+          '<span class="legend-divider"></span><span>15分钟辅助网格 · 容量按资源变化点分段</span><button class="inline-help" data-action="open-capacity-rule" aria-label="查看容量计算口径">?</button>' +
+          '<span class="product-legend">' + Object.keys(products).map(function (key) { return '<span class="legend-item"><i class="product-dot" style="background:' + products[key].color + '"></i>' + products[key].name + '</span>'; }).join('') + '</span>' +
+        '</div>';
+      }
+
+      function renderHourHeader() {
+        var ticks = '';
+        for (var hour = 0; hour <= 24; hour += 1) {
+          ticks += '<div class="hour-tick' + (hour === 24 ? ' last' : '') + '" style="left:' + (hour * 112) + 'px"><span>' + pad(hour) + ':00</span></div>';
+        }
+        return '<div class="timeline-row timeline-header"><div class="timeline-label">护士 / 时间</div><div class="hour-axis">' + ticks + currentTimeLine(true) + '</div></div>';
+      }
+
+      function currentTimeLine(labelled) {
+        if (!isToday()) return '';
+        var now = new Date();
+        var minute = now.getHours() * 60 + now.getMinutes();
+        return '<i class="current-time-line' + (labelled ? ' labelled' : '') + '"' + (labelled ? ' data-time="' + minuteLabel(minute) + '"' : '') + ' style="left:' + px(minute) + 'px"></i>';
+      }
+
+      function renderCapacity(data, allocation) {
+        var html = capacitySegments(data, allocation).map(function (segment) {
+          var width = px(segment.end - segment.start);
+          var level = segment.free === 0 ? 'zero' : (segment.free === 1 ? 'mid' : 'high');
+          var title = minuteLabel(segment.start) + '–' + minuteLabel(segment.end) + ' · 剩余可用护士 ' + segment.free + ' 人';
+          return '<button class="capacity-segment level-' + level + (width < 30 ? ' too-narrow' : '') + '" data-action="open-capacity" data-start="' + segment.start + '" data-end="' + segment.end + '" style="left:' + px(segment.start) + 'px;width:' + width + 'px" title="' + esc(title) + '"><span class="capacity-number">' + segment.free + '</span></button>';
+        }).join('');
+        return '<div class="timeline-row capacity-row"><div class="timeline-label"><div class="capacity-label"><strong>剩余资源容量<button class="inline-help" data-action="open-capacity-rule" aria-label="查看计算口径">?</button></strong><small>任一班次或工单变化即重新分段</small></div></div><div class="grid-track capacity-track">' + html + currentTimeLine(false) + '</div></div>';
+      }
+
+      function renderExceptionRow(overflow) {
+        if (!overflow.length) return '';
+        var layout = layoutCards(overflow);
+        var maxLane = layout.reduce(function (max,item) { return Math.max(max,item.lane); },0);
+        var rowHeight = 78 + maxLane * 43;
+        var cards = layout.map(function (item) { return renderWorkCard(item.order, item.lane, true); }).join('');
+        return '<div class="timeline-row exception-row" style="min-height:' + rowHeight + 'px"><div class="timeline-label"><div class="exception-label">' + icon('alert') + '<div><strong>无可用护士</strong><div class="nurse-state">同时间工单分层展示</div></div><span class="exception-count">' + overflow.length + '</span></div></div><div class="grid-track exception-track" style="min-height:' + rowHeight + 'px">' + cards + currentTimeLine(false) + '</div></div>';
+      }
+
+      function nurseShiftSummary(nurseId, shifts) {
+        var all = shifts.filter(function (s) { return s.nurseId === nurseId; });
+        if (!all.length) return '当日未排班';
+        var available = shifts.filter(function (s) { return s.nurseId === nurseId && s.available; });
+        if (!available.length) return '当日无资源可用班次';
+        return available.map(function (s) { return minuteLabel(s.start) + '–' + minuteLabel(s.end); }).join('、');
+      }
+
+      function renderNurseRows(data, allocation) {
+        return nurses.map(function (nurse) {
+          var shifts = data.shifts.filter(function (s) { return s.nurseId === nurse.id; });
+          var orders = allocation.displayed.filter(function (o) { return o.nurseId === nurse.id; });
+          var layout = layoutCards(orders);
+          var maxLane = layout.reduce(function (max,item) { return Math.max(max,item.lane); },0);
+          var rowHeight = 104 + maxLane * 42;
+          var shiftHtml = shifts.map(function (shift) { return renderShiftBand(shift,rowHeight); }).join('');
+          var cards = layout.map(function (item) { return renderWorkCard(item.order, item.lane, false); }).join('');
+          var available = shifts.some(function (s) { return s.available; });
+          var unscheduled = !shifts.length;
+          var emptyText = unscheduled ? '当日未排班，不参与资源容量计算' : '当日无可用于承接工作的班次';
+          return '<div class="timeline-row nurse-row' + (unscheduled ? ' unscheduled-row' : '') + '" style="min-height:' + rowHeight + 'px"><div class="timeline-label" style="min-height:' + rowHeight + 'px"><div class="nurse-identity"><span class="nurse-avatar">' + esc(nurse.avatar) + '</span><div><div class="nurse-name" title="' + esc(nurse.name) + '">' + esc(nurse.name) + '</div><div class="nurse-state">' + esc(nurseShiftSummary(nurse.id, data.shifts)) + '</div></div></div></div><div class="grid-track nurse-track" style="min-height:' + rowHeight + 'px">' + shiftHtml + (!available ? '<span class="no-available-note">' + esc(emptyText) + '</span>' : '') + cards + currentTimeLine(false) + '</div></div>';
+        }).join('');
+      }
+
+      function renderShiftBand(shift, rowHeight) {
+        var title = shift.name + ' · ' + minuteLabel(shift.start) + '–' + minuteLabel(shift.end) + ' · ' + (shift.available ? '资源可用' : '资源不可用');
+        return '<button class="shift-band ' + (shift.available ? 'available' : 'unavailable') + '" data-action="open-shift" data-shift="' + esc(shift.id) + '" style="left:' + px(shift.start) + 'px;width:' + px(shift.end-shift.start) + 'px;height:' + Math.max(85,rowHeight-19) + 'px" title="' + esc(title) + '"><span class="shift-band-label">' + esc(shift.name + ' ' + minuteLabel(shift.start) + '–' + minuteLabel(shift.end)) + '</span></button>';
+      }
+
+      function layoutCards(orders) {
+        var laneEnds = [];
+        return orders.slice().sort(function (a,b) { return a.start-b.start || a.id.localeCompare(b.id); }).map(function (order) {
+          var lane = 0;
+          while (laneEnds[lane] != null && laneEnds[lane] > order.start) lane += 1;
+          laneEnds[lane] = order.end;
+          return { order:order, lane:lane };
+        });
+      }
+
+      function renderWorkCard(order, lane, overflow) {
+        var product = products[order.product];
+        var width = Math.max(10, px(order.duration));
+        var sizeClass = width < 38 ? ' micro' : (width < 86 ? ' compact' : '');
+        var top = overflow ? 18 + lane * 43 : 48 + lane * 42;
+        var title = order.service + ' · ' + minuteLabel(order.start) + '–' + minuteLabel(order.end) + ' · ' + order.status;
+        var mark = order.abnormal ? '<span class="abnormal-mark">!</span>' : (order.simulated || overflow ? '<span class="simulated-mark">◇</span>' : '');
+        var classes = 'work-card' + sizeClass + (order.simulated || overflow ? ' simulated' : '') + (order.abnormal ? ' abnormal' : '');
+        return '<button class="' + classes + '" data-action="open-order" data-order="' + esc(order.id) + '" title="' + esc(title) + '" style="left:' + px(order.start) + 'px;width:' + width + 'px;top:' + top + 'px;border-color:' + product.color + ';color:' + product.color + ';background:' + product.bg + '"><span class="work-card-title">' + mark + esc(order.service) + '</span><span class="work-card-time">' + minuteLabel(order.start) + '–' + minuteLabel(order.end) + '</span></button>';
+      }
+
+      function renderNoSchedule() {
+        var orders = baseOrders.slice(0,5).map(function (item) { return Object.assign({}, item, { end:item.start+item.duration }); });
+        var rows = orders.map(function (order) {
+          return '<div class="audit-row"><span>' + esc(order.id) + '</span><span>' + esc(products[order.product].name + ' · ' + order.service) + '</span><span>' + minuteLabel(order.start) + '–' + minuteLabel(order.end) + '</span><span>' + esc(order.nurseId ? '已分配护士' : '未分配护士') + '</span><span class="audit-reason">' + esc(order.nurseId ? '安排异常：护士无有效排班' : '无法模拟占位') + '</span></div>';
+        }).join('');
+        document.getElementById('viewRoot').innerHTML = '<div class="state-wrap"><div class="state-card no-schedule-state"><div><div class="state-icon">' + icon('calendar') + '</div><h2>当日暂无有效的已发布排班</h2><p>无法计算护士资源容量，也不会为未分配护士工单生成模拟占位。以下符合展示状态的工单仍保留，供相关人员核查。</p><div class="audit-list"><div class="audit-head"><span>工单编号</span><span>产品 / 服务</span><span>预计时段</span><span>护士分配状态</span><span>处理结果</span></div>' + rows + '</div></div></div></div>';
+      }
+
+      function renderError() {
+        document.getElementById('viewRoot').innerHTML = '<div class="state-wrap"><div class="state-card error initial-error-state"><div><div class="state-icon">' + icon('alert') + '</div><h2>资源数据加载失败</h2><p>首次进入页面时暂时无法获取已发布排班或工单数据，且当前没有可保留的成功数据。</p><button class="btn btn-primary" data-action="retry">' + icon('refresh') + '重新加载</button></div></div></div>';
+      }
+
+      function updateRefreshUI() {
+        var button = document.getElementById('refreshButton');
+        var meta = document.getElementById('updateMeta');
+        if (!button || !meta) return;
+        button.classList.toggle('is-refreshing', App.loading);
+        button.setAttribute('aria-busy', App.loading ? 'true' : 'false');
+        button.querySelector('span').textContent = App.loading ? '更新中' : '刷新';
+        if (App.loading) {
+          meta.innerHTML = '<span class="refreshing-copy">正在后台更新，当前数据仍可查看</span> · <strong>上次更新于 ' + esc(App.updateTime) + '</strong>';
+        } else if (App.refreshFailed) {
+          meta.innerHTML = '<span style="color:var(--warning)">刷新失败</span> · <strong>当前数据更新于 ' + esc(App.updateTime) + '</strong>';
+        } else {
+          meta.innerHTML = '每60秒自动刷新 · <strong>数据更新于 ' + esc(App.updateTime) + '</strong>';
+        }
+      }
+
+      function locateTime(smooth) {
+        var scroll = document.getElementById('timelineScroll');
+        if (!scroll) return;
+        var minute = 360;
+        if (isToday()) {
+          var now = new Date();
+          minute = now.getHours() * 60 + now.getMinutes();
+        }
+        var left = Math.max(0, px(minute) - Math.min(260, scroll.clientWidth * .28));
+        scroll.scrollTo({ left:left, behavior:smooth ? 'smooth' : 'auto' });
+      }
+
+      function refreshData(fromAuto) {
+        if (App.loading) return;
+        App.loading = true;
+        App.refreshToken += 1;
+        var token = App.refreshToken;
+        var activeOrderId = App.activeOrderId;
+        updateRefreshUI();
+        var completed = false;
+        var timeoutTimer = setTimeout(function () { finishRefresh(false, true); }, 10000);
+        setTimeout(function () {
+          finishRefresh(App.scene !== 'error' && App.scene !== 'stale', false);
+        }, App.scene === 'stale' ? 900 : 650);
+
+        function finishRefresh(success, timedOut) {
+          if (completed || token !== App.refreshToken) return;
+          completed = true;
+          clearTimeout(timeoutTimer);
+          App.loading = false;
+          if (!success) {
+            App.refreshFailed = App.scene !== 'error';
+            render({ preserveScroll:true });
+            if (!fromAuto) toast(timedOut ? '刷新超时，已保留当前数据' : '刷新失败，已保留当前数据', true);
+            return;
+          }
+          App.refreshFailed = false;
+          var now = new Date();
+          App.updateTime = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+          render({ preserveScroll:true });
+          if (activeOrderId) {
+            var refreshedOrder = findOrder(activeOrderId);
+            if (refreshedOrder) openOrder(activeOrderId);
+            else {
+              closeModal();
+              toast('该工单已不在当前看板展示范围', true);
+            }
+          }
+          if (!fromAuto) toast('资源数据已更新');
+        }
+      }
+
+      function findOrder(id) {
+        var data = getData();
+        data.orders.forEach(function (item) { item.end = item.start + item.duration; });
+        var allocation = buildAllocation(data);
+        return data.orders.find(function (order) { return order.id === id; }) || allocation.overflow.find(function (order) { return order.id === id; });
+      }
+
+      function nurseName(id) { var nurse = nurses.find(function (item) { return item.id === id; }); return nurse ? nurse.name : '—'; }
+
+      function currentContext() {
+        var data = getData();
+        var allocation = buildAllocation(data);
+        return { data:data, allocation:allocation };
+      }
+
+      function modalFrame(title, body, footer, wide, dotColor, kind) {
+        return '<div class="modal-layer" data-modal-backdrop="true"><section class="modal' + (wide ? ' modal-wide' : '') + '" data-modal-kind="' + esc(kind || 'general') + '" role="dialog" aria-modal="true" aria-label="' + esc(title) + '"><div class="modal-head"><div class="modal-title">' + (dotColor ? '<i class="modal-type-dot" style="background:' + dotColor + '"></i>' : '') + esc(title) + '</div><button class="icon-button" data-action="close-modal" aria-label="关闭弹窗">' + icon('close') + '</button></div><div class="modal-body">' + body + '</div><div class="modal-foot">' + footer + '</div></section></div>';
+      }
+
+      function focusModalClose() {
+        setTimeout(function () { var close = document.querySelector('.modal [data-action="close-modal"]'); if (close) close.focus(); },0);
+      }
+
+      function openCapacityRule() {
+        App.activeOrderId = null;
+        var body = '<div class="detail-section-title">容量分段规则</div><dl class="detail-grid"><dt>分段边界</dt><dd>任一资源可用班次、已确认护士工单或模拟占位工单的开始或结束时间。</dd><dt>计算公式</dt><dd>资源可用班次内护士数 − 已确认占用护士数 − 模拟占位护士数。</dd><dt>时间精度</dt><dd>按分钟计算；15分钟网格仅用于阅读，不参与取整。</dd><dt>相邻时段</dt><dd>若前后时段剩余人数相同则自动合并，因此不会强制按整点拆分。</dd></dl><div class="modal-notice">' + icon('info') + '<span>例如工单在13:40开始，容量会从13:40重新计算，而不会等到14:00。这样可以避免把13:40–14:00误判为仍可承接。</span></div>';
+        var footer = '<span class="modal-foot-meta">口径适用于当前有效发布版本</span><div class="modal-foot-actions"><button class="btn btn-primary" data-action="close-modal">知道了</button></div>';
+        document.getElementById('modalRoot').innerHTML = modalFrame('剩余资源容量说明', body, footer, false, '#00876a', 'capacity-rule');
+        focusModalClose();
+      }
+
+      function openCapacity(start, end) {
+        var context = currentContext();
+        var probe = start + (end-start)/2;
+        var available = nurses.filter(function (nurse) {
+          return context.data.shifts.some(function (shift) { return shift.nurseId === nurse.id && shift.available && shift.start <= probe && shift.end > probe; });
+        });
+        var occupied = available.filter(function (nurse) {
+          return context.allocation.displayed.some(function (order) { return order.nurseId === nurse.id && order.start <= probe && order.end > probe; });
+        });
+        var confirmed = occupied.filter(function (nurse) {
+          return context.allocation.confirmed.some(function (order) { return order.nurseId === nurse.id && order.start <= probe && order.end > probe; });
+        }).length;
+        var simulated = occupied.filter(function (nurse) {
+          return context.allocation.simulated.some(function (order) { return order.nurseId === nurse.id && order.start <= probe && order.end > probe; });
+        }).length;
+        var free = Math.max(0, available.length - occupied.length);
+        var body = '<div class="metric-grid"><div class="metric-box"><span>排班可用</span><strong>' + available.length + '</strong></div><div class="metric-box"><span>已确认占用</span><strong>' + confirmed + '</strong></div><div class="metric-box"><span>模拟占位占用</span><strong>' + simulated + '</strong></div><div class="metric-box"><span>剩余资源容量</span><strong style="color:' + (free ? 'var(--brand-dark)' : 'var(--danger)') + '">' + free + '</strong></div></div><div class="detail-section-title">时段信息</div><dl class="detail-grid"><dt>计算时段</dt><dd>' + minuteLabel(start) + '–' + minuteLabel(end) + '</dd><dt>分段原因</dt><dd>该时段内班次与工单占用状态保持不变；边界处存在班次或工单的开始/结束。</dd><dt>可承接判断</dt><dd>' + (free ? '当前剩余资源容量为 ' + free + ' 人，可继续结合新工单完整时长判断。' : '当前没有可承接护士，建议调整服务开始时间。') + '</dd></dl>';
+        var footer = '<span class="modal-foot-meta">数据更新于 ' + esc(App.updateTime) + '</span><div class="modal-foot-actions"><button class="btn" data-action="open-capacity-rule">查看计算口径</button><button class="btn btn-primary" data-action="close-modal">关闭</button></div>';
+        document.getElementById('modalRoot').innerHTML = modalFrame('时段资源详情', body, footer, false, free ? '#00876a' : '#d74747', 'capacity-detail');
+        focusModalClose();
+      }
+
+      function openShift(id) {
+        var context = currentContext();
+        var shift = context.data.shifts.find(function (item) { return item.id === id; });
+        if (!shift) return;
+        App.activeOrderId = null;
+        var nurse = nurses.find(function (item) { return item.id === shift.nurseId; });
+        var related = context.allocation.displayed.filter(function (order) { return order.nurseId === shift.nurseId && overlaps(order.start, order.end, shift.start, shift.end); });
+        var confirmed = related.filter(function (order) { return !order.simulated; }).length;
+        var simulated = related.filter(function (order) { return order.simulated; }).length;
+        var occupiedMinutes = related.reduce(function (sum, order) { return sum + Math.max(0, Math.min(order.end, shift.end) - Math.max(order.start, shift.start)); },0);
+        var body = '<div class="metric-grid"><div class="metric-box"><span>班次时长</span><strong>' + formatHours(shift.end-shift.start) + 'h</strong></div><div class="metric-box"><span>已确认护士工单</span><strong>' + confirmed + '</strong></div><div class="metric-box"><span>模拟占位工单</span><strong>' + simulated + '</strong></div><div class="metric-box"><span>预计占用</span><strong>' + occupiedMinutes + 'm</strong></div></div><div class="detail-section-title">班次信息</div><dl class="detail-grid"><dt>护士</dt><dd>' + esc(nurse ? nurse.name : '—') + '</dd><dt>班次名称</dt><dd>' + esc(shift.name) + '</dd><dt>当日展示</dt><dd>' + minuteLabel(shift.start) + '–' + minuteLabel(shift.end) + '</dd><dt>资源状态</dt><dd>' + (shift.available ? '资源可用，可参与工单容量计算' : '资源不可用，不参与工单容量计算') + '</dd><dt>跨日说明</dt><dd>' + (shift.name.indexOf('跨日') >= 0 ? '当前页面仅展示落在所选日期内的部分，冲突校验使用完整跨日时段。' : '非跨日班次。') + '</dd><dt>数据来源</dt><dd>当前有效发布版本 V2</dd></dl>';
+        var footer = '<span class="modal-foot-meta">只读信息 · 不在资源看板修改班次</span><div class="modal-foot-actions"><button class="btn btn-primary" data-action="close-modal">关闭</button></div>';
+        document.getElementById('modalRoot').innerHTML = modalFrame('班次详情', body, footer, false, shift.available ? '#00876a' : '#89918f', 'shift-detail');
+        focusModalClose();
+      }
+
+      function openOrder(id) {
+        var order = findOrder(id);
+        if (!order) return;
+        App.activeOrderId = id;
+        var product = products[order.product];
+        var confirmation = order.overflow ? '未分配护士 · 无法模拟占位' : (order.simulated ? '未分配护士 · 模拟占位' : '已确认护士');
+        var tags = '<span class="tag" style="color:' + product.color + ';background:' + product.bg + '">' + esc(product.name) + '</span><span class="tag">' + esc(order.status) + '</span>' +
+          (order.abnormal ? '<span class="tag abnormal">安排异常</span>' : (order.simulated || order.overflow ? '<span class="tag simulated">模拟占位工单</span>' : '<span class="tag confirmed">已确认护士</span>'));
+        var nurseValue = order.overflow ? '尚未安排' : nurseName(order.nurseId);
+        var notice = '';
+        if (order.abnormal) notice = '<div class="modal-notice danger">' + icon('alert') + '<span><strong>安排异常：</strong>' + esc(order.abnormalReason) + '。保留现有实际安排，不参与未分配护士工单的模拟分配。</span></div>';
+        else if (order.simulated) notice = '<div class="modal-notice warning">' + icon('info') + '<span>该护士仅用于资源容量模拟，不代表实际指派，系统不会向工单回写护士ID。</span></div>';
+        else if (order.overflow) notice = '<div class="modal-notice danger">' + icon('alert') + '<span><strong>无法模拟占位：</strong>' + esc(order.overflowReason) + '，建议协调服务开始时间。</span></div>';
+        var body = '<div class="modal-tags">' + tags + '</div><dl class="detail-grid"><dt>工单编号</dt><dd>' + esc(order.id) + '</dd><dt>产品 / 服务</dt><dd>' + esc(product.name + ' / ' + order.service) + '</dd><dt>预计服务日期</dt><dd>' + esc(App.date + ' ' + weekdayName(App.date)) + '</dd><dt>预计时间</dt><dd>' + minuteLabel(order.start) + '–' + minuteLabel(order.end) + '（' + order.duration + '分钟）</dd><dt>业务节点</dt><dd>' + esc(order.status) + '</dd><dt>护士分配状态</dt><dd>' + esc(confirmation) + '</dd><dt>时间轴位置</dt><dd>' + esc(nurseValue) + '</dd><dt>工单创建时间</dt><dd>' + esc(App.date + ' ' + order.createdAt) + '</dd></dl>' + notice;
+        var footer = '<span class="modal-foot-meta">数据更新于 ' + esc(App.updateTime) + '</span><div class="modal-foot-actions"><button class="btn" data-action="close-modal">关闭</button><button class="btn btn-primary" data-action="view-detail" data-order="' + esc(order.id) + '">' + icon('external') + '查看工单详情</button></div>';
+        document.getElementById('modalRoot').innerHTML = modalFrame('工单缩略信息', body, footer, false, product.color, 'order-summary');
+        focusModalClose();
+      }
+
+      function openOrderDetail(id) {
+        var order = findOrder(id);
+        if (!order) return;
+        App.activeOrderId = id;
+        var product = products[order.product];
+        var flow = productFlows[order.product] || [];
+        var currentIndex = Math.max(0, flow.indexOf(order.status));
+        var flowHtml = flow.map(function (node, index) { return '<div class="flow-node ' + (index < currentIndex ? 'done' : (index === currentIndex ? 'current' : '')) + '">' + esc(node) + '</div>'; }).join('');
+        var assignment = order.overflow ? '未分配护士，且当前无法模拟占位' : (order.simulated ? '未分配护士；看板模拟占位至 ' + nurseName(order.nurseId) : '已确认护士：' + nurseName(order.nurseId));
+        var body = '<div class="modal-tags"><span class="tag" style="color:' + product.color + ';background:' + product.bg + '">' + esc(product.name) + '</span><span class="tag">' + esc(order.service) + '</span><span class="tag">' + esc(order.status) + '</span></div><div class="detail-section-title">工单信息</div><dl class="detail-grid"><dt>工单编号</dt><dd>' + esc(order.id) + '</dd><dt>服务日期</dt><dd>' + esc(App.date + ' ' + weekdayName(App.date)) + '</dd><dt>预计开始</dt><dd>' + minuteLabel(order.start) + '</dd><dt>预计结束</dt><dd>' + minuteLabel(order.end) + '</dd><dt>预计时长</dt><dd>' + order.duration + '分钟（一期资源占用以预计时间为准）</dd><dt>创建时间</dt><dd>' + esc(App.date + ' ' + order.createdAt) + '</dd></dl><div class="detail-section-title">业务流程</div><div class="flow-line">' + flowHtml + '</div><div class="detail-section-title">护士资源安排</div><dl class="detail-grid"><dt>护士数据</dt><dd>' + esc(assignment) + '</dd><dt>容量影响</dt><dd>' + (order.overflow ? '未占用容量，进入“无可用护士”轨道。' : (order.simulated ? '参与看板容量扣减，但不写回工单。' : '按已确认护士的预计时段占用容量。')) + '</dd><dt>异常校验</dt><dd>' + esc(order.abnormal ? order.abnormalReason : (order.overflow ? order.overflowReason : '校验通过')) + '</dd><dt>数据更新时间</dt><dd>' + esc(App.date + ' ' + App.updateTime) + '</dd></dl><div class="modal-notice">' + icon('info') + '<span>此处为现有工单详情入口的原型示意。资源看板及缩略信息不展示患者姓名、联系方式、诊断或病历内容。</span></div>';
+        var footer = '<span class="modal-foot-meta">详情权限由现有按钮权限控制</span><div class="modal-foot-actions"><button class="btn" data-action="back-order" data-order="' + esc(order.id) + '">返回缩略信息</button><button class="btn btn-primary" data-action="close-modal">关闭</button></div>';
+        document.getElementById('modalRoot').innerHTML = modalFrame('工单详情（现有功能示意）', body, footer, true, product.color, 'order-detail');
+        focusModalClose();
+      }
+
+      function closeModal() { App.activeOrderId = null; document.getElementById('modalRoot').innerHTML = ''; }
+      function toast(message, error) {
+        var node = document.createElement('div');
+        node.className = 'toast' + (error ? ' error' : '');
+        node.innerHTML = icon(error ? 'alert' : 'check') + '<span>' + esc(message) + '</span>';
+        document.getElementById('toastStack').appendChild(node);
+        setTimeout(function () { node.remove(); },2600);
+      }
+
+      function setScene(value) {
+        App.scene = value;
+        App.loading = false;
+        App.refreshFailed = value === 'stale';
+        App.refreshToken += 1;
+        closeModal();
+        updateSceneTabs();
+        render();
+      }
+
+      function updateSceneTabs() {
+        document.querySelectorAll('.prototype-scene-tab').forEach(function (button) {
+          var active = button.dataset.scene === App.scene;
+          button.classList.toggle('active', active);
+          if (active) button.setAttribute('aria-current', 'page');
+          else button.removeAttribute('aria-current');
+        });
+      }
+
+      function switchPanel(panel) {
+        App.activePanel = panel;
+        document.getElementById('solutionPanel').classList.toggle('artifact-hidden', panel !== 'solution');
+        document.getElementById('prototypePanel').classList.toggle('artifact-hidden', panel !== 'prototype');
+        document.getElementById('prdPanel').classList.toggle('artifact-hidden', panel !== 'prd');
+        document.body.classList.toggle('prototype-active', panel === 'prototype');
+        document.querySelectorAll('.artifact-tab').forEach(function (button) {
+          button.classList.toggle('active', button.dataset.panel === panel);
+        });
+        if (panel !== 'prototype') {
+          App.annotationsVisible = false;
+          App.activeAnnotation = null;
+        }
+        updateAnnotationToggle();
+        renderAnnotations();
+        window.scrollTo(0, 0);
+        if (panel === 'prototype') setTimeout(function () { locateTime(false); renderAnnotations(); }, 0);
+      }
+
+      function updateAnnotationToggle() {
+        var button = document.querySelector('.annotation-toggle');
+        if (!button) return;
+        button.classList.toggle('active', App.annotationsVisible);
+        button.textContent = App.annotationsVisible ? '隐藏标注' : '显示标注';
+      }
+
+      function toggleAnnotations() {
+        if (App.activePanel !== 'prototype') switchPanel('prototype');
+        App.annotationsVisible = !App.annotationsVisible;
+        App.activeAnnotation = null;
+        updateAnnotationToggle();
+        renderAnnotations();
+      }
+
+      function annotationTable(rows, headings) {
+        if (!rows || !rows.length) return '';
+        return '<table class="annotation-dev-table"><thead><tr><th>' + esc(headings[0]) + '</th><th>' + esc(headings[1]) + '</th></tr></thead><tbody>' + rows.map(function (row) {
+          return '<tr><td>' + esc(row[0]) + '</td><td>' + esc(row[1]) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+      }
+
+      function renderAnnotationPanel() {
+        var root = document.getElementById('annotationPanelRoot');
+        document.querySelectorAll('.annotation-target').forEach(function (node) { node.classList.remove('annotation-target'); });
+        if (!App.annotationsVisible || App.activeAnnotation == null) { root.innerHTML = ''; return; }
+        var spec = annotationSpecs[App.activeAnnotation];
+        var target = document.querySelector(spec.selector);
+        if (target) target.classList.add('annotation-target');
+        root.innerHTML = '<aside class="annotation-panel" role="dialog" aria-label="原型开发标注"><div class="annotation-panel-head"><strong>开发标注 · ' + esc(spec.title) + '</strong><button class="icon-button" style="color:#fff" data-action="close-annotation" aria-label="关闭标注">' + icon('close') + '</button></div><div class="annotation-panel-body"><h4>当前模块说明</h4><p>' + esc(spec.summary) + '</p><h4>字段与显示规则</h4>' + annotationTable(spec.fields, ['字段/状态','开发规则']) + '<h4>当前模块交互</h4>' + annotationTable(spec.actions, ['触发','结果与系统反馈']) + '</div></aside>';
+      }
+
+      function renderAnnotations() {
+        var root = document.getElementById('annotationOverlayRoot');
+        root.innerHTML = '';
+        if (!App.annotationsVisible || App.activePanel !== 'prototype') { renderAnnotationPanel(); return; }
+        if (App.activeAnnotation != null && !document.querySelector(annotationSpecs[App.activeAnnotation].selector)) App.activeAnnotation = null;
+        var visibleNumber = 0;
+        annotationSpecs.forEach(function (spec, index) {
+          var target = document.querySelector(spec.selector);
+          if (!target) return;
+          var rect = target.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0 || rect.bottom < 44 || rect.top > window.innerHeight) return;
+          visibleNumber += 1;
+          var button = document.createElement('button');
+          button.className = 'annotation-pin' + (App.activeAnnotation === index ? ' active' : '');
+          button.dataset.action = 'open-annotation';
+          button.dataset.index = String(index);
+          button.textContent = String(visibleNumber);
+          button.title = spec.title;
+          button.style.left = Math.max(5, Math.min(window.innerWidth - 30, rect.right - 13)) + 'px';
+          button.style.top = Math.max(93, Math.min(window.innerHeight - 30, rect.top + 5)) + 'px';
+          root.appendChild(button);
+        });
+        renderAnnotationPanel();
+      }
+
+      function scheduleAnnotations() {
+        if (!App.annotationsVisible) return;
+        requestAnimationFrame(renderAnnotations);
+      }
+
+      document.addEventListener('click', function (event) {
+        if (event.target.matches && event.target.matches('[data-modal-backdrop="true"]')) {
+          closeModal();
+          return;
+        }
+        var target = event.target.closest('[data-action]');
+        if (!target) {
+          if (!event.target.closest('.user-menu') && !event.target.closest('.user-trigger')) document.getElementById('menuRoot').innerHTML = '';
+          return;
+        }
+        var action = target.dataset.action;
+        if (action === 'switch-panel') { switchPanel(target.dataset.panel); return; }
+        if (action === 'switch-scene') { setScene(target.dataset.scene); return; }
+        if (action === 'toggle-annotations') { toggleAnnotations(); return; }
+        if (action === 'open-annotation') { App.activeAnnotation = Number(target.dataset.index); renderAnnotations(); return; }
+        if (action === 'close-annotation') { App.activeAnnotation = null; renderAnnotations(); return; }
+        if (action === 'toggle-sidebar') {
+          App.sidebarCollapsed = !App.sidebarCollapsed;
+          document.getElementById('sidebar').classList.toggle('collapsed', App.sidebarCollapsed);
+          document.getElementById('appMain').classList.toggle('expanded', App.sidebarCollapsed);
+        }
+        if (action === 'change-date') { App.date = addDays(App.date, Number(target.dataset.step)); render(); }
+        if (action === 'go-today') { App.date = todayKey(); render(); toast('已返回今天'); }
+        if (action === 'locate-time') locateTime(true);
+        if (action === 'refresh') refreshData(false);
+        if (action === 'retry') { App.scene = 'full'; updateSceneTabs(); refreshData(false); }
+        if (action === 'open-order') openOrder(target.dataset.order);
+        if (action === 'open-shift') openShift(target.dataset.shift);
+        if (action === 'open-capacity') openCapacity(Number(target.dataset.start), Number(target.dataset.end));
+        if (action === 'open-capacity-rule') openCapacityRule();
+        if (action === 'close-modal') closeModal();
+        if (action === 'view-detail') openOrderDetail(target.dataset.order || App.activeOrderId);
+        if (action === 'back-order') openOrder(target.dataset.order);
+        if (action === 'out-of-scope') toast('护士排班使用现有模块，本原型仅展示护士资源看板');
+        if (action === 'notification') toast('暂无新消息');
+        if (action === 'toggle-user') {
+          var root = document.getElementById('menuRoot');
+          root.innerHTML = root.innerHTML ? '' : '<div class="user-menu"><div class="user-menu-head"><strong>护士长</strong><small>已获得护士资源看板查看权限</small></div><button data-action="permission-info">' + icon('eye') + '查看权限说明</button></div>';
+        }
+        if (action === 'permission-info') toast('菜单和工单详情按钮均由现有权限体系控制');
+        scheduleAnnotations();
+      });
+
+      document.getElementById('dateField').addEventListener('change', function () { if (this.value) { App.date = this.value; render(); } });
+      document.addEventListener('keydown', function (event) { if (event.key === 'Escape') { if (App.activeAnnotation != null) { App.activeAnnotation = null; renderAnnotations(); } else { closeModal(); document.getElementById('menuRoot').innerHTML = ''; } } });
+      window.addEventListener('resize', scheduleAnnotations);
+      window.addEventListener('scroll', scheduleAnnotations, true);
+
+      render();
+      switchPanel('solution');
+      App.autoRefreshTimer = setInterval(function () { refreshData(true); },60000);
+    })();
+  </script>
+</body>
+</html>

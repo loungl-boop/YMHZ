@@ -1,0 +1,1598 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="服务时长配置、项目集覆盖与工单适配完整产品方案" />
+  <title>服务时长配置与工单适配完整产品方案</title>
+  <style>
+    :root {
+      --brand: #078d78;
+      --brand-strong: #04715f;
+      --brand-soft: #e7f7f2;
+      --brand-mist: #f4fbf8;
+      --ink: #1d2525;
+      --muted: #71807e;
+      --line: #e3e8e7;
+      --bg: #f4f6f5;
+      --card: #ffffff;
+      --warning: #ba7118;
+      --warning-bg: #fff6e7;
+      --danger: #c44f52;
+      --blue: #4267b2;
+      --shadow: 0 14px 38px rgba(29, 54, 49, .12);
+      --radius: 6px;
+      --sidebar: 196px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 1180px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app { min-height: 100vh; }
+    .topbar {
+      height: 56px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .brand {
+      width: var(--sidebar);
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-left: 25px;
+      border-right: 1px solid #f0f2f1;
+    }
+    .brand-mark {
+      width: 31px;
+      height: 31px;
+      border: 2px solid var(--brand);
+      border-radius: 50% 50% 46% 54%;
+      position: relative;
+      transform: rotate(-8deg);
+    }
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid var(--brand);
+    }
+    .brand-mark::before { inset: 5px 11px 5px 5px; border-right-color: transparent; }
+    .brand-mark::after { width: 4px; height: 4px; right: 3px; top: 7px; background: var(--brand); }
+    .brand-name { font-family: "Songti SC", serif; font-weight: 700; font-size: 20px; letter-spacing: 3px; }
+    .crumb { padding: 0 28px; color: #8a9593; flex: 1; }
+    .crumb strong { color: var(--ink); }
+    .top-actions { display: flex; align-items: center; gap: 20px; padding-right: 24px; }
+    .bell { width: 8px; height: 8px; border: 2px solid #293230; border-radius: 50%; position: relative; }
+    .bell::after { content: ""; position: absolute; width: 10px; height: 1px; background: #293230; left: -3px; bottom: -5px; }
+
+    .sidebar {
+      position: fixed;
+      inset: 56px auto 0 0;
+      width: var(--sidebar);
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 12px 8px;
+      overflow: auto;
+      z-index: 10;
+    }
+    .menu-label {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      height: 41px;
+      padding: 0 18px;
+      color: #414d4b;
+      border-radius: 3px;
+      margin: 1px 0;
+      cursor: pointer;
+    }
+    .menu-label::before { content: ""; width: 14px; height: 14px; border: 1.5px solid #7d8987; border-radius: 2px; }
+    .menu-label.active { background: var(--brand-soft); color: var(--brand-strong); font-weight: 600; }
+    .menu-label.active::before { border-color: var(--brand); box-shadow: inset 0 0 0 3px var(--brand-soft); background: var(--brand); }
+    .menu-label:hover, .menu-sub:hover { color: var(--brand-strong); background: var(--brand-mist); }
+    .menu-sub { margin-left: 43px; padding: 7px 8px; color: #626d6b; border-radius: 3px; cursor: pointer; }
+    .menu-sub.active { color: var(--brand); font-weight: 600; }
+
+    .main { margin-left: var(--sidebar); padding: 16px 20px 80px; }
+    .prototype-switcher {
+      background: #173e36;
+      color: #fff;
+      min-height: 64px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 9px 12px 9px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 7px 20px rgba(15, 53, 45, .16);
+    }
+    .switcher-title { width: 225px; }
+    .switcher-title small { display: block; opacity: .62; margin-top: 4px; }
+    .scene-tabs { display: flex; gap: 7px; flex: 1; }
+    .scene-tab {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.72);
+      padding: 10px 16px;
+      border-radius: 5px;
+      transition: .18s ease;
+    }
+    .scene-tab:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .scene-tab.active { background: #fff; color: #183d36; font-weight: 600; }
+
+    .page { display: none; animation: pageIn .22s ease both; }
+    .page.active { display: block; }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(4px); } }
+
+    .page-head {
+      min-height: 64px;
+      background: #fff;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      margin-bottom: 14px;
+      border: 1px solid #edf0ef;
+    }
+    .back { color: #303a38; margin-right: 22px; }
+    .page-title { font-size: 20px; font-weight: 650; }
+    .page-id { color: var(--muted); margin-left: 12px; }
+    .spacer { flex: 1; }
+    .btn {
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 3px;
+      border: 1px solid #d9dfde;
+      color: #34403e;
+      background: #fff;
+    }
+    .btn + .btn { margin-left: 9px; }
+    .btn.primary { color: #fff; background: var(--brand); border-color: var(--brand); }
+    .btn.primary:hover { background: var(--brand-strong); }
+    .btn.subtle { color: var(--brand); border-color: #b8dcd4; background: var(--brand-mist); }
+    .btn.link { padding: 0; border: none; background: transparent; color: var(--brand); height: auto; }
+
+    .card { background: #fff; border-radius: var(--radius); border: 1px solid #edf0ef; margin-bottom: 14px; }
+    .card-head { display: flex; align-items: center; min-height: 58px; padding: 0 20px; border-bottom: 1px solid #edf0ef; }
+    .card-title { font-size: 19px; font-weight: 650; }
+    .card-body { padding: 20px; }
+    .hint { color: var(--muted); font-size: 13px; }
+    .mini-note { color: #8d9997; font-size: 12px; line-height: 1.6; }
+
+    .config-grid { display: grid; grid-template-columns: 1.05fr .95fr .72fr; gap: 14px; min-height: 650px; }
+    .config-col { background: #fff; border: 1px solid #edf0ef; border-radius: var(--radius); padding: 20px; }
+    .section-title { font-weight: 650; font-size: 17px; padding: 5px 0 13px; border-bottom: 1px solid var(--line); margin-bottom: 15px; }
+    .check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; color: #4b5654; }
+    .check { display: flex; align-items: center; gap: 7px; }
+    .check span { width: 15px; height: 15px; border: 1px solid #b9c3c1; border-radius: 2px; }
+    .check.on span { background: var(--brand); border-color: var(--brand); box-shadow: inset 0 0 0 3px #fff; }
+    .divider { height: 1px; background: var(--line); margin: 22px 0 15px; }
+    .form-row { margin-bottom: 18px; }
+    .form-row label { display: block; font-weight: 600; margin-bottom: 8px; }
+    .field { display: flex; }
+    .field input, .field select, .input {
+      height: 36px;
+      border: 1px solid #d8dfdd;
+      background: #fff;
+      padding: 0 11px;
+      outline: none;
+      width: 100%;
+      border-radius: 3px;
+      color: #26302e;
+    }
+    .field input:focus, .field select:focus, .input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(7,141,120,.1); }
+    .field input { border-radius: 3px 0 0 3px; }
+    .field select { width: 94px; border-left: 0; border-radius: 0 3px 3px 0; }
+    .unit-suffix { width: 72px; border: 1px solid #d8dfdd; border-left: 0; border-radius: 0 3px 3px 0; display: grid; place-items: center; background: #fafbfb; color: #55615f; }
+    .quick { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .quick button { border: 1px solid #dbe3e1; background: #fff; color: #63706e; border-radius: 3px; padding: 5px 10px; }
+    .quick button:hover { border-color: var(--brand); color: var(--brand); }
+    .source-box { background: var(--brand-mist); border: 1px solid #d4eee8; border-left: 3px solid var(--brand); padding: 11px 12px; margin-top: 10px; color: #3f5752; line-height: 1.6; }
+    .preview-item { background: #f2f5f4; border-radius: 7px; min-height: 58px; padding: 11px 14px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; margin-bottom: 10px; }
+    .preview-item strong { font-weight: 500; }
+    .preview-item span { color: #98a2a0; }
+    .preview-item.focus { background: #eaf7f3; outline: 1px solid #c7e7df; }
+    .edit-empty { display: grid; place-items: center; min-height: 400px; color: #a1aaa8; text-align: center; }
+
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 70px; }
+    .info-item { display: grid; grid-template-columns: 104px 1fr; }
+    .info-item .key { color: #788381; }
+    .info-item .value { color: #26302e; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { height: 42px; text-align: left; color: #87918f; font-weight: 400; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    td { height: 64px; border-bottom: 1px solid var(--line); color: #34403e; }
+    tr:last-child td { border-bottom: none; }
+    .progress { display: inline-flex; width: 100px; height: 6px; background: #e7eae9; border-radius: 10px; overflow: hidden; margin-right: 7px; vertical-align: middle; }
+    .progress span { width: 25%; background: var(--brand); border-radius: 10px; }
+    .duration-cell { display: inline-flex; align-items: center; gap: 7px; }
+    .duration-main { font-weight: 650; color: #24312e; }
+    .tag { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 3px; font-size: 12px; white-space: nowrap; }
+    .tag.inherit { background: #edf2f1; color: #65706e; }
+    .tag.override { background: var(--warning-bg); color: var(--warning); }
+    .tag.success { background: var(--brand-soft); color: var(--brand); }
+    .tag.info { background: #eef3fd; color: var(--blue); }
+    .tag.muted { background: #f0f2f2; color: #87918f; }
+
+    .workorder-layout { display: grid; grid-template-columns: minmax(720px, 1fr) 340px; gap: 14px; }
+    .workorder-layout.consult-mode { grid-template-columns: minmax(720px, 1fr) 158px; }
+    .status-steps { display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; border-radius: var(--radius); margin-bottom: 14px; padding: 14px 22px 18px; }
+    .step { position: relative; color: #8b9694; font-weight: 600; padding-top: 36px; }
+    .step::before { content: ""; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #dde3e1; background: #fff; position: absolute; top: 4px; left: 2px; z-index: 2; }
+    .step::after { content: ""; height: 4px; background: #e8eceb; position: absolute; top: 15px; left: 26px; right: 10px; }
+    .step:last-child::after { display: none; }
+    .step.done, .step.active { color: var(--ink); }
+    .step.done::before { content: "✓"; color: #fff; display: grid; place-items: center; border-color: var(--brand); background: var(--brand); }
+    .step.done::after { background: #a8dacc; }
+    .step.active::before { border-color: var(--brand); box-shadow: inset 0 0 0 5px #fff; background: var(--brand); }
+    .detail-section { padding: 20px; }
+    .detail-section + .detail-section { border-top: 12px solid var(--bg); }
+    .detail-head { display: flex; align-items: center; margin-bottom: 19px; }
+    .detail-head h3 { margin: 0; font-size: 19px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 70px; }
+    .detail-field { display: grid; grid-template-columns: 106px 1fr; align-items: center; min-height: 27px; }
+    .detail-field.span-two { grid-column: 1 / -1; }
+    .detail-field .key { color: #788381; }
+    .detail-field .value { color: #27312f; font-weight: 500; }
+    .duration-detail-field strong { font-weight: 650; color: #26322f; }
+    .detail-field .link-value { color: var(--brand); word-break: break-all; }
+    .video-empty { color: #98a2a0; font-weight: 400; }
+    .video-upload { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-left: 8px; border: 1px solid var(--brand); border-radius: 3px; color: var(--brand); }
+    .more-info-row { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); color: #687572; }
+    .sidebar-card { position: sticky; top: 136px; align-self: start; }
+    .consult-actions { position: sticky; top: 136px; align-self: start; display: flex; flex-direction: column; gap: 10px; }
+    .consult-actions .btn { width: 100%; min-height: 36px; justify-content: center; background: #fff; }
+    .side-tabs { display: flex; border-bottom: 1px solid var(--line); }
+    .side-tabs span { width: 50%; padding: 16px 0; text-align: center; color: #7c8785; }
+    .side-tabs .active { color: var(--brand); border-bottom: 2px solid var(--brand); }
+    .side-info { padding: 18px 20px 25px; }
+    .side-info h3 { margin: 0 0 18px; font-size: 19px; }
+    .side-line { display: grid; grid-template-columns: 82px 1fr; margin: 13px 0; }
+    .side-line span:first-child { color: #7d8886; }
+
+    .type-toolbar { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; background: #fff; padding: 12px 16px; border-radius: var(--radius); border: 1px solid #edf0ef; }
+    .type-select { height: 36px; min-width: 180px; border: 1px solid #d9dfdd; padding: 0 10px; border-radius: 3px; color: #293432; }
+    .mode-summary { color: #6e7a78; }
+
+    .occupancy { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .person { border: 1px solid var(--line); border-radius: 5px; padding: 12px; display: flex; gap: 10px; align-items: center; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #dcefe9; color: var(--brand-strong); display: grid; place-items: center; font-weight: 700; }
+    .person strong { display: block; font-size: 13px; }
+    .person small { display: block; color: #84908e; margin-top: 3px; }
+
+    .matrix th, .matrix td { padding: 10px 12px; height: 52px; }
+    .matrix tbody tr:hover { background: #fafcfb; }
+    .matrix td:first-child { font-weight: 600; }
+    .recommend { color: var(--brand-strong); }
+
+    .drawer-mask { position: fixed; inset: 0; background: rgba(17, 27, 25, .52); z-index: 50; opacity: 0; pointer-events: none; transition: .2s ease; }
+    .drawer-mask.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 620px;
+      background: #fff;
+      transform: translateX(100%);
+      transition: .24s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+    }
+    .drawer-mask.open .drawer { transform: translateX(0); }
+    .drawer.wide { width: 760px; }
+    #workorder-drawer .drawer { width: min(960px, 52vw); min-width: 620px; }
+    .drawer-head { height: 58px; display: flex; align-items: center; padding: 0 22px; border-bottom: 1px solid var(--line); }
+    .drawer-head strong { font-size: 18px; }
+    .drawer-close { margin-left: auto; border: none; background: transparent; font-size: 22px; color: #697573; }
+    .drawer-body { flex: 1; overflow: auto; padding: 25px 70px; }
+    .drawer-foot { min-height: 64px; border-top: 1px solid var(--line); padding: 14px 22px; }
+    .radio-card { border: 1px solid var(--line); border-radius: 5px; padding: 14px; margin: 9px 0; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+    .radio-card.active { border-color: var(--brand); background: var(--brand-mist); }
+    .radio-dot { width: 16px; height: 16px; border: 1px solid #aab5b3; border-radius: 50%; margin-top: 2px; }
+    .radio-card.active .radio-dot { border: 5px solid var(--brand); }
+    .radio-copy strong { display: block; }
+    .radio-copy small { color: #7a8684; display: block; margin-top: 4px; }
+    .readonly { background: #f2f4f4 !important; color: #9aa3a2 !important; }
+    .required::before { content: "*"; color: var(--danger); margin-right: 4px; }
+    .error { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+    .scope-note { border: 1px solid #dbe8e5; background: #f7fbfa; border-radius: 5px; padding: 14px 16px; line-height: 1.75; color: #4f5f5c; }
+    .scope-note strong { color: #24332f; }
+    .dialog { position: absolute; width: 580px; max-height: calc(100vh - 48px); left: 50%; top: 50%; transform: translate(-50%,-46%) scale(.98); background: #fff; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; transition: .22s ease; overflow: auto; }
+    .drawer-mask.open .dialog { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    .dialog-head { min-height: 70px; display: flex; align-items: center; padding: 0 32px; border-bottom: 1px solid var(--line); font-size: 18px; font-weight: 650; }
+    .dialog-body { padding: 18px 32px; }
+    .dialog-foot { min-height: 66px; display: flex; align-items: center; justify-content: flex-end; padding: 0 32px; border-top: 1px solid var(--line); }
+    .compact-row { display: grid; grid-template-columns: 108px 1fr; gap: 12px; align-items: start; margin-bottom: 15px; }
+    .compact-row > label { padding-top: 8px; font-weight: 600; }
+    .form-section-title { font-size: 15px; font-weight: 650; padding-bottom: 10px; margin: 4px 0 18px; border-bottom: 1px solid var(--line); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+    .textarea { min-height: 72px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
+    .check-line { min-height: 36px; display: flex; align-items: center; gap: 18px; color: #43504e; }
+    .check-line label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; margin: 0; }
+    .drawer-steps { position: relative; display: grid; margin: 0 0 30px; padding: 0 10px; }
+    .drawer-steps.two { grid-template-columns: repeat(2, 1fr); }
+    .drawer-steps.three { grid-template-columns: repeat(3, 1fr); }
+    .drawer-step { position: relative; padding-top: 22px; color: #929a98; text-align: center; font-size: 15px; }
+    .drawer-step::before { content: ""; position: absolute; width: 7px; height: 7px; border: 2px solid #9ba4a2; background: #fff; border-radius: 50%; top: 4px; left: 50%; transform: translateX(-50%); z-index: 2; }
+    .drawer-step::after { content: ""; position: absolute; height: 1px; background: #aeb6b4; top: 8px; left: calc(-50% + 6px); right: calc(50% + 6px); }
+    .drawer-step:first-child::after { display: none; }
+    .drawer-step.active { color: var(--brand); font-weight: 650; }
+    .drawer-step.active::before { background: var(--brand); border-color: var(--brand); }
+    .drawer-form { max-width: 610px; margin: 0 auto; }
+    .drawer-form .form-row { display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 0 16px; align-items: start; }
+    .drawer-form .form-row > label { text-align: right; padding-top: 9px; margin: 0; }
+    .drawer-form .form-row > .field-wrap { min-width: 0; }
+    .new-user { display: inline-flex; margin-top: 8px; color: var(--brand); font-size: 13px; cursor: pointer; }
+    .plain-value { min-height: 36px; display: flex; align-items: center; color: #8d9694; padding: 0 3px; }
+    .drawer-form-divider { height: 1px; background: var(--line); margin: 24px -70px 22px; }
+    .more-toggle { border: 0; background: #f4f6f5; color: var(--brand); padding: 7px 14px; border-radius: 3px; }
+
+    .toast { position: fixed; left: 50%; top: 82px; transform: translate(-50%,-12px); z-index: 80; background: #163c34; color: #fff; padding: 11px 18px; border-radius: 5px; opacity: 0; pointer-events: none; transition: .2s ease; box-shadow: var(--shadow); }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+    .legend { display: flex; gap: 16px; color: #71807e; font-size: 12px; }
+    .legend span::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); margin-right: 6px; }
+    .legend span:nth-child(2)::before { background: var(--warning); }
+    .legend span:nth-child(3)::before { background: #9ba5a3; }
+
+    /* 完整方案一级导航 */
+    .artifact-nav {
+      position: sticky;
+      top: 0;
+      z-index: 120;
+      height: 60px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      color: #fff;
+      background: #12372f;
+      box-shadow: 0 5px 20px rgba(15, 47, 40, .18);
+    }
+    .artifact-title { display: flex; align-items: center; gap: 11px; min-width: 330px; }
+    .artifact-title i { width: 14px; height: 14px; border: 3px solid #7ce0c7; border-radius: 50%; box-shadow: 0 0 0 4px rgba(124,224,199,.12); }
+    .artifact-title strong { font-size: 16px; letter-spacing: .3px; }
+    .artifact-title span { margin-left: 7px; color: rgba(255,255,255,.55); font-size: 12px; }
+    .artifact-tabs { margin-left: auto; display: flex; align-items: center; gap: 5px; }
+    .artifact-tab {
+      min-width: 104px;
+      height: 38px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 4px;
+      background: transparent;
+      color: rgba(255,255,255,.72);
+    }
+    .artifact-tab:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .artifact-tab.active { color: #143b33; background: #fff; border-color: #fff; font-weight: 650; }
+    .artifact-view { display: none; }
+    .artifact-view.active { display: block; }
+    .app.artifact-view .topbar { top: 60px; }
+    .app.artifact-view .sidebar { inset: 116px auto 0 0; }
+
+    /* 方案与 PRD 阅读页 */
+    .solution-doc {
+      min-height: calc(100vh - 60px);
+      color: #20302c;
+      background:
+        radial-gradient(circle at 92% 2%, rgba(7,141,120,.10), transparent 28%),
+        linear-gradient(180deg, #f8fbfa 0, #f2f5f4 380px, #f4f6f5 100%);
+    }
+    .solution-hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 350px;
+      padding: 72px max(56px, calc((100vw - 1180px) / 2));
+      color: #fff;
+      background: #153e35;
+    }
+    .solution-hero::after {
+      content: "";
+      position: absolute;
+      width: 460px;
+      height: 460px;
+      right: -100px;
+      top: -205px;
+      border: 72px solid rgba(124,224,199,.10);
+      border-radius: 50%;
+    }
+    .hero-kicker { color: #83dfc8; font-size: 12px; letter-spacing: 2.5px; font-weight: 700; }
+    .solution-hero h1 { position: relative; z-index: 1; max-width: 880px; margin: 18px 0 16px; font-family: "Songti SC", "STSong", serif; font-size: 48px; line-height: 1.18; letter-spacing: 1px; }
+    .solution-hero p { position: relative; z-index: 1; max-width: 830px; margin: 0; color: rgba(255,255,255,.72); font-size: 17px; line-height: 1.8; }
+    .hero-meta { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    .hero-chip { padding: 8px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 3px; background: rgba(255,255,255,.06); color: rgba(255,255,255,.86); }
+    .doc-shell { width: min(1180px, calc(100vw - 64px)); margin: -32px auto 0; position: relative; z-index: 2; padding-bottom: 90px; }
+    .doc-summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 22px; }
+    .summary-tile { min-height: 122px; padding: 20px; background: #fff; border: 1px solid #e5eae8; border-radius: 7px; box-shadow: 0 9px 28px rgba(23,62,54,.07); }
+    .summary-tile small { display: block; color: #81908c; margin-bottom: 11px; }
+    .summary-tile strong { display: block; font-size: 21px; color: #183d35; }
+    .summary-tile span { display: block; margin-top: 7px; color: #687773; line-height: 1.55; }
+    .doc-layout { display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 18px; align-items: start; }
+    .doc-toc { position: sticky; top: 78px; padding: 16px; background: #fff; border: 1px solid #e4eae8; border-radius: 7px; }
+    .doc-toc strong { display: block; padding: 2px 9px 11px; color: #163d34; }
+    .doc-toc a { display: block; padding: 9px; border-radius: 3px; color: #60706c; text-decoration: none; }
+    .doc-toc a:hover { color: var(--brand); background: var(--brand-mist); }
+    .doc-content { display: grid; gap: 16px; }
+    .doc-section { scroll-margin-top: 80px; background: #fff; border: 1px solid #e4eae8; border-radius: 7px; padding: 28px; }
+    .doc-section h2 { margin: 0 0 20px; color: #173e35; font-size: 23px; }
+    .doc-section h3 { margin: 24px 0 12px; color: #29463f; font-size: 16px; }
+    .doc-section p, .doc-section li { line-height: 1.8; color: #586862; }
+    .doc-section ul, .doc-section ol { margin: 8px 0; padding-left: 22px; }
+    .section-intro { margin: -7px 0 22px !important; color: #74827e !important; }
+    .conclusion-grid, .principle-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+    .conclusion-item, .principle-item { padding: 17px 18px; border: 1px solid #e3e9e7; border-radius: 5px; background: #fbfcfc; }
+    .conclusion-item small { color: #84918e; }
+    .conclusion-item strong { display: block; margin-top: 8px; color: #233f38; font-size: 15px; line-height: 1.55; }
+    .principle-item { border-left: 3px solid var(--brand); }
+    .principle-item strong { display: block; margin-bottom: 7px; color: #1d473d; }
+    .flow-line { display: grid; grid-template-columns: repeat(7, auto); align-items: stretch; gap: 8px; }
+    .flow-node { min-width: 0; padding: 18px 12px; text-align: center; border: 1px solid #cfe1dc; border-radius: 5px; background: #f7fbfa; }
+    .flow-node strong { display: block; color: #18463b; }
+    .flow-node span { display: block; margin-top: 6px; color: #76847f; font-size: 12px; line-height: 1.45; }
+    .flow-arrow { display: grid; place-items: center; color: #7b8c87; }
+    .doc-table-wrap { overflow-x: auto; border: 1px solid #e3e8e7; border-radius: 5px; }
+    .doc-table { min-width: 760px; }
+    .doc-table th { padding: 0 14px; background: #f7f9f8; color: #6e7c78; font-weight: 600; }
+    .doc-table td { height: auto; min-height: 54px; padding: 13px 14px; line-height: 1.6; vertical-align: top; }
+    .doc-table code, .code-block code { font-family: "SFMono-Regular", Consolas, monospace; color: #176352; }
+    .decision-band { display: flex; align-items: center; gap: 18px; padding: 18px 20px; background: #eaf7f3; border-left: 4px solid var(--brand); border-radius: 4px; }
+    .decision-band strong { color: #17483c; white-space: nowrap; }
+    .decision-band span { color: #4f6962; line-height: 1.7; }
+    .scope-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .scope-box { padding: 18px; border-radius: 5px; background: #f7fbf9; border: 1px solid #dcebe6; }
+    .scope-box.out { background: #fbfaf8; border-color: #ece5d9; }
+    .scope-box h3 { margin-top: 0; }
+    .code-block { padding: 18px; overflow-x: auto; border-radius: 5px; background: #173d35; color: #d8eee8; line-height: 1.8; }
+    .code-block code { color: #d8eee8; white-space: pre; }
+    .status-pill { display: inline-flex; padding: 3px 8px; border-radius: 10px; color: #17624f; background: #e8f7f2; font-size: 12px; }
+    .status-pill.out { color: #8a661d; background: #fff6df; }
+    .prd-hero { min-height: 230px; padding-top: 52px; }
+    .prd-shell { margin-top: -26px; }
+
+    @media (max-width: 1280px) {
+      .artifact-title { min-width: 270px; }
+      .solution-hero { padding-left: 48px; padding-right: 48px; }
+    }
+    @media print {
+      body { min-width: 0; background: #fff; }
+      .artifact-nav, .doc-toc { display: none !important; }
+      .artifact-view { display: none !important; }
+      .artifact-view.active { display: block !important; }
+      .solution-hero { min-height: 0; padding: 34px; print-color-adjust: exact; }
+      .doc-shell { width: 100%; margin: 0; padding: 0; }
+      .doc-layout { display: block; }
+      .doc-section, .summary-tile { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="artifact-nav" aria-label="产品方案一级导航">
+    <div class="artifact-title"><i></i><strong>服务时长配置与工单适配</strong><span>完整产品方案 · V1.0</span></div>
+    <div class="artifact-tabs">
+      <button class="artifact-tab active" data-artifact="overview">整体方案</button>
+      <button class="artifact-tab" data-artifact="prototype">交互原型</button>
+      <button class="artifact-tab" data-artifact="prd">PRD文档</button>
+    </div>
+  </nav>
+
+  <section class="artifact-view active solution-doc" id="artifact-overview">
+    <header class="solution-hero">
+      <div class="hero-kicker">SERVICE DURATION GOVERNANCE</div>
+      <h1>服务时长配置与工单适配<br/>完整产品方案</h1>
+      <p>建立“服务默认值—项目集覆盖—工单快照”三级时长模型，为后续按角色估算资源占用、结合排班预览人员工作提供统一且可追溯的数据基础。</p>
+      <div class="hero-meta">
+        <span class="hero-chip">交付对象：产品 / 研发 / 测试 / 实施</span>
+        <span class="hero-chip">影响端：服务平台管理后台</span>
+        <span class="hero-chip">计量单位：分钟</span>
+        <span class="hero-chip">方案状态：定稿</span>
+      </div>
+    </header>
+
+    <div class="doc-shell">
+      <div class="doc-summary">
+        <div class="summary-tile"><small>配置层级</small><strong>3 级</strong><span>服务默认、项目集覆盖、工单调整</span></div>
+        <div class="summary-tile"><small>工单适配</small><strong>4 类</strong><span>会诊、诊所服务、远程门诊、绿通</span></div>
+        <div class="summary-tile"><small>新增状态</small><strong>0 个</strong><span>沿用现有工单流程和状态机</span></div>
+        <div class="summary-tile"><small>核心原则</small><strong>工单快照</strong><span>配置变化不追溯已创建工单</span></div>
+      </div>
+
+      <div class="doc-layout">
+        <aside class="doc-toc">
+          <strong>方案目录</strong>
+          <a href="#overview-conclusion">01　评审结论</a>
+          <a href="#overview-problem">02　背景与目标</a>
+          <a href="#overview-model">03　三级时长模型</a>
+          <a href="#overview-rules">04　核心业务规则</a>
+          <a href="#overview-scope">05　范围与边界</a>
+          <a href="#overview-workorders">06　工单适配矩阵</a>
+          <a href="#overview-data">07　数据与兼容</a>
+          <a href="#overview-delivery">08　交付与验收</a>
+        </aside>
+
+        <main class="doc-content">
+          <article class="doc-section" id="overview-conclusion">
+            <h2>01　评审结论</h2>
+            <p class="section-intro">本方案不改变产品、服务、合同、项目集、项目、工单的既有业务关系，只补齐可继承、可覆盖、可在单据内调整的预计服务时长。</p>
+            <div class="conclusion-grid">
+              <div class="conclusion-item"><small>交付内容</small><strong>服务默认时长、项目集服务时长、工单预计服务时长三处配置与展示</strong></div>
+              <div class="conclusion-item"><small>不纳入范围</small><strong>合同维度时长、人员排班占用预览、报告解读与就医指导工单</strong></div>
+              <div class="conclusion-item"><small>影响端</small><strong>服务平台管理后台；患者端不展示预计服务时长</strong></div>
+              <div class="conclusion-item"><small>新增字段</small><strong>服务默认值、项目集覆盖值、工单快照值，统一存储分钟</strong></div>
+              <div class="conclusion-item"><small>状态与流程</small><strong>不新增状态；分别嵌入现有创建、分诊、协调结果流程</strong></div>
+              <div class="conclusion-item"><small>权限策略</small><strong>沿用对应服务、项目集与工单现有查看/编辑权限</strong></div>
+              <div class="conclusion-item"><small>历史数据</small><strong>远程门诊沿用已有“服务时长”；其他存量记录不强制回填</strong></div>
+              <div class="conclusion-item"><small>兼容策略</small><strong>配置只影响后续新建工单，不批量修改历史工单快照</strong></div>
+            </div>
+          </article>
+
+          <article class="doc-section" id="overview-problem">
+            <h2>02　背景与目标</h2>
+            <div class="decision-band"><strong>解决的问题</strong><span>当前服务数量只能表达“要完成多少单”，不能表达“每单需要占用多久”，导致项目执行量无法换算为人员工作量，排班预览也缺少可靠的时长输入。</span></div>
+            <h3>业务目标</h3>
+            <ul>
+              <li>为每张具有明确服务时间的工单形成稳定的预计服务时长。</li>
+              <li>允许相同服务在不同项目集执行时采用不同的时长要求。</li>
+              <li>保持配置复用：大多数场景直接继承服务默认值，仅项目集有差异时覆盖。</li>
+              <li>为后续“工单时长 × 参与角色 × 排班时间”计算人员占用提供基础数据。</li>
+            </ul>
+            <h3>业务结构保持不变</h3>
+            <div class="flow-line">
+              <div class="flow-node"><strong>产品</strong><span>定义工单流程</span></div><div class="flow-arrow">→</div>
+              <div class="flow-node"><strong>服务</strong><span>销售商品与默认时长</span></div><div class="flow-arrow">→</div>
+              <div class="flow-node"><strong>项目集</strong><span>执行要求与时长覆盖</span></div><div class="flow-arrow">→</div>
+              <div class="flow-node"><strong>工单</strong><span>本次预计时长快照</span></div>
+            </div>
+            <p>合同继续负责服务项、数量和价格；项目继续负责数量分配与最小执行管理。本次不在合同或项目维度重复维护时长。</p>
+          </article>
+
+          <article class="doc-section" id="overview-model">
+            <h2>03　三级时长模型</h2>
+            <div class="doc-table-wrap">
+              <table class="doc-table">
+                <thead><tr><th>层级</th><th>字段</th><th>作用</th><th>维护方式</th><th>对历史数据影响</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>服务</strong></td><td>默认预计服务时长</td><td>所有产品类型服务的基础配置</td><td>必填，分钟；快捷值 10/15/20/30/60/120</td><td>仅影响后续创建工单</td></tr>
+                  <tr><td><strong>项目集服务</strong></td><td>预计服务时长</td><td>表达同一服务在特定项目集的执行要求</td><td>默认继承；允许自定义覆盖</td><td>配置变化不追溯已有工单</td></tr>
+                  <tr><td><strong>工单</strong></td><td>预计服务时长</td><td>当前单据的最终预计占用时长</td><td>按来源带入；有权限的操作人可修改</td><td>作为独立快照长期保留</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <h3>取值优先级</h3>
+            <div class="flow-line">
+              <div class="flow-node"><strong>工单人工调整</strong><span>优先级 1</span></div><div class="flow-arrow">＞</div>
+              <div class="flow-node"><strong>项目集覆盖值</strong><span>优先级 2</span></div><div class="flow-arrow">＞</div>
+              <div class="flow-node"><strong>服务默认值</strong><span>优先级 3</span></div><div class="flow-arrow">→</div>
+              <div class="flow-node"><strong>工单快照</strong><span>保存最终分钟值与来源</span></div>
+            </div>
+          </article>
+
+          <article class="doc-section" id="overview-rules">
+            <h2>04　核心业务规则</h2>
+            <div class="principle-grid">
+              <div class="principle-item"><strong>统一分钟口径</strong><span>界面与数据均只保留分钟，不提供小时单位切换；输入 120 即表示 120 分钟。</span></div>
+              <div class="principle-item"><strong>配置与展示分离</strong><span>服务属性配置页只维护默认值，不在字段“展示预览”中显示，避免被误解为患者填写字段。</span></div>
+              <div class="principle-item"><strong>项目集双入口一致</strong><span>无论服务来自关联合同还是手动分配，都展示预计服务时长并提供“配置时长”操作。</span></div>
+              <div class="principle-item"><strong>快照不追溯</strong><span>服务或项目集配置变化，只影响变化后创建的工单；已创建工单保持原值。</span></div>
+              <div class="principle-item"><strong>按业务时机录入</strong><span>诊所/远程门诊在创建时录入，会诊在分诊时录入，绿通在安排协调结果时录入。</span></div>
+              <div class="principle-item"><strong>沿用现有权限</strong><span>不新增独立权限点，是否可改时长与当前页面已有配置或修改操作权限保持一致。</span></div>
+              <div class="principle-item"><strong>来源可追溯</strong><span>工单保存时同时记录来源：服务默认、项目集覆盖或工单调整。</span></div>
+              <div class="principle-item"><strong>患者侧不展示</strong><span>预计服务时长用于内部资源评估，不作为对患者承诺的实际服务时长。</span></div>
+            </div>
+          </article>
+
+          <article class="doc-section" id="overview-scope">
+            <h2>05　范围与边界</h2>
+            <div class="scope-columns">
+              <div class="scope-box">
+                <h3>交付范围</h3>
+                <ul>
+                  <li>所有产品类型的服务配置增加默认预计服务时长。</li>
+                  <li>项目集服务列表支持展示、继承和覆盖时长。</li>
+                  <li>会诊、诊所服务、远程门诊、绿通工单保存时长快照。</li>
+                  <li>四类工单在现有业务入口中支持查看和修改。</li>
+                  <li>远程门诊原“服务时长”数据迁移并统一字段名称。</li>
+                </ul>
+              </div>
+              <div class="scope-box out">
+                <h3>不纳入范围</h3>
+                <ul>
+                  <li>合同维度、项目维度重复配置服务时长。</li>
+                  <li>排班占用预览、人员冲突校验和自动排班。</li>
+                  <li>报告解读、就医指导原型与工单适配。</li>
+                  <li>购药、健康报告、电话咨询、慢病管理等暂无明确服务时间的工单。</li>
+                  <li>实际服务时长、计费时长、绩效核算时长。</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="doc-section" id="overview-workorders">
+            <h2>06　工单适配矩阵</h2>
+            <div class="doc-table-wrap">
+              <table class="doc-table">
+                <thead><tr><th>工单类型</th><th>产生时机</th><th>编辑入口</th><th>详情展示</th><th>备注</th></tr></thead>
+                <tbody>
+                  <tr><td>会诊</td><td>分诊安排会诊时</td><td>分诊弹窗；右侧“修改会诊时间”</td><td>会诊信息</td><td>与会诊日期、时间、专家和房间信息共同维护</td></tr>
+                  <tr><td>诊所服务</td><td>创建工单时</td><td>创建工单抽屉；详情“修改”</td><td>申请信息</td><td>保持当前创建表单字段顺序，仅增加预计服务时长</td></tr>
+                  <tr><td>远程门诊</td><td>创建工单时</td><td>创建工单抽屉；详情“修改”</td><td>申请信息</td><td>沿用旧服务时长；结束时间按开始时间与时长自动计算</td></tr>
+                  <tr><td>绿通</td><td>安排协调结果时</td><td>填写/修改协调结果</td><td>安排资源</td><td>录入具体就诊时间后形成时长快照</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="doc-section" id="overview-data">
+            <h2>07　数据与兼容</h2>
+            <h3>建议字段</h3>
+            <div class="doc-table-wrap">
+              <table class="doc-table">
+                <thead><tr><th>实体</th><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+                <tbody>
+                  <tr><td>服务</td><td><code>default_estimated_duration_minutes</code></td><td>INT</td><td>默认预计服务时长；所有产品类型服务必填</td></tr>
+                  <tr><td>项目集服务</td><td><code>estimated_duration_minutes</code></td><td>INT NULL</td><td>空值代表继承服务默认值；非空代表项目集覆盖</td></tr>
+                  <tr><td>工单</td><td><code>estimated_service_duration_minutes</code></td><td>INT NULL</td><td>当前工单最终快照；仅适用工单必填</td></tr>
+                  <tr><td>工单</td><td><code>estimated_duration_source</code></td><td>VARCHAR</td><td>SERVICE_DEFAULT / PROJECT_SET / WORK_ORDER</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <h3>兼容与迁移</h3>
+            <ul>
+              <li>远程门诊已有“服务时长”字段：沿用原字段数据，统一接口语义、页面名称和分钟口径，避免重复建字段。</li>
+              <li>其他服务的默认值由运营配置后启用；上线前仍为空的服务不得创建适用工单，并提示先完成服务配置。</li>
+              <li>历史工单不批量推算时长，避免用当前配置篡改历史事实；如旧远程门诊已有数据，则原值直接作为工单快照。</li>
+            </ul>
+          </article>
+
+          <article class="doc-section" id="overview-delivery">
+            <h2>08　交付与验收</h2>
+            <div class="doc-table-wrap">
+              <table class="doc-table">
+                <thead><tr><th>阶段</th><th>交付内容</th><th>完成标准</th></tr></thead>
+                <tbody>
+                  <tr><td>配置能力</td><td>服务默认、项目集继承/覆盖</td><td>所有入口保存成功，分钟值与来源正确</td></tr>
+                  <tr><td>工单适配</td><td>四类工单创建/分诊/协调/修改/详情</td><td>带入、修改、展示和来源标识一致</td></tr>
+                  <tr><td>兼容迁移</td><td>远程门诊旧数据与新字段语义统一</td><td>迁移前后时长值不变、结束时间计算正确</td></tr>
+                  <tr><td>后续能力</td><td>角色占用与排班预览</td><td><span class="status-pill out">不在当前版本</span> 待工单时长稳定后单独立项</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>详细字段规则、权限、异常处理与测试用例见顶部“PRD文档”；所有页面交互与字段承载位置见“交互原型”。</p>
+          </article>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <div class="app artifact-view" id="artifact-prototype">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark"></span><span class="brand-name">尤迈会诊</span></div>
+      <div class="crumb" id="crumb">产品服务　›　服务　›　<strong>产品属性配置</strong></div>
+      <div class="top-actions"><span class="bell"></span><span>杨小龙⌄</span></div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="menu-label active" data-menu="product" data-scene="service" role="button" tabindex="0">产品服务</div>
+      <div class="menu-sub active" data-sub="service" data-scene="service" role="button" tabindex="0">服务</div>
+      <div class="menu-label" data-menu="project" data-scene="project" role="button" tabindex="0">项目中心</div>
+      <div class="menu-sub" data-sub="project" data-scene="project" role="button" tabindex="0">项目管理</div>
+      <div class="menu-label" data-menu="workorder" data-scene="workorder" role="button" tabindex="0">工单管理</div>
+      <div class="menu-sub" data-sub="consult" data-scene="workorder" data-workorder="consult" role="button" tabindex="0">会诊工单</div>
+      <div class="menu-sub" data-sub="clinic" data-scene="workorder" data-workorder="clinic" role="button" tabindex="0">诊所服务</div>
+      <div class="menu-sub" data-sub="remote" data-scene="workorder" data-workorder="remote" role="button" tabindex="0">远程门诊工单</div>
+      <div class="menu-sub" data-sub="green" data-scene="workorder" data-workorder="green" role="button" tabindex="0">绿通</div>
+    </aside>
+
+    <main class="main">
+      <nav class="prototype-switcher">
+        <div class="switcher-title">
+          <strong>服务时长 · 交互原型</strong>
+          <small>基于当前系统结构设计</small>
+        </div>
+        <div class="scene-tabs">
+          <button class="scene-tab active" data-scene="service">1　服务默认时长</button>
+          <button class="scene-tab" data-scene="project">2　项目集覆盖</button>
+          <button class="scene-tab" data-scene="workorder">3　工单时长</button>
+          <button class="scene-tab" data-scene="matrix">4　本期规则与范围</button>
+        </div>
+      </nav>
+
+      <section class="page active" id="page-service">
+        <div class="page-head">
+          <span class="back">←　返回</span>
+          <span class="page-title">产品属性配置</span>
+          <span class="spacer"></span>
+          <button class="btn primary" id="save-service">保存</button>
+        </div>
+        <div class="config-grid">
+          <div class="config-col">
+            <div class="section-title">字段配置</div>
+            <div class="hint" style="margin-bottom:12px">患者信息</div>
+            <div class="check-grid">
+              <div class="check on"><span></span>患者姓名</div><div class="check on"><span></span>性别</div><div class="check on"><span></span>年龄</div>
+              <div class="check on"><span></span>身高</div><div class="check on"><span></span>体重</div><div class="check on"><span></span>手机号</div>
+              <div class="check on"><span></span>证件号</div><div class="check"><span></span>民族</div><div class="check"><span></span>与您的关系</div>
+            </div>
+            <div class="divider"></div>
+            <div class="hint" style="margin-bottom:12px">申请信息</div>
+            <div class="check-grid"><div class="check on"><span></span>会诊目的</div><div class="check on"><span></span>申请科室</div></div>
+            <div class="divider"></div>
+            <div class="section-title" style="border:0;margin-bottom:4px">设置</div>
+            <div class="form-row">
+              <label>是否需要协助</label>
+              <span>◉ 不需要　 ○ 需要</span>
+            </div>
+            <div class="form-row">
+              <label>服务周期（天）</label>
+              <input class="input" value="30" />
+              <div class="mini-note">用于限制服务权益的有效周期，不参与排班。</div>
+            </div>
+            <div class="form-row">
+              <label class="required">默认预计服务时长</label>
+              <div class="field">
+                <input id="service-duration" type="number" min="5" max="1440" value="60" />
+                <span class="unit-suffix">分钟</span>
+              </div>
+              <div class="quick">
+                <button data-minute="10">10分钟</button><button data-minute="15">15分钟</button><button data-minute="20">20分钟</button><button data-minute="30">30分钟</button><button data-minute="60">60分钟</button><button data-minute="120">120分钟</button>
+              </div>
+            </div>
+          </div>
+          <div class="config-col">
+            <div class="section-title">展示预览</div>
+            <div class="preview-item"><strong>患者姓名</strong><span>患者姓名</span></div>
+            <div class="preview-item"><strong>性别</strong><span>性别</span></div>
+            <div class="preview-item"><strong>年龄</strong><span>年龄</span></div>
+            <div class="preview-item"><strong>申请科室</strong><span>请选择科室</span></div>
+            <div class="preview-item"><strong>会诊目的</strong><span>请输入会诊目的</span></div>
+          </div>
+          <div class="config-col">
+            <div class="section-title">字段编辑</div>
+            <div class="edit-empty"><div><div style="font-size:26px;margin-bottom:10px">⌁</div>请先在【展示预览】中<br/>选择要编辑的字段</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-project">
+        <div class="page-head">
+          <span class="back">←　返回</span>
+          <span class="page-title">健康帮扶项目集2026</span>
+          <span class="page-id">ID：6840003708</span>
+          <span class="spacer"></span>
+          <button class="btn">消息推送　›</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">基础信息</span><span class="spacer"></span><button class="btn">✎　编辑</button></div>
+          <div class="card-body info-grid">
+            <div class="info-item"><span class="key">开始时间</span><span class="value">2026-01-01</span></div>
+            <div class="info-item"><span class="key">结束时间</span><span class="value">2026-12-31</span></div>
+            <div class="info-item"><span class="key">项目负责人</span><span class="value">范经理</span></div>
+            <div class="info-item"><span class="key">分配方式</span><span class="value">关联合同</span></div>
+            <div class="info-item"><span class="key">客户名称</span><span class="value">示范企业有限公司</span></div>
+            <div class="info-item"><span class="key">合同</span><span class="value" style="color:var(--brand)">健康帮扶服务协议2026</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">服务内容</span><span class="spacer"></span>
+            <div class="legend"><span>继承服务默认值</span><span>项目集已覆盖</span><span>历史工单不追溯</span></div>
+          </div>
+          <div class="card-body" style="padding-top:0">
+            <table>
+              <thead><tr><th>服务名称</th><th>总数量</th><th>已分配</th><th>已发起</th><th>已完成</th><th>完成率</th><th>预计服务时长</th><th>限制策略</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><strong>专家案例培训</strong></td><td>2070</td><td>1286</td><td>592</td><td>516</td>
+                  <td><span class="progress"><span></span></span>24.9%</td>
+                  <td><span class="duration-cell"><span class="duration-main" id="project-duration-a">90分钟</span><span class="tag override" id="project-tag-a">项目集覆盖</span></span></td>
+                  <td>专家：限制特定专家<br><span class="mini-note">患者：1次/人</span></td>
+                  <td><button class="btn link open-project-drawer" data-service="专家案例培训" data-default="60" data-current="90">配置时长</button>　<button class="btn link">查看</button></td>
+                </tr>
+                <tr>
+                  <td><strong>远程门诊</strong></td><td>360</td><td>210</td><td>86</td><td>80</td>
+                  <td><span class="progress"><span style="width:22%"></span></span>22.2%</td>
+                  <td><span class="duration-cell"><span class="duration-main" id="project-duration-b">240分钟</span><span class="tag inherit" id="project-tag-b">继承服务</span></span></td>
+                  <td>专家：不限制<br><span class="mini-note">患者：2次/人</span></td>
+                  <td><button class="btn link open-project-drawer" data-service="远程门诊" data-default="240" data-current="240" data-inherit="true">配置时长</button>　<button class="btn link">查看</button></td>
+                </tr>
+                <tr>
+                  <td><strong>报告解读</strong></td><td>420</td><td>320</td><td>206</td><td>192</td>
+                  <td><span class="progress"><span style="width:46%"></span></span>45.7%</td>
+                  <td><span class="duration-cell"><span class="duration-main">30分钟</span><span class="tag inherit">继承服务</span></span></td>
+                  <td>不限制</td>
+                  <td><button class="btn link open-project-drawer" data-service="报告解读" data-default="30" data-current="30" data-inherit="true">配置时长</button>　<button class="btn link">查看</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">项目清单</span><span class="spacer"></span><button class="btn">服务分配</button><button class="btn primary">＋ 新增项目</button></div>
+          <div class="card-body" style="padding-top:0">
+            <table><thead><tr><th>项目名称</th><th>项目有效期</th><th>项目进度</th><th>项目状态</th><th>项目经理</th><th>操作</th></tr></thead>
+            <tbody><tr><td>健康示范县人民医院2026</td><td>2026-03-01 至 2026-12-31</td><td><span class="progress"><span style="width:42%"></span></span>42%</td><td><span class="tag override">进行中</span></td><td>范经理</td><td><button class="btn link">查看</button>　<button class="btn link">更多</button></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-workorder">
+        <div class="type-toolbar">
+          <strong>工单类型</strong>
+          <select class="type-select" id="workorder-type">
+            <option value="consult">会诊工单</option>
+            <option value="clinic">诊所服务</option>
+            <option value="remote">远程门诊工单</option>
+            <option value="green">绿通</option>
+          </select>
+          <span class="tag success" id="workorder-mode-tag">本期范围</span>
+          <span class="mode-summary" id="workorder-mode-summary">会诊在分诊时填写时长，并在“会诊信息”区域展示。</span>
+          <span class="spacer"></span>
+          <button class="btn subtle" data-scene-jump="matrix">查看规则与范围</button>
+          <button class="btn primary" id="create-workorder-btn">进入分诊</button>
+        </div>
+        <div class="page-head">
+          <span class="back">←　返回</span>
+          <span class="page-title" id="workorder-no">HZ0825092935292030108</span>
+          <span class="tag info" id="workorder-status" style="margin-left:12px">待会诊</span>
+          <span class="spacer"></span>
+          <button class="btn">···</button>
+        </div>
+        <div class="status-steps">
+          <div class="step done">提交申请</div><div class="step active" id="step-two">服务执行</div><div class="step" id="step-three">服务总结</div><div class="step">服务完成</div>
+        </div>
+        <div class="workorder-layout" id="workorder-layout">
+          <div class="card">
+            <div class="detail-section">
+              <div class="detail-head"><h3>申请信息</h3><span class="spacer"></span><button class="btn open-workorder-drawer" id="standard-edit-button" style="display:none">✎　<span id="edit-label">修改服务信息</span></button></div>
+              <div class="detail-grid">
+                <div class="detail-field"><span class="key">服务名称</span><span class="value" id="wo-service">专家案例培训</span></div>
+                <div class="detail-field"><span class="key">患者姓名</span><span class="value">张某</span></div>
+                <div class="detail-field"><span class="key">临床医生</span><span class="value">赵医生</span></div>
+                <div class="detail-field"><span class="key">所属项目</span><span class="value">健康示范县2026</span></div>
+                <div class="detail-field"><span class="key">申请科室</span><span class="value">神经内科</span></div>
+                <div class="detail-field"><span class="key">申请时间</span><span class="value">2026-08-25 09:29</span></div>
+              </div>
+              <div id="standard-service-fields" style="display:none">
+                <div class="divider"></div>
+                <div class="detail-grid">
+                  <div class="detail-field"><span class="key" id="role-label">服务专家</span><span class="value" id="wo-expert">李医生</span></div>
+                  <div class="detail-field"><span class="key" id="start-label">服务时间</span><span class="value" id="wo-start">2026-08-27 14:00</span></div>
+                  <div class="detail-field"><span class="key" id="department-label">服务科室</span><span class="value" id="wo-department">神经内科</span></div>
+                  <div class="detail-field duration-detail-field"><span class="key">预计服务时长</span><span class="value"><strong id="wo-duration">30分钟</strong>　<span class="tag inherit" id="wo-source">服务默认</span></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="detail-section" id="consultation-info-section">
+              <div class="detail-head"><h3 style="color:var(--brand-strong)">会诊信息</h3></div>
+              <div class="detail-grid">
+                <div class="detail-field"><span class="key">专家姓名</span><span class="value" id="consult-expert">王教授</span></div>
+                <div class="detail-field"><span class="key">会诊科室</span><span class="value">神经内科</span></div>
+                <div class="detail-field"><span class="key">会诊时间</span><span class="value" id="consult-start">2026-08-27 15:00</span></div>
+                <div class="detail-field"><span class="key">会诊方式</span><span class="value">平台会诊</span></div>
+                <div class="detail-field span-two"><span class="key">房间号</span><span class="value">372037637　（视频会诊室－12人－标清）</span></div>
+                <div class="detail-field"><span class="key">房间状态</span><span class="value"><span class="tag muted">已过期</span></span></div>
+                <div class="detail-field span-two"><span class="key">房间链接</span><span class="value link-value">https://umait.youmaijiankang.com/umlcicclient/#/local3?targetId=7296000913</span></div>
+                <div class="detail-field span-two"><span class="key">会诊视频</span><span class="value"><span class="video-empty">暂无视频/音频</span><span class="video-upload">⇧</span></span></div>
+                <div class="detail-field duration-detail-field"><span class="key">预计服务时长</span><span class="value"><strong id="consult-duration">90分钟</strong>　<span class="tag override" id="consult-source">项目集覆盖</span></span></div>
+              </div>
+              <div class="more-info-row">更多信息　⌄</div>
+            </div>
+            <div class="detail-section" id="green-resource-section" style="display:none">
+              <div class="detail-head"><h3 style="color:var(--brand-strong)">安排资源</h3><span class="spacer"></span><button class="btn open-green-drawer">✎　修改</button></div>
+              <div class="detail-grid">
+                <div class="detail-field"><span class="key">就诊城市</span><span class="value" id="green-city">北京市－北京市－东城区</span></div>
+                <div class="detail-field"><span class="key">就诊医院</span><span class="value" id="green-hospital">北京尤迈医学诊所</span></div>
+                <div class="detail-field"><span class="key">就诊科室</span><span class="value" id="green-department">药剂科</span></div>
+                <div class="detail-field"><span class="key">就诊时间</span><span class="value" id="green-start">2026-08-27 16:00</span></div>
+                <div class="detail-field"><span class="key">服务专家</span><span class="value" id="green-expert">－</span></div>
+                <div class="detail-field duration-detail-field"><span class="key">预计服务时长</span><span class="value"><strong id="green-duration">60分钟</strong>　<span class="tag inherit" id="green-source">服务默认</span></span></div>
+                <div class="detail-field"><span class="key">医院地址</span><span class="value">东城区东单北大街</span></div>
+                <div class="detail-field"><span class="key">携带证件</span><span class="value">身份证、病历资料</span></div>
+                <div class="detail-field"><span class="key">就诊须知</span><span class="value">请提前30分钟到院</span></div>
+                <div class="detail-field"><span class="key">协调人员</span><span class="value">宋玮玮</span></div>
+                <div class="detail-field"><span class="key">协调人员电话</span><span class="value">138****5678</span></div>
+                <div class="detail-field"><span class="key">备注</span><span class="value">－</span></div>
+              </div>
+            </div>
+            <div class="detail-section" id="execution-section">
+              <div class="detail-head"><h3 id="execution-title">服务执行</h3></div>
+              <div class="detail-grid"><div class="detail-field"><span class="key">执行状态</span><span class="value">待开始</span></div><div class="detail-field"><span class="key">执行方式</span><span class="value" id="execution-mode">视频会诊室</span></div></div>
+            </div>
+          </div>
+          <aside class="card sidebar-card" id="workorder-info-sidebar">
+            <div class="side-tabs"><span class="active">工单信息</span><span>订单信息</span></div>
+            <div class="side-info">
+              <h3>工单信息</h3>
+              <div class="side-line"><span>工单号</span><span id="side-no">HZ0825092935292030108</span></div>
+              <div class="side-line"><span>工单状态</span><span><span class="tag info" id="side-status">待会诊</span></span></div>
+              <div class="side-line"><span>项目归属</span><strong>健康示范县2026</strong></div>
+              <div class="side-line"><span>申请人</span><span style="color:var(--brand)">赵医生</span></div>
+              <div class="side-line"><span>手机号</span><span>138****1234</span></div>
+              <div class="divider"></div>
+              <div class="side-line"><span>创建方式</span><span>后台代创建</span></div>
+              <div class="side-line"><span>创建时间</span><span>2026-08-25 09:29</span></div>
+            </div>
+          </aside>
+          <aside class="consult-actions" id="consult-action-sidebar" style="display:none">
+            <button class="btn">邀请填写会诊意见</button>
+            <button class="btn">上传会诊意见</button>
+            <button class="btn open-triage-dialog">修改会诊时间</button>
+            <button class="btn">取消会诊</button>
+            <button class="btn">编辑病历</button>
+            <button class="btn">⌄</button>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-matrix">
+        <div class="page-head"><span class="page-title">本期规则与范围</span><span class="page-id">服务配置全量覆盖，工单仅覆盖有明确服务时间的类型</span><span class="spacer"></span><button class="btn subtle" data-scene-jump="workorder">返回工单原型</button></div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">统一业务规则</span></div>
+          <div class="card-body" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+            <div class="scope-note"><strong>1. 服务默认配置</strong><br/>所有产品类型的服务均增加“默认预计服务时长”，统一按分钟维护。远程门诊原有“服务时长”沿用原数据，并统一名称与口径。</div>
+            <div class="scope-note"><strong>2. 项目集服务配置</strong><br/>项目集的服务分配方式包括“关联合同”和“手动分配”。无论采用哪一种，服务列表都展示预计服务时长，并提供“配置时长”操作。</div>
+            <div class="scope-note"><strong>3. 工单落地范围</strong><br/>本期只在已有明确服务时间的产品类型中保存和展示预计服务时长：会诊、诊所服务、远程门诊、绿通。</div>
+            <div class="scope-note"><strong>4. 产生时机</strong><br/>诊所服务、远程门诊在创建工单时带入；会诊在分诊时带入；绿通在安排协调结果、录入具体就诊时间时带入，后续修改协调结果时允许调整。</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">本期工单适配</span><span class="spacer"></span><span class="tag success">4类</span></div>
+          <div class="card-body" style="padding-top:0">
+            <table class="matrix">
+              <thead><tr><th>工单类型</th><th>时长产生时机</th><th>展示位置</th><th>操作入口</th><th>取值规则</th></tr></thead>
+              <tbody>
+                <tr><td>会诊工单</td><td>分诊安排会诊时</td><td>详情－会诊信息</td><td class="recommend">分诊/修改会诊时间</td><td>项目集覆盖值 ＞ 服务默认值，可在分诊时调整</td></tr>
+                <tr><td>诊所服务</td><td>创建工单时</td><td>详情－申请信息</td><td class="recommend">创建/修改工单</td><td>项目集覆盖值 ＞ 服务默认值，可在本单调整</td></tr>
+                <tr><td>远程门诊工单</td><td>创建工单时</td><td>详情－申请信息</td><td class="recommend">创建/现有“修改”抽屉</td><td>沿用原服务时长数据，按统一规则取值</td></tr>
+                <tr><td>绿通</td><td>安排协调结果时</td><td>详情－安排资源</td><td class="recommend">填写/修改协调结果</td><td>项目集覆盖值 ＞ 服务默认值，可在协调结果中调整</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body"><div class="scope-note"><strong>明确不在本期：</strong>报告解读、就医指导不涉及本版原型；购药、健康报告、电话咨询、慢病管理等当前没有明确服务时间的工单，本期不增加工单“预计服务时长”。后续若某产品补充了明确服务时间，再按相同规则接入。</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <section class="artifact-view solution-doc" id="artifact-prd">
+    <header class="solution-hero prd-hero">
+      <div class="hero-kicker">PRODUCT REQUIREMENTS DOCUMENT</div>
+      <h1>服务时长配置与工单适配 · PRD</h1>
+      <p>研发与测试统一实现基线。本文只保留已经收敛的业务结论、字段定义、交互规则、异常处理和验收标准。</p>
+      <div class="hero-meta"><span class="hero-chip">版本：V1.0</span><span class="hero-chip">更新时间：2026-08-25</span><span class="hero-chip">状态：定稿</span></div>
+    </header>
+
+    <div class="doc-shell prd-shell">
+      <div class="doc-layout">
+        <aside class="doc-toc">
+          <strong>PRD 目录</strong>
+          <a href="#prd-summary">01　概要说明</a>
+          <a href="#prd-users">02　用户与故事</a>
+          <a href="#prd-functional">03　功能需求</a>
+          <a href="#prd-data">04　技术与数据</a>
+          <a href="#prd-permission">05　权限与留痕</a>
+          <a href="#prd-exception">06　校验与异常</a>
+          <a href="#prd-acceptance">07　验收标准</a>
+          <a href="#prd-rollout">08　上线与风险</a>
+        </aside>
+
+        <main class="doc-content">
+          <article class="doc-section" id="prd-summary">
+            <h2>01　概要说明</h2>
+            <h3>问题陈述</h3>
+            <p>现有合同、项目集和项目只能管理服务数量，工单没有统一的预计时长快照，无法可靠换算角色占用，也无法为人员排班预览提供标准输入。</p>
+            <h3>解决方案</h3>
+            <p>在服务、项目集服务、工单三个层级建立分钟制预计时长：服务提供默认值，项目集按执行要求选择继承或覆盖，工单按业务时机带入并允许本单调整。</p>
+            <h3>成功标准</h3>
+            <ul>
+              <li>适用范围内新建工单的预计服务时长保存完整率为 100%。</li>
+              <li>工单取值与“本单调整 ＞ 项目集覆盖 ＞ 服务默认”规则一致率为 100%。</li>
+              <li>配置变更不得修改任何已创建工单快照，回归通过率为 100%。</li>
+              <li>远程门诊迁移前后已有服务时长值一致，数据差异为 0。</li>
+              <li>四类工单的创建、编辑、查看入口均能展示相同分钟值。</li>
+            </ul>
+            <h3>术语定义</h3>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>术语</th><th>定义</th></tr></thead><tbody>
+              <tr><td>默认预计服务时长</td><td>服务层面的通用基础值。</td></tr>
+              <tr><td>项目集覆盖值</td><td>相同服务在特定项目集中的差异化执行时长。</td></tr>
+              <tr><td>工单预计服务时长</td><td>当前工单最终使用的时长快照，不等于实际服务时长或计费时长。</td></tr>
+              <tr><td>适用工单</td><td>当前版本中具有明确服务日期与时间的会诊、诊所服务、远程门诊、绿通工单。</td></tr>
+            </tbody></table></div>
+          </article>
+
+          <article class="doc-section" id="prd-users">
+            <h2>02　用户体验与用户故事</h2>
+            <h3>用户角色</h3>
+            <div class="principle-grid">
+              <div class="principle-item"><strong>产品/服务运营</strong><span>维护服务默认时长，保证基础配置可复用。</span></div>
+              <div class="principle-item"><strong>项目经理</strong><span>按项目集执行要求继承或覆盖服务时长。</span></div>
+              <div class="principle-item"><strong>工单操作人</strong><span>在创建、分诊或协调时确认本次服务时长。</span></div>
+              <div class="principle-item"><strong>资源管理人员</strong><span>后续基于工单时长评估角色占用和排班。</span></div>
+            </div>
+            <h3>用户故事与完成定义</h3>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>用户故事</th><th>完成定义</th></tr></thead><tbody>
+              <tr><td>作为服务运营，我希望为服务配置默认预计时长，以便新项目直接复用。</td><td>可输入分钟整数；快捷值可点击；保存后项目集与新建工单可读取。</td></tr>
+              <tr><td>作为项目经理，我希望相同服务在不同项目集使用不同预计时长，以便表达实际执行要求。</td><td>关联合同与手动分配两类服务均可配置；默认继承；覆盖后列表展示覆盖值和来源。</td></tr>
+              <tr><td>作为工单操作人，我希望在实际安排服务时调整预计时长，以便本单更符合实际。</td><td>四类工单在各自业务入口可修改；保存后详情显示最终值与来源。</td></tr>
+              <tr><td>作为资源管理人员，我希望每张适用工单都有稳定时长快照，以便后续计算角色占用。</td><td>配置变化不追溯历史；接口可返回分钟值与来源。</td></tr>
+            </tbody></table></div>
+            <h3>非目标</h3>
+            <p>不实现人员排班、冲突检测、实际时长采集、按分钟计费、合同级时长、项目级时长，也不向患者端展示预计服务时长。</p>
+          </article>
+
+          <article class="doc-section" id="prd-functional">
+            <h2>03　功能需求</h2>
+            <h3>FR-01　服务默认预计时长</h3>
+            <ul>
+              <li>入口：产品服务 → 服务 → 属性配置。</li>
+              <li>所有产品类型的服务均增加“默认预计服务时长”。</li>
+              <li>字段为必填正整数，单位固定为分钟，允许范围 5—1440。</li>
+              <li>提供 10、15、20、30、60、120 分钟快捷按钮；点击后写入输入框。</li>
+              <li>字段属于系统设置，不进入“展示预览”，不展示给患者或申请人。</li>
+              <li>远程门诊已有“服务时长”沿用原数据，仅统一名称与分钟口径。</li>
+            </ul>
+            <h3>FR-02　项目集服务继承与覆盖</h3>
+            <ul>
+              <li>入口：项目中心 → 项目管理 → 项目集详情。</li>
+              <li>项目集通过“关联合同”或“手动分配”获得的服务，均在服务列表增加“预计服务时长”和“配置时长”。</li>
+              <li>新增项目集服务时默认继承服务默认值；列表标记“继承服务”。</li>
+              <li>选择“自定义本项目集时长”后必须输入 5—1440 的分钟整数；列表标记“项目集覆盖”。</li>
+              <li>由覆盖切回继承时，清空项目集覆盖字段，并实时读取当前服务默认值供后续新工单使用。</li>
+              <li>不在合同、项目两个层级增加时长字段。</li>
+            </ul>
+            <h3>FR-03　工单取值与快照</h3>
+            <ul>
+              <li>创建工单时先读取项目集服务覆盖值；覆盖为空时读取服务默认值。</li>
+              <li>操作人在业务表单中修改后，以修改值保存工单，并将来源标记为 WORK_ORDER。</li>
+              <li>工单创建成功后，配置层变化不更新工单字段。</li>
+              <li>详情页显示“预计服务时长 + 来源标签”；修改入口保存后同步刷新。</li>
+            </ul>
+            <h3>FR-04　会诊工单</h3>
+            <ul>
+              <li>创建会诊工单时不要求填写时长；分诊安排会诊日期、时间和专家时增加必填“预计服务时长”。</li>
+              <li>详情在“会诊信息”模块展示，保持房间号、状态、链接、视频等现有信息结构。</li>
+              <li>修改入口位于页面右侧“修改会诊时间”，弹窗内允许调整时长。</li>
+            </ul>
+            <h3>FR-05　诊所服务与远程门诊</h3>
+            <ul>
+              <li>两类工单均在现有“创建工单”抽屉的申请信息中增加必填预计服务时长。</li>
+              <li>详情均在“申请信息”区域展示；操作按钮统一使用“修改”。</li>
+              <li>远程门诊结束时间 = 出诊开始时间 + 预计服务时长；开始时间或时长变化后重新计算。</li>
+            </ul>
+            <h3>FR-06　绿通</h3>
+            <ul>
+              <li>创建申请时不填写预计服务时长。</li>
+              <li>安排协调结果并录入就诊日期、时间时，增加必填预计服务时长。</li>
+              <li>详情在“安排资源”区域展示；修改协调结果时允许同步修改。</li>
+            </ul>
+          </article>
+
+          <article class="doc-section" id="prd-data">
+            <h2>04　技术规格与数据规则</h2>
+            <h3>字段模型</h3>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>表/实体</th><th>建议字段</th><th>类型与约束</th><th>默认/兼容</th></tr></thead><tbody>
+              <tr><td>service</td><td><code>default_estimated_duration_minutes</code></td><td>INT，5—1440</td><td>上线迁移期可空；配置完成后业务必填</td></tr>
+              <tr><td>project_set_service</td><td><code>estimated_duration_minutes</code></td><td>INT NULL，5—1440</td><td>NULL 表示继承</td></tr>
+              <tr><td>work_order</td><td><code>estimated_service_duration_minutes</code></td><td>INT NULL，5—1440</td><td>适用工单形成安排时必填</td></tr>
+              <tr><td>work_order</td><td><code>estimated_duration_source</code></td><td>VARCHAR(32)</td><td>SERVICE_DEFAULT / PROJECT_SET / WORK_ORDER</td></tr>
+              <tr><td>work_order</td><td><code>estimated_duration_updated_by</code></td><td>BIGINT NULL</td><td>记录最后修改人</td></tr>
+              <tr><td>work_order</td><td><code>estimated_duration_updated_at</code></td><td>DATETIME NULL</td><td>记录最后修改时间</td></tr>
+            </tbody></table></div>
+            <h3>取值算法</h3>
+            <pre class="code-block"><code>resolvedMinutes = projectSetService.estimatedDurationMinutes
+  ?? service.defaultEstimatedDurationMinutes
+
+if (operatorEditedMinutes) {
+  resolvedMinutes = operatorEditedMinutes
+  source = "WORK_ORDER"
+} else if (projectSetService.estimatedDurationMinutes != null) {
+  source = "PROJECT_SET"
+} else {
+  source = "SERVICE_DEFAULT"
+}
+
+workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
+            <h3>接口规则</h3>
+            <ul>
+              <li>服务与项目集接口统一返回分钟整数，不返回格式化小时字符串。</li>
+              <li>工单创建/分诊/协调结果接口接收 <code>estimatedServiceDurationMinutes</code>；适用场景缺失时返回明确业务错误。</li>
+              <li>工单详情接口返回分钟值、来源枚举、最后修改人和修改时间。</li>
+              <li>前端展示统一拼接“分钟”，不得自行转换为“小时”。</li>
+            </ul>
+            <h3>迁移策略</h3>
+            <ol>
+              <li>确认远程门诊旧“服务时长”字段、单位及使用接口。</li>
+              <li>优先复用旧字段；如必须迁移，按分钟原值写入新字段并保留一次性校验报表。</li>
+              <li>其他历史工单保持 NULL，不用当前服务配置回填。</li>
+              <li>上线前完成适用服务的默认值配置；未配置服务进入阻断清单。</li>
+            </ol>
+          </article>
+
+          <article class="doc-section" id="prd-permission">
+            <h2>05　权限、留痕与数据边界</h2>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>操作</th><th>权限</th><th>留痕</th></tr></thead><tbody>
+              <tr><td>维护服务默认值</td><td>沿用服务属性配置编辑权限</td><td>记录服务、变更前后分钟值、操作人、时间</td></tr>
+              <tr><td>项目集继承/覆盖</td><td>沿用项目集编辑权限</td><td>记录模式、变更前后值、覆盖原因、操作人、时间</td></tr>
+              <tr><td>创建/分诊/协调时修改</td><td>沿用当前业务操作权限</td><td>随工单操作日志记录最终值与来源</td></tr>
+              <tr><td>详情页查看</td><td>沿用工单查看权限</td><td>无需新增查看日志</td></tr>
+            </tbody></table></div>
+            <ul>
+              <li>时长不包含患者隐私数据，但必须与工单权限一起返回，禁止独立越权查询。</li>
+              <li>患者端、专家端如当前未承担资源管理，不返回来源标签，不新增展示。</li>
+              <li>删除或停用服务时沿用原业务约束，不删除历史工单快照。</li>
+            </ul>
+          </article>
+
+          <article class="doc-section" id="prd-exception">
+            <h2>06　校验与异常处理</h2>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>场景</th><th>处理规则</th><th>用户提示</th></tr></thead><tbody>
+              <tr><td>为空</td><td>适用业务提交时阻断</td><td>请输入预计服务时长</td></tr>
+              <tr><td>非整数、≤0、超出范围</td><td>前后端同时校验 5—1440</td><td>请输入 5—1440 之间的整数分钟</td></tr>
+              <tr><td>服务未配置默认值且项目集未覆盖</td><td>不允许形成适用工单</td><td>当前服务未配置默认预计服务时长，请先完成服务配置</td></tr>
+              <tr><td>项目集覆盖值被清除</td><td>切换为继承并读取最新服务默认值</td><td>已切换为继承服务默认时长</td></tr>
+              <tr><td>远程门诊结束时间跨日</td><td>按真实日期时间相加，允许跨日</td><td>展示计算后的完整结束日期与时间</td></tr>
+              <tr><td>保存并发冲突</td><td>按现有版本号/更新时间机制处理，不静默覆盖</td><td>数据已被其他人更新，请刷新后重试</td></tr>
+              <tr><td>接口读取失败</td><td>不得用 0 或任意默认值代替</td><td>预计服务时长加载失败，请稍后重试</td></tr>
+            </tbody></table></div>
+          </article>
+
+          <article class="doc-section" id="prd-acceptance">
+            <h2>07　验收标准与测试矩阵</h2>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>编号</th><th>测试场景</th><th>预期结果</th></tr></thead><tbody>
+              <tr><td>AC-01</td><td>服务配置输入 60 并保存</td><td>保存成功，重新进入仍为 60 分钟，展示预览不出现该字段</td></tr>
+              <tr><td>AC-02</td><td>点击六个快捷分钟值</td><td>输入框分别写入 10/15/20/30/60/120</td></tr>
+              <tr><td>AC-03</td><td>项目集关联合同服务保持继承</td><td>显示服务默认值与“继承服务”标签</td></tr>
+              <tr><td>AC-04</td><td>项目集手动分配服务配置覆盖</td><td>保存覆盖值，列表显示“项目集覆盖”</td></tr>
+              <tr><td>AC-05</td><td>修改服务默认值</td><td>新工单读取新值，已有工单值不变</td></tr>
+              <tr><td>AC-06</td><td>会诊分诊确认 90 分钟</td><td>详情会诊信息显示 90 分钟；右侧修改入口可再次修改</td></tr>
+              <tr><td>AC-07</td><td>创建诊所服务工单</td><td>抽屉字段顺序与现状一致，时长保存并在申请信息展示</td></tr>
+              <tr><td>AC-08</td><td>创建远程门诊，15:00 + 240 分钟</td><td>结束时间自动计算为 19:00，详情显示 240 分钟</td></tr>
+              <tr><td>AC-09</td><td>绿通安排协调结果</td><td>保存具体就诊时间和时长，安排资源区域同步展示</td></tr>
+              <tr><td>AC-10</td><td>输入空值、4、1441、小数或文本</td><td>提交被阻断并显示明确校验提示</td></tr>
+              <tr><td>AC-11</td><td>查看报告解读、就医指导等非适用工单</td><td>不展示预计服务时长，不影响原流程</td></tr>
+              <tr><td>AC-12</td><td>无编辑权限用户进入详情</td><td>可按原权限查看；不出现可修改入口</td></tr>
+              <tr><td>AC-13</td><td>远程门诊历史数据迁移抽样与全量校验</td><td>分钟值差异为 0，结束时间计算结果一致</td></tr>
+              <tr><td>AC-14</td><td>左侧菜单切换四类工单</td><td>页面、工单类型、面包屑及选中态同步更新</td></tr>
+            </tbody></table></div>
+          </article>
+
+          <article class="doc-section" id="prd-rollout">
+            <h2>08　上线、监控与风险</h2>
+            <h3>上线步骤</h3>
+            <ol>
+              <li>数据库字段与接口兼容先行，旧客户端/旧调用不受影响。</li>
+              <li>执行远程门诊字段兼容或迁移，并完成全量值比对。</li>
+              <li>运营配置适用服务默认时长，输出未配置阻断清单。</li>
+              <li>开放项目集覆盖配置，再开放四类工单入口。</li>
+              <li>上线后一周监控缺失率、异常值、工单调整率与接口错误。</li>
+            </ol>
+            <h3>监控指标</h3>
+            <ul>
+              <li>适用新工单时长缺失率：目标 0%。</li>
+              <li>时长非法值写入数：目标 0。</li>
+              <li>项目集覆盖率与工单人工调整率：用于识别默认配置是否合理，不设硬目标。</li>
+              <li>远程门诊迁移差异数：目标 0。</li>
+            </ul>
+            <h3>主要风险与控制</h3>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>风险</th><th>影响</th><th>控制措施</th></tr></thead><tbody>
+              <tr><td>默认值被理解为患者承诺</td><td>引发服务预期争议</td><td>仅后台展示，文案统一“预计”，患者端不展示</td></tr>
+              <tr><td>配置变化追溯历史</td><td>排班与统计结果漂移</td><td>工单保存快照，禁止配置批量回写历史</td></tr>
+              <tr><td>远程门诊重复建字段</td><td>出现双数据源</td><td>上线前确认旧字段并优先复用，迁移后只保留一个写入口</td></tr>
+              <tr><td>非适用工单被强制加字段</td><td>增加无意义操作</td><td>服务配置全量支持，工单仅按明确服务时间类型接入</td></tr>
+            </tbody></table></div>
+            <h3>后续路线</h3>
+            <p><span class="status-pill">下一阶段</span> 在工单时长数据稳定后，新增“工单—参与角色—占用系数”模型，并结合人员排班生成工作量预览与冲突提示。该能力单独评审，不与本次字段改造耦合上线。</p>
+          </article>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <div class="drawer-mask" id="project-drawer">
+    <div class="drawer">
+      <div class="drawer-head"><strong>配置项目集服务时长</strong><button class="drawer-close" data-close="project">×</button></div>
+      <div class="drawer-body">
+        <div class="form-row"><label>服务名称</label><input class="input readonly" id="drawer-service-name" readonly /></div>
+        <div class="form-row"><label>服务默认时长</label><input class="input readonly" id="drawer-service-default" readonly /></div>
+        <div class="form-row">
+          <label class="required">本项目集执行时长</label>
+          <div class="radio-card" id="inherit-card"><span class="radio-dot"></span><span class="radio-copy"><strong>继承服务默认时长</strong><small>服务默认值后续调整时，仅影响新建工单。</small></span></div>
+          <div class="radio-card active" id="override-card"><span class="radio-dot"></span><span class="radio-copy"><strong>自定义本项目集时长</strong><small>用于本项目集下所有项目的新建工单。</small></span></div>
+        </div>
+        <div class="form-row" id="override-input-wrap"><label class="required">自定义时长</label><div class="field"><input id="project-custom-duration" type="number" min="5" value="90" /><span class="unit-suffix">分钟</span></div></div>
+        <div class="form-row" id="override-reason-wrap"><label>覆盖原因</label><input class="input" value="根据项目执行要求调整" /></div>
+        <div class="source-box">配置变化仅用于此后创建的工单，已有工单的预计时长保持不变。</div>
+      </div>
+      <div class="drawer-foot"><button class="btn primary" id="save-project-duration">确定</button><button class="btn" data-close="project">取消</button></div>
+    </div>
+  </div>
+
+  <div class="drawer-mask" id="workorder-drawer">
+    <div class="drawer">
+      <div class="drawer-head"><strong id="wo-drawer-title">创建工单</strong><button class="drawer-close" data-close="workorder">×</button></div>
+      <div class="drawer-body">
+        <div id="clinic-create-form" class="drawer-form">
+          <div class="drawer-steps three"><div class="drawer-step active">申请信息</div><div class="drawer-step">患者病历</div><div class="drawer-step">费用支付</div></div>
+          <div class="form-row"><label class="required">申请人</label><div class="field-wrap"><select class="input" id="clinic-applicant"><option>张某</option></select><span class="new-user">＋　创建新用户</span></div></div>
+          <div class="form-row"><label class="required">申请服务</label><div class="field-wrap"><select class="input" id="clinic-service"><option>专家面诊</option></select></div></div>
+          <div class="form-row"><label class="required">服务时间</label><div class="field-wrap"><input class="input" id="clinic-start" type="datetime-local" value="2026-08-27T14:00" /></div></div>
+          <div class="form-row"><label class="required">预计服务时长</label><div class="field-wrap"><div class="field"><input id="clinic-duration" type="number" min="5" max="1440" value="30" /><span class="unit-suffix">分钟</span></div></div></div>
+          <div class="form-row"><label>专家</label><div class="field-wrap"><select class="input" id="clinic-expert"><option>李医生</option><option>请选择</option></select></div></div>
+          <div class="form-row"><label>科室</label><div class="field-wrap"><select class="input" id="clinic-department"><option>神经内科</option><option>心血管内科</option><option>全科</option></select></div></div>
+        </div>
+
+        <div id="remote-create-form" class="drawer-form" style="display:none">
+          <div class="drawer-steps two"><div class="drawer-step active">申请信息</div><div class="drawer-step">费用支付</div></div>
+          <div class="form-row"><label class="required">申请人</label><div class="field-wrap"><select class="input" id="remote-applicant"><option>张某</option></select><span class="new-user">＋　创建新用户</span></div></div>
+          <div class="form-row"><label class="required">申请服务</label><div class="field-wrap"><select class="input" id="remote-service"><option>远程门诊</option></select></div></div>
+          <div class="form-row"><label class="required">出诊专家</label><div class="field-wrap"><select class="input" id="remote-visiting-expert"><option>钱教授</option><option>请选择</option></select></div></div>
+          <div class="form-row"><label class="required">出诊时间</label><div class="field-wrap"><input class="input" id="remote-start" type="datetime-local" value="2026-08-27T15:00" /></div></div>
+          <div class="form-row"><label class="required">预计服务时长</label><div class="field-wrap"><div class="field"><input id="remote-duration" type="number" min="5" max="1440" value="240" /><span class="unit-suffix">分钟</span></div></div></div>
+          <div class="form-row"><label>结束时间</label><div class="field-wrap"><input class="input readonly" id="remote-end" value="2026-08-27 19:00" readonly /></div></div>
+          <div class="form-row"><label class="required">门诊医生</label><div class="field-wrap"><select class="input" id="remote-doctor"><option>赵医生</option><option>请选择</option></select></div></div>
+          <div class="form-row"><label>门诊科室</label><div class="field-wrap"><div class="plain-value">精神心理科</div></div></div>
+          <div class="form-row"><label>门诊医院</label><div class="field-wrap"><div class="plain-value">北京尤迈医学诊所</div></div></div>
+          <div class="drawer-form-divider"></div>
+          <div class="form-row"><label class="required">房间类型</label><div class="field-wrap"><select class="input"><option>视频会诊室</option></select></div></div>
+          <div class="form-row"><label class="required">最大参与人数</label><div class="field-wrap"><select class="input"><option>12人</option><option>20人</option></select></div></div>
+          <div class="form-row"><label class="required">视频清晰度</label><div class="field-wrap"><select class="input"><option>标清</option><option>高清</option></select></div></div>
+          <button class="more-toggle" type="button">收起更多　⌃</button>
+        </div>
+      </div>
+      <div class="drawer-foot"><button class="btn primary" id="save-workorder-duration">下一步</button><button class="btn" data-close="workorder">取消</button></div>
+    </div>
+  </div>
+
+  <div class="drawer-mask" id="green-drawer">
+    <div class="drawer wide">
+      <div class="drawer-head"><strong>协调结果</strong><button class="drawer-close" data-close="green">×</button></div>
+      <div class="drawer-body">
+        <div class="two-col">
+          <div class="form-row"><label class="required">就诊城市</label><select class="input" id="green-form-city"><option>北京市 / 北京市 / 东城区</option></select></div>
+          <div class="form-row"><label class="required">就诊医院</label><select class="input" id="green-form-hospital"><option>北京尤迈医学诊所</option></select></div>
+          <div class="form-row"><label class="required">就诊科室</label><select class="input" id="green-form-department"><option>药剂科</option><option>神经内科</option></select></div>
+          <div class="form-row"><label class="required">服务专家</label><select class="input" id="green-form-expert"><option>请选择</option><option>李医生</option></select></div>
+          <div class="form-row"><label class="required">就诊日期</label><input class="input" id="green-form-date" type="date" value="2026-08-27" /></div>
+          <div class="form-row"><label class="required">就诊时间</label><input class="input" id="green-form-time" type="time" value="16:00" /></div>
+          <div class="form-row"><label class="required">预计服务时长</label><div class="field"><input id="green-form-duration" type="number" min="5" max="1440" value="60" /><span class="unit-suffix">分钟</span></div></div>
+        </div>
+        <div class="form-row"><label class="required">医院地址</label><textarea class="input textarea" id="green-form-address" placeholder="请详细描述（1–300字）">东城区东单北大街</textarea></div>
+        <div class="form-row"><label class="required">携带证件</label><div class="check-line"><label><input type="checkbox" checked /> 身份证</label><label><input type="checkbox" /> 医保卡</label><label><input type="checkbox" checked /> 病历资料</label></div></div>
+        <div class="form-row"><label class="required">就诊须知</label><textarea class="input textarea" id="green-form-notice" placeholder="请详细描述（1–300字）">请提前30分钟到院</textarea></div>
+        <div class="two-col">
+          <div class="form-row"><label>协调人员</label><select class="input" id="green-form-coordinator"><option>宋玮玮</option></select></div>
+          <div class="form-row"><label>协调人员电话</label><input class="input" id="green-form-phone" value="13812345678" placeholder="请输入" /></div>
+        </div>
+        <div class="form-row"><label>备注</label><textarea class="input textarea" placeholder="请详细描述（1–300字）"></textarea></div>
+      </div>
+      <div class="drawer-foot"><button class="btn primary" id="save-green">确认</button><button class="btn" data-close="green">取消</button></div>
+    </div>
+  </div>
+
+  <div class="drawer-mask" id="triage-dialog">
+    <div class="dialog">
+      <div class="dialog-head">分诊－专家案例培训</div>
+      <div class="dialog-body">
+        <div class="compact-row"><label class="required">会诊科室</label><div><select class="input"><option>神经科 / 神经内科</option></select><div class="mini-note">项目下该科室已使用次数（不含本单）：1/2</div></div></div>
+        <div class="compact-row"><label class="required">会诊专家</label><select class="input" id="triage-expert"><option>王教授</option><option>李教授</option></select></div>
+        <div class="compact-row"><label class="required">会诊日期</label><input class="input" id="triage-date" type="date" value="2026-08-27" /></div>
+        <div class="compact-row"><label class="required">会诊时间</label><input class="input" id="triage-time" type="time" value="15:00" /></div>
+        <div class="compact-row"><label class="required">预计服务时长</label><div><div class="field"><input id="triage-duration" type="number" min="5" max="1440" value="90" /><span class="unit-suffix">分钟</span></div><div class="mini-note">来源：项目集覆盖配置，可在本次分诊时调整</div></div></div>
+        <div class="divider"></div>
+        <div class="compact-row"><label class="required">会诊方式</label><select class="input"><option>平台会诊</option></select></div>
+        <div class="compact-row"><label class="required">房间类型</label><select class="input"><option>视频会诊室</option></select></div>
+        <div class="compact-row"><label class="required">最大参与人数</label><select class="input"><option>12人</option></select></div>
+        <div class="compact-row"><label class="required">视频清晰度</label><select class="input"><option>标清</option></select></div>
+      </div>
+      <div class="dialog-foot"><button class="btn" data-close="triage">取消</button><button class="btn primary" id="save-triage">确定分诊</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">已保存</div>
+
+  <script>
+    function switchArtifactView(view) {
+      document.querySelectorAll('.artifact-view').forEach(item => item.classList.toggle('active', item.id === `artifact-${view}`));
+      document.querySelectorAll('.artifact-tab[data-artifact]').forEach(tab => {
+        const active = tab.dataset.artifact === view;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-current', active ? 'page' : 'false');
+      });
+      if (view !== 'prototype') document.querySelectorAll('.drawer-mask').forEach(mask => mask.classList.remove('open'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.artifact-tab[data-artifact]').forEach(tab => tab.addEventListener('click', () => switchArtifactView(tab.dataset.artifact)));
+
+    const sceneMeta = {
+      service: { crumb: '产品服务　›　服务　›　<strong>产品属性配置</strong>', menu: 'product' },
+      project: { crumb: '项目中心　›　项目管理　›　<strong>项目集详情</strong>', menu: 'project' },
+      workorder: { crumb: '工单管理　›　<strong>工单详情</strong>', menu: 'workorder' },
+      matrix: { crumb: '工单管理　›　<strong>本期规则与范围</strong>', menu: 'workorder' }
+    };
+
+    const workorderTypes = {
+      consult: { label:'会诊工单', summary:'会诊在分诊时填写时长，并在“会诊信息”区域展示。', no:'HZ0825092935292030108', status:'待会诊', service:'专家案例培训', roleLabel:'会诊专家', expert:'王教授', startLabel:'会诊时间', start:'2026-08-27 15:00', duration:90, source:'项目集覆盖', sourceClass:'override', edit:'修改会诊时间', step:'会诊执行', execution:'视频会诊室' },
+      clinic: { label:'诊所服务', summary:'创建工单时带入预计服务时长，详情在“申请信息”区域展示。', no:'ZS0825092935292030108', status:'待服务', service:'专家面诊', roleLabel:'服务专家', expert:'李医生', startLabel:'服务时间', start:'2026-08-27 14:00', duration:30, source:'服务默认', sourceClass:'inherit', edit:'修改', step:'服务执行', execution:'线下执行', departmentLabel:'科室', department:'神经内科' },
+      remote: { label:'远程门诊工单', summary:'创建表单沿用当前远程门诊字段，并新增预计服务时长。', no:'YC0825092935292030108', status:'待出诊', service:'远程门诊', roleLabel:'出诊专家', expert:'钱教授', startLabel:'出诊时间', start:'2026-08-27 15:00', duration:240, source:'服务默认', sourceClass:'inherit', edit:'修改', step:'服务执行', execution:'视频门诊室', departmentLabel:'门诊科室', department:'精神心理科' },
+      green: { label:'绿通', summary:'安排协调结果、录入就诊时间时填写预计服务时长，后续修改协调结果时可调整。', no:'LT0825143602831144380', status:'待总结', service:'门诊绿通', roleLabel:'服务专家', expert:'－', startLabel:'就诊时间', start:'2026-08-27 16:00', duration:60, source:'服务默认', sourceClass:'inherit', edit:'修改协调结果', step:'服务总结', execution:'线下就诊', city:'北京市－北京市－东城区', hospital:'北京尤迈医学诊所', department:'药剂科' }
+    };
+
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function updateSidebarState(scene, subKey) {
+      const menuKey = scene === 'service' ? 'product' : scene === 'project' ? 'project' : 'workorder';
+      document.querySelectorAll('.menu-label').forEach(label => {
+        const active = label.dataset.menu === menuKey;
+        label.classList.toggle('active', active);
+        label.setAttribute('aria-current', active ? 'page' : 'false');
+      });
+      document.querySelectorAll('.menu-sub').forEach(sub => {
+        const active = sub.dataset.sub === subKey;
+        sub.classList.toggle('active', active);
+        sub.setAttribute('aria-current', active ? 'page' : 'false');
+      });
+    }
+
+    function switchScene(scene, workorderKey) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.scene-tab').forEach(t => t.classList.toggle('active', t.dataset.scene === scene));
+      document.getElementById('page-' + scene).classList.add('active');
+      document.getElementById('crumb').innerHTML = sceneMeta[scene].crumb;
+      if (scene === 'workorder' && workorderKey) {
+        document.getElementById('workorder-type').value = workorderKey;
+        renderWorkorder(workorderKey);
+      }
+      const activeSub = scene === 'service' ? 'service' : scene === 'project' ? 'project' : document.getElementById('workorder-type').value;
+      updateSidebarState(scene, activeSub);
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    document.querySelectorAll('.scene-tab').forEach(t => t.addEventListener('click', () => switchScene(t.dataset.scene)));
+    document.querySelectorAll('[data-scene-jump]').forEach(t => t.addEventListener('click', () => switchScene(t.dataset.sceneJump)));
+    document.querySelectorAll('#sidebar [data-scene]').forEach(item => {
+      const navigate = () => switchScene(item.dataset.scene, item.dataset.workorder);
+      item.addEventListener('click', navigate);
+      item.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          navigate();
+        }
+      });
+    });
+
+    const serviceDuration = document.getElementById('service-duration');
+    document.querySelectorAll('[data-minute]').forEach(btn => btn.addEventListener('click', () => { serviceDuration.value = btn.dataset.minute; }));
+    document.getElementById('save-service').addEventListener('click', () => showToast('服务默认预计时长已保存（原型演示）'));
+
+    let projectTarget = null;
+    let projectMode = 'override';
+    document.querySelectorAll('.open-project-drawer').forEach(btn => btn.addEventListener('click', () => {
+      projectTarget = btn;
+      const isInherit = btn.dataset.inherit === 'true';
+      projectMode = isInherit ? 'inherit' : 'override';
+      document.getElementById('drawer-service-name').value = btn.dataset.service;
+      document.getElementById('drawer-service-default').value = `${btn.dataset.default}分钟`;
+      document.getElementById('project-custom-duration').value = btn.dataset.current;
+      refreshProjectMode();
+      document.getElementById('project-drawer').classList.add('open');
+    }));
+    function refreshProjectMode() {
+      document.getElementById('inherit-card').classList.toggle('active', projectMode === 'inherit');
+      document.getElementById('override-card').classList.toggle('active', projectMode === 'override');
+      document.getElementById('override-input-wrap').style.display = projectMode === 'override' ? '' : 'none';
+      document.getElementById('override-reason-wrap').style.display = projectMode === 'override' ? '' : 'none';
+    }
+    document.getElementById('inherit-card').addEventListener('click', () => { projectMode = 'inherit'; refreshProjectMode(); });
+    document.getElementById('override-card').addEventListener('click', () => { projectMode = 'override'; refreshProjectMode(); });
+    document.getElementById('save-project-duration').addEventListener('click', () => {
+      if (!projectTarget) return;
+      const row = projectTarget.closest('tr');
+      const durationEl = row.querySelector('.duration-main');
+      const tagEl = row.querySelector('.tag');
+      const value = projectMode === 'inherit' ? projectTarget.dataset.default : document.getElementById('project-custom-duration').value;
+      durationEl.textContent = `${value}分钟`;
+      tagEl.textContent = projectMode === 'inherit' ? '继承服务' : '项目集覆盖';
+      tagEl.className = `tag ${projectMode === 'inherit' ? 'inherit' : 'override'}`;
+      projectTarget.dataset.current = value;
+      projectTarget.dataset.inherit = projectMode === 'inherit' ? 'true' : 'false';
+      document.getElementById('project-drawer').classList.remove('open');
+      showToast('项目集服务时长已更新（原型演示）');
+    });
+
+    function addMinutes(dateString, minutes) {
+      if (!dateString) return '';
+      const normalized = dateString.includes('T') ? dateString : dateString.replace(' ', 'T');
+      const date = new Date(normalized);
+      if (Number.isNaN(date.getTime())) return '';
+      date.setMinutes(date.getMinutes() + Number(minutes));
+      const pad = n => String(n).padStart(2,'0');
+      return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+    let currentWO = workorderTypes.consult;
+    let workorderDrawerMode = 'edit';
+    function renderWorkorder(key) {
+      currentWO = workorderTypes[key];
+      const isConsult = key === 'consult';
+      const isGreen = key === 'green';
+      const isStandard = key === 'clinic' || key === 'remote';
+      document.getElementById('workorder-layout').classList.toggle('consult-mode', isConsult);
+      document.getElementById('workorder-info-sidebar').style.display = isConsult ? 'none' : '';
+      document.getElementById('consult-action-sidebar').style.display = isConsult ? '' : 'none';
+      document.getElementById('workorder-mode-tag').textContent = '本期范围';
+      document.getElementById('workorder-mode-tag').className = 'tag success';
+      document.getElementById('workorder-mode-summary').textContent = currentWO.summary;
+      ['workorder-no','side-no'].forEach(id => document.getElementById(id).textContent = currentWO.no);
+      ['workorder-status','side-status'].forEach(id => document.getElementById(id).textContent = currentWO.status);
+      document.getElementById('wo-service').textContent = currentWO.service;
+      document.getElementById('step-two').textContent = isGreen ? '安排资源' : currentWO.step;
+      document.getElementById('step-two').className = `step ${isGreen ? 'done' : 'active'}`;
+      document.getElementById('step-three').className = `step ${isGreen ? 'active' : ''}`;
+      document.getElementById('execution-title').textContent = currentWO.step;
+      document.getElementById('execution-mode').textContent = currentWO.execution;
+      document.getElementById('consultation-info-section').style.display = isConsult ? '' : 'none';
+      document.getElementById('green-resource-section').style.display = isGreen ? '' : 'none';
+      document.getElementById('standard-service-fields').style.display = isStandard ? '' : 'none';
+      document.getElementById('standard-edit-button').style.display = isStandard ? '' : 'none';
+      document.getElementById('execution-section').style.display = isGreen ? 'none' : '';
+      document.getElementById('create-workorder-btn').textContent = isConsult ? '进入分诊' : isGreen ? '填写协调结果' : '查看创建表单';
+      if (document.getElementById('page-workorder').classList.contains('active')) updateSidebarState('workorder', key);
+      if (isConsult) {
+        document.getElementById('consult-expert').textContent = currentWO.expert;
+        document.getElementById('consult-start').textContent = currentWO.start;
+        document.getElementById('consult-duration').textContent = `${currentWO.duration}分钟`;
+        document.getElementById('consult-source').textContent = currentWO.source;
+        document.getElementById('consult-source').className = `tag ${currentWO.sourceClass}`;
+      } else if (isStandard) {
+        document.getElementById('wo-expert').textContent = currentWO.expert;
+        document.getElementById('role-label').textContent = currentWO.roleLabel;
+        document.getElementById('edit-label').textContent = currentWO.edit;
+        document.getElementById('start-label').textContent = currentWO.startLabel;
+        document.getElementById('wo-start').textContent = currentWO.start;
+        document.getElementById('department-label').textContent = currentWO.departmentLabel;
+        document.getElementById('wo-department').textContent = currentWO.department;
+        document.getElementById('wo-duration').textContent = `${currentWO.duration}分钟`;
+        document.getElementById('wo-source').textContent = currentWO.source;
+        document.getElementById('wo-source').className = `tag ${currentWO.sourceClass}`;
+      } else if (isGreen) {
+        document.getElementById('green-city').textContent = currentWO.city;
+        document.getElementById('green-hospital').textContent = currentWO.hospital;
+        document.getElementById('green-department').textContent = currentWO.department;
+        document.getElementById('green-start').textContent = currentWO.start;
+        document.getElementById('green-expert').textContent = currentWO.expert;
+        document.getElementById('green-duration').textContent = `${currentWO.duration}分钟`;
+        document.getElementById('green-source').textContent = currentWO.source;
+        document.getElementById('green-source').className = `tag ${currentWO.sourceClass}`;
+      }
+    }
+    document.getElementById('workorder-type').addEventListener('change', e => renderWorkorder(e.target.value));
+
+    function formatForInput(dateString) { return dateString ? dateString.replace(' ', 'T') : ''; }
+    function refreshRemoteEnd() {
+      const end = addMinutes(document.getElementById('remote-start').value, Number(document.getElementById('remote-duration').value || 0));
+      document.getElementById('remote-end').value = end;
+    }
+    function openWorkorderDrawer(mode) {
+      workorderDrawerMode = mode;
+      const isRemote = document.getElementById('workorder-type').value === 'remote';
+      document.getElementById('wo-drawer-title').textContent = mode === 'create' ? '创建工单' : '修改工单';
+      document.getElementById('clinic-create-form').style.display = isRemote ? 'none' : '';
+      document.getElementById('remote-create-form').style.display = isRemote ? '' : 'none';
+      if (isRemote) {
+        document.getElementById('remote-service').value = currentWO.service;
+        document.getElementById('remote-visiting-expert').value = currentWO.expert;
+        document.getElementById('remote-start').value = formatForInput(currentWO.start);
+        document.getElementById('remote-duration').value = currentWO.duration;
+        refreshRemoteEnd();
+      } else {
+        document.getElementById('clinic-service').value = currentWO.service;
+        document.getElementById('clinic-start').value = formatForInput(currentWO.start);
+        document.getElementById('clinic-duration').value = currentWO.duration;
+        document.getElementById('clinic-expert').value = currentWO.expert;
+        document.getElementById('clinic-department').value = currentWO.department;
+      }
+      document.getElementById('workorder-drawer').classList.add('open');
+    }
+    document.getElementById('standard-edit-button').addEventListener('click', () => openWorkorderDrawer('edit'));
+    document.getElementById('create-workorder-btn').addEventListener('click', () => {
+      if (document.getElementById('workorder-type').value === 'consult') {
+        openTriageDialog();
+      } else if (document.getElementById('workorder-type').value === 'green') {
+        openGreenDrawer();
+      } else {
+        openWorkorderDrawer('create');
+      }
+    });
+    document.getElementById('remote-start').addEventListener('input', refreshRemoteEnd);
+    document.getElementById('remote-duration').addEventListener('input', refreshRemoteEnd);
+    document.getElementById('save-workorder-duration').addEventListener('click', () => {
+      const isRemote = document.getElementById('workorder-type').value === 'remote';
+      const newDuration = Number(document.getElementById(isRemote ? 'remote-duration' : 'clinic-duration').value || 0);
+      const changed = newDuration !== Number(currentWO.duration);
+      currentWO.duration = newDuration;
+      currentWO.start = document.getElementById(isRemote ? 'remote-start' : 'clinic-start').value.replace('T',' ');
+      currentWO.expert = document.getElementById(isRemote ? 'remote-visiting-expert' : 'clinic-expert').value;
+      if (!isRemote) currentWO.department = document.getElementById('clinic-department').value;
+      if (changed) { currentWO.source = workorderDrawerMode === 'create' ? '创建时调整' : '工单修改'; currentWO.sourceClass = 'override'; }
+      renderWorkorder(document.getElementById('workorder-type').value);
+      document.getElementById('workorder-drawer').classList.remove('open');
+      showToast(workorderDrawerMode === 'create' ? '创建表单已确认（原型演示）' : '本次工单预计时长已更新（原型演示）');
+    });
+
+    function openGreenDrawer() {
+      document.getElementById('green-form-city').value = '北京市 / 北京市 / 东城区';
+      document.getElementById('green-form-hospital').value = currentWO.hospital;
+      document.getElementById('green-form-department').value = currentWO.department;
+      document.getElementById('green-form-expert').value = currentWO.expert === '－' ? '请选择' : currentWO.expert;
+      document.getElementById('green-form-date').value = currentWO.start.slice(0,10);
+      document.getElementById('green-form-time').value = currentWO.start.slice(11,16);
+      document.getElementById('green-form-duration').value = currentWO.duration;
+      document.getElementById('green-drawer').classList.add('open');
+    }
+    document.querySelectorAll('.open-green-drawer').forEach(btn => btn.addEventListener('click', openGreenDrawer));
+    document.getElementById('save-green').addEventListener('click', () => {
+      const oldDuration = currentWO.duration;
+      currentWO.city = document.getElementById('green-form-city').value.replaceAll(' / ', '－');
+      currentWO.hospital = document.getElementById('green-form-hospital').value;
+      currentWO.department = document.getElementById('green-form-department').value;
+      currentWO.expert = document.getElementById('green-form-expert').value === '请选择' ? '－' : document.getElementById('green-form-expert').value;
+      currentWO.start = `${document.getElementById('green-form-date').value} ${document.getElementById('green-form-time').value}`;
+      currentWO.duration = Number(document.getElementById('green-form-duration').value || 0);
+      if (currentWO.duration !== oldDuration) { currentWO.source = '协调结果调整'; currentWO.sourceClass = 'override'; }
+      renderWorkorder('green');
+      document.getElementById('green-drawer').classList.remove('open');
+      showToast('协调结果已保存（原型演示）');
+    });
+
+    function openTriageDialog() {
+      document.getElementById('triage-expert').value = currentWO.expert;
+      document.getElementById('triage-date').value = currentWO.start.slice(0,10);
+      document.getElementById('triage-time').value = currentWO.start.slice(11,16);
+      document.getElementById('triage-duration').value = currentWO.duration;
+      document.getElementById('triage-dialog').classList.add('open');
+    }
+    document.querySelectorAll('.open-triage-dialog').forEach(btn => btn.addEventListener('click', openTriageDialog));
+    document.getElementById('save-triage').addEventListener('click', () => {
+      const oldDuration = currentWO.duration;
+      currentWO.expert = document.getElementById('triage-expert').value;
+      currentWO.start = `${document.getElementById('triage-date').value} ${document.getElementById('triage-time').value}`;
+      currentWO.duration = Number(document.getElementById('triage-duration').value || 0);
+      if (currentWO.duration !== oldDuration) { currentWO.source = '分诊时调整'; currentWO.sourceClass = 'override'; }
+      renderWorkorder('consult');
+      document.getElementById('triage-dialog').classList.remove('open');
+      showToast('分诊信息已确认（原型演示）');
+    });
+
+    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => {
+      const targetId = btn.dataset.close === 'triage' ? 'triage-dialog' : `${btn.dataset.close}-drawer`;
+      document.getElementById(targetId).classList.remove('open');
+    }));
+    document.querySelectorAll('.drawer-mask').forEach(mask => mask.addEventListener('click', e => { if (e.target === mask) mask.classList.remove('open'); }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.drawer-mask').forEach(m => m.classList.remove('open')); });
+
+    renderWorkorder('consult');
+  </script>
+</body>
+</html>
