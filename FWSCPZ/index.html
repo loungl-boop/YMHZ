@@ -134,6 +134,17 @@
     }
     .scene-tab:hover { background: rgba(255,255,255,.12); color: #fff; }
     .scene-tab.active { background: #fff; color: #183d36; font-weight: 600; }
+    .annotation-toggle {
+      height: 38px;
+      padding: 0 15px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,.28);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      white-space: nowrap;
+    }
+    .annotation-toggle:hover { background: rgba(255,255,255,.15); }
+    .annotation-toggle.active { color: #8f2f25; border-color: #ffd2cb; background: #fff0ed; font-weight: 650; }
 
     .page { display: none; animation: pageIn .22s ease both; }
     .page.active { display: block; }
@@ -196,6 +207,7 @@
       color: #26302e;
     }
     .field input:focus, .field select:focus, .input:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(7,141,120,.1); }
+    input.invalid { border-color: #e5484d !important; box-shadow: 0 0 0 2px rgba(229,72,77,.10) !important; }
     .field input { border-radius: 3px 0 0 3px; }
     .field select { width: 94px; border-left: 0; border-radius: 0 3px 3px 0; }
     .unit-suffix { width: 72px; border: 1px solid #d8dfdd; border-left: 0; border-radius: 0 3px 3px 0; display: grid; place-items: center; background: #fafbfb; color: #55615f; }
@@ -225,6 +237,7 @@
     .tag { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 3px; font-size: 12px; white-space: nowrap; }
     .tag.inherit { background: #edf2f1; color: #65706e; }
     .tag.override { background: var(--warning-bg); color: var(--warning); }
+    .tag.adjusted { background: #eef3fd; color: var(--blue); }
     .tag.success { background: var(--brand-soft); color: var(--brand); }
     .tag.info { background: #eef3fd; color: var(--blue); }
     .tag.muted { background: #f0f2f2; color: #87918f; }
@@ -464,6 +477,76 @@
     .prd-hero { min-height: 230px; padding-top: 52px; }
     .prd-shell { margin-top: -26px; }
 
+    /* Axure 式开发标注 */
+    .annotation-anchor { position: relative !important; }
+    .annotation-marker {
+      display: none;
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      z-index: 46;
+      width: 25px;
+      height: 25px;
+      padding: 0;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #e44f3f;
+      color: #fff;
+      font: 700 12px/1 "PingFang SC", sans-serif;
+      box-shadow: 0 3px 10px rgba(136,44,34,.34);
+      transform: scale(.88);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    body.annotations-on .annotation-marker { display: inline-flex; }
+    .annotation-marker:hover, .annotation-marker.active { transform: scale(1.08); box-shadow: 0 4px 14px rgba(136,44,34,.44); }
+    .annotation-marker.context-hidden { display: none !important; }
+    .annotation-marker.marker-left { left: -10px; right: auto; }
+    .annotation-marker.marker-inside { top: 5px; right: 5px; }
+    .annotation-marker.marker-button { top: -12px; right: -12px; }
+    .annotation-panel {
+      display: none;
+      position: fixed;
+      top: 132px;
+      right: 28px;
+      z-index: 180;
+      width: 420px;
+      max-height: calc(100vh - 160px);
+      overflow: hidden;
+      flex-direction: column;
+      border: 1px solid #dddfde;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 22px 58px rgba(25,48,43,.28);
+    }
+    .annotation-panel.open { display: flex; animation: annotationIn .16s ease both; }
+    @keyframes annotationIn { from { opacity: 0; transform: translateY(7px); } }
+    .annotation-panel-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 57px;
+      padding: 0 14px 0 16px;
+      color: #fff;
+      background: #173f36;
+      cursor: move;
+      user-select: none;
+    }
+    .annotation-panel-badge { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; background: #e44f3f; font-weight: 700; flex: none; }
+    .annotation-panel-title { min-width: 0; flex: 1; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .annotation-panel-close { width: 31px; height: 31px; border: 0; border-radius: 3px; background: transparent; color: rgba(255,255,255,.72); font-size: 21px; }
+    .annotation-panel-close:hover { color: #fff; background: rgba(255,255,255,.10); }
+    .annotation-panel-meta { padding: 10px 18px; border-bottom: 1px solid #edf0ef; color: #7a8784; background: #fafcfb; font-size: 12px; }
+    .annotation-panel-body { overflow: auto; padding: 4px 18px 22px; }
+    .annotation-rule { padding: 15px 0; border-bottom: 1px solid #edf0ef; }
+    .annotation-rule:last-child { border-bottom: 0; }
+    .annotation-rule h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 9px; color: #21483e; font-size: 14px; }
+    .annotation-rule h4::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+    .annotation-rule ul { margin: 0; padding-left: 18px; }
+    .annotation-rule li { margin: 6px 0; color: #566560; font-size: 13px; line-height: 1.65; }
+    .annotation-empty { padding: 28px 10px; color: #86918f; text-align: center; line-height: 1.8; }
+
     @media (max-width: 1280px) {
       .artifact-title { min-width: 270px; }
       .solution-hero { padding-left: 48px; padding-right: 48px; }
@@ -529,9 +612,9 @@
             <h2>01　评审结论</h2>
             <p class="section-intro">本方案不改变产品、服务、合同、项目集、项目、工单的既有业务关系，只补齐可继承、可覆盖、可在单据内调整的预计服务时长。</p>
             <div class="conclusion-grid">
-              <div class="conclusion-item"><small>交付内容</small><strong>服务默认时长、项目集服务时长、工单预计服务时长三处配置与展示</strong></div>
+              <div class="conclusion-item"><small>交付内容</small><strong>服务的“默认预计服务时长”、项目集服务及工单的“预计服务时长”三处配置与展示</strong></div>
               <div class="conclusion-item"><small>不纳入范围</small><strong>合同维度时长、人员排班占用预览、报告解读与就医指导工单</strong></div>
-              <div class="conclusion-item"><small>影响端</small><strong>服务平台管理后台；患者端不展示预计服务时长</strong></div>
+              <div class="conclusion-item"><small>影响端</small><strong>仅服务平台管理后台；患者端、专家端本期均不新增展示</strong></div>
               <div class="conclusion-item"><small>新增字段</small><strong>服务默认值、项目集覆盖值、工单快照值，统一存储分钟</strong></div>
               <div class="conclusion-item"><small>状态与流程</small><strong>不新增状态；分别嵌入现有创建、分诊、协调结果流程</strong></div>
               <div class="conclusion-item"><small>权限策略</small><strong>沿用对应服务、项目集与工单现有查看/编辑权限</strong></div>
@@ -591,7 +674,7 @@
               <div class="principle-item"><strong>按业务时机录入</strong><span>诊所/远程门诊在创建时录入，会诊在分诊时录入，绿通在安排协调结果时录入。</span></div>
               <div class="principle-item"><strong>沿用现有权限</strong><span>不新增独立权限点，是否可改时长与当前页面已有配置或修改操作权限保持一致。</span></div>
               <div class="principle-item"><strong>来源可追溯</strong><span>工单保存时同时记录来源：服务默认、项目集覆盖或工单调整。</span></div>
-              <div class="principle-item"><strong>患者侧不展示</strong><span>预计服务时长用于内部资源评估，不作为对患者承诺的实际服务时长。</span></div>
+              <div class="principle-item"><strong>其他端不展示</strong><span>预计服务时长用于服务平台内部资源评估，患者端、专家端本期均不新增展示，也不作为对患者承诺的实际服务时长。</span></div>
             </div>
           </article>
 
@@ -646,7 +729,7 @@
                   <tr><td>服务</td><td><code>default_estimated_duration_minutes</code></td><td>INT</td><td>默认预计服务时长；所有产品类型服务必填</td></tr>
                   <tr><td>项目集服务</td><td><code>estimated_duration_minutes</code></td><td>INT NULL</td><td>空值代表继承服务默认值；非空代表项目集覆盖</td></tr>
                   <tr><td>工单</td><td><code>estimated_service_duration_minutes</code></td><td>INT NULL</td><td>当前工单最终快照；仅适用工单必填</td></tr>
-                  <tr><td>工单</td><td><code>estimated_duration_source</code></td><td>VARCHAR</td><td>SERVICE_DEFAULT / PROJECT_SET / WORK_ORDER</td></tr>
+                  <tr><td>工单</td><td><code>estimated_duration_source</code></td><td>VARCHAR NULL</td><td>SERVICE_DEFAULT / PROJECT_SET / WORK_ORDER；时长为空时来源也为空</td></tr>
                 </tbody>
               </table>
             </div>
@@ -704,11 +787,12 @@
           <small>基于当前系统结构设计</small>
         </div>
         <div class="scene-tabs">
-          <button class="scene-tab active" data-scene="service">1　服务默认时长</button>
+          <button class="scene-tab active" data-scene="service">1　服务默认配置</button>
           <button class="scene-tab" data-scene="project">2　项目集覆盖</button>
           <button class="scene-tab" data-scene="workorder">3　工单时长</button>
           <button class="scene-tab" data-scene="matrix">4　本期规则与范围</button>
         </div>
+        <button class="annotation-toggle" id="annotation-toggle" type="button">显示标注</button>
       </nav>
 
       <section class="page active" id="page-service">
@@ -744,7 +828,7 @@
             <div class="form-row">
               <label class="required">默认预计服务时长</label>
               <div class="field">
-                <input id="service-duration" type="number" min="5" max="1440" value="60" />
+                <input id="service-duration" type="number" min="5" max="1440" step="1" value="60" />
                 <span class="unit-suffix">分钟</span>
               </div>
               <div class="quick">
@@ -789,7 +873,7 @@
         <div class="card">
           <div class="card-head">
             <span class="card-title">服务内容</span><span class="spacer"></span>
-            <div class="legend"><span>继承服务默认值</span><span>项目集已覆盖</span><span>历史工单不追溯</span></div>
+            <div class="legend"><span>继承服务</span><span>项目集覆盖</span><span>历史工单不追溯</span></div>
           </div>
           <div class="card-body" style="padding-top:0">
             <table>
@@ -940,7 +1024,7 @@
 
       <section class="page" id="page-matrix">
         <div class="page-head"><span class="page-title">本期规则与范围</span><span class="page-id">服务配置全量覆盖，工单仅覆盖有明确服务时间的类型</span><span class="spacer"></span><button class="btn subtle" data-scene-jump="workorder">返回工单原型</button></div>
-        <div class="card">
+        <div class="card" id="matrix-rule-card">
           <div class="card-head"><span class="card-title">统一业务规则</span></div>
           <div class="card-body" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
             <div class="scope-note"><strong>1. 服务默认配置</strong><br/>所有产品类型的服务均增加“默认预计服务时长”，统一按分钟维护。远程门诊原有“服务时长”沿用原数据，并统一名称与口径。</div>
@@ -949,7 +1033,7 @@
             <div class="scope-note"><strong>4. 产生时机</strong><br/>诊所服务、远程门诊在创建工单时带入；会诊在分诊时带入；绿通在安排协调结果、录入具体就诊时间时带入，后续修改协调结果时允许调整。</div>
           </div>
         </div>
-        <div class="card">
+        <div class="card" id="matrix-adaptation-card">
           <div class="card-head"><span class="card-title">本期工单适配</span><span class="spacer"></span><span class="tag success">4类</span></div>
           <div class="card-body" style="padding-top:0">
             <table class="matrix">
@@ -957,13 +1041,13 @@
               <tbody>
                 <tr><td>会诊工单</td><td>分诊安排会诊时</td><td>详情－会诊信息</td><td class="recommend">分诊/修改会诊时间</td><td>项目集覆盖值 ＞ 服务默认值，可在分诊时调整</td></tr>
                 <tr><td>诊所服务</td><td>创建工单时</td><td>详情－申请信息</td><td class="recommend">创建/修改工单</td><td>项目集覆盖值 ＞ 服务默认值，可在本单调整</td></tr>
-                <tr><td>远程门诊工单</td><td>创建工单时</td><td>详情－申请信息</td><td class="recommend">创建/现有“修改”抽屉</td><td>沿用原服务时长数据，按统一规则取值</td></tr>
+                <tr><td>远程门诊工单</td><td>创建工单时</td><td>详情－申请信息</td><td class="recommend">创建/现有“修改”抽屉</td><td>沿用原“服务时长”数据并统一名称，按统一优先级取值</td></tr>
                 <tr><td>绿通</td><td>安排协调结果时</td><td>详情－安排资源</td><td class="recommend">填写/修改协调结果</td><td>项目集覆盖值 ＞ 服务默认值，可在协调结果中调整</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="card">
+        <div class="card" id="matrix-exclusion-card">
           <div class="card-body"><div class="scope-note"><strong>明确不在本期：</strong>报告解读、就医指导不涉及本版原型；购药、健康报告、电话咨询、慢病管理等当前没有明确服务时间的工单，本期不增加工单“预计服务时长”。后续若某产品补充了明确服务时间，再按相同规则接入。</div></div>
         </div>
       </section>
@@ -975,7 +1059,7 @@
       <div class="hero-kicker">PRODUCT REQUIREMENTS DOCUMENT</div>
       <h1>服务时长配置与工单适配 · PRD</h1>
       <p>研发与测试统一实现基线。本文只保留已经收敛的业务结论、字段定义、交互规则、异常处理和验收标准。</p>
-      <div class="hero-meta"><span class="hero-chip">版本：V1.0</span><span class="hero-chip">更新时间：2026-08-25</span><span class="hero-chip">状态：定稿</span></div>
+      <div class="hero-meta"><span class="hero-chip">版本：V1.0</span><span class="hero-chip">更新时间：2026-08-28</span><span class="hero-chip">状态：定稿</span></div>
     </header>
 
     <div class="doc-shell prd-shell">
@@ -1002,7 +1086,7 @@
             <h3>成功标准</h3>
             <ul>
               <li>适用范围内新建工单的预计服务时长保存完整率为 100%。</li>
-              <li>工单取值与“本单调整 ＞ 项目集覆盖 ＞ 服务默认”规则一致率为 100%。</li>
+              <li>工单取值与“工单调整 ＞ 项目集覆盖 ＞ 服务默认”规则一致率为 100%。</li>
               <li>配置变更不得修改任何已创建工单快照，回归通过率为 100%。</li>
               <li>远程门诊迁移前后已有服务时长值一致，数据差异为 0。</li>
               <li>四类工单的创建、编辑、查看入口均能展示相同分钟值。</li>
@@ -1020,7 +1104,7 @@
             <h2>02　用户体验与用户故事</h2>
             <h3>用户角色</h3>
             <div class="principle-grid">
-              <div class="principle-item"><strong>产品/服务运营</strong><span>维护服务默认时长，保证基础配置可复用。</span></div>
+              <div class="principle-item"><strong>产品/服务运营</strong><span>维护默认预计服务时长，保证基础配置可复用。</span></div>
               <div class="principle-item"><strong>项目经理</strong><span>按项目集执行要求继承或覆盖服务时长。</span></div>
               <div class="principle-item"><strong>工单操作人</strong><span>在创建、分诊或协调时确认本次服务时长。</span></div>
               <div class="principle-item"><strong>资源管理人员</strong><span>后续基于工单时长评估角色占用和排班。</span></div>
@@ -1038,7 +1122,7 @@
 
           <article class="doc-section" id="prd-functional">
             <h2>03　功能需求</h2>
-            <h3>FR-01　服务默认预计时长</h3>
+            <h3>FR-01　默认预计服务时长</h3>
             <ul>
               <li>入口：产品服务 → 服务 → 属性配置。</li>
               <li>所有产品类型的服务均增加“默认预计服务时长”。</li>
@@ -1052,7 +1136,7 @@
               <li>入口：项目中心 → 项目管理 → 项目集详情。</li>
               <li>项目集通过“关联合同”或“手动分配”获得的服务，均在服务列表增加“预计服务时长”和“配置时长”。</li>
               <li>新增项目集服务时默认继承服务默认值；列表标记“继承服务”。</li>
-              <li>选择“自定义本项目集时长”后必须输入 5—1440 的分钟整数；列表标记“项目集覆盖”。</li>
+              <li>选择“自定义本项目集预计时长”后必须输入 5—1440 的分钟整数；列表标记“项目集覆盖”。</li>
               <li>由覆盖切回继承时，清空项目集覆盖字段，并实时读取当前服务默认值供后续新工单使用。</li>
               <li>不在合同、项目两个层级增加时长字段。</li>
             </ul>
@@ -1071,7 +1155,7 @@
             </ul>
             <h3>FR-05　诊所服务与远程门诊</h3>
             <ul>
-              <li>两类工单均在现有“创建工单”抽屉的申请信息中增加必填预计服务时长。</li>
+              <li>诊所服务在现有“创建工单”抽屉的申请信息中新增必填“预计服务时长”；远程门诊沿用现有“服务时长”数据与字段能力，并将页面名称统一为“预计服务时长”。</li>
               <li>详情均在“申请信息”区域展示；操作按钮统一使用“修改”。</li>
               <li>远程门诊结束时间 = 出诊开始时间 + 预计服务时长；开始时间或时长变化后重新计算。</li>
             </ul>
@@ -1090,36 +1174,55 @@
               <tr><td>service</td><td><code>default_estimated_duration_minutes</code></td><td>INT，5—1440</td><td>上线迁移期可空；配置完成后业务必填</td></tr>
               <tr><td>project_set_service</td><td><code>estimated_duration_minutes</code></td><td>INT NULL，5—1440</td><td>NULL 表示继承</td></tr>
               <tr><td>work_order</td><td><code>estimated_service_duration_minutes</code></td><td>INT NULL，5—1440</td><td>适用工单形成安排时必填</td></tr>
-              <tr><td>work_order</td><td><code>estimated_duration_source</code></td><td>VARCHAR(32)</td><td>SERVICE_DEFAULT / PROJECT_SET / WORK_ORDER</td></tr>
-              <tr><td>work_order</td><td><code>estimated_duration_updated_by</code></td><td>BIGINT NULL</td><td>记录最后修改人</td></tr>
-              <tr><td>work_order</td><td><code>estimated_duration_updated_at</code></td><td>DATETIME NULL</td><td>记录最后修改时间</td></tr>
+              <tr><td>work_order</td><td><code>estimated_duration_source</code></td><td>VARCHAR(32) NULL</td><td>SERVICE_DEFAULT / PROJECT_SET / WORK_ORDER；分钟值为空时必须为空</td></tr>
+              <tr><td>work_order</td><td><code>estimated_duration_updated_by</code></td><td>BIGINT NULL</td><td>首次形成快照时记录操作人，后续修改时覆盖</td></tr>
+              <tr><td>work_order</td><td><code>estimated_duration_updated_at</code></td><td>DATETIME NULL</td><td>首次形成快照时记录时间，后续修改时覆盖</td></tr>
+            </tbody></table></div>
+            <h3>来源枚举与展示映射</h3>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>后端枚举</th><th>前端标签</th><th>视觉</th><th>含义</th></tr></thead><tbody>
+              <tr><td><code>SERVICE_DEFAULT</code></td><td>服务默认</td><td>灰色中性标签</td><td>工单保存时采用服务的默认预计服务时长。</td></tr>
+              <tr><td><code>PROJECT_SET</code></td><td>项目集覆盖</td><td>橙色提示标签</td><td>工单保存时采用项目集服务覆盖值。</td></tr>
+              <tr><td><code>WORK_ORDER</code></td><td>工单调整</td><td>蓝色信息标签</td><td>操作人在创建、分诊、协调或修改时改变了分钟值；具体操作环节记录在工单操作日志，不扩展来源枚举。</td></tr>
             </tbody></table></div>
             <h3>取值算法</h3>
-            <pre class="code-block"><code>resolvedMinutes = projectSetService.estimatedDurationMinutes
+            <pre class="code-block"><code>baseMinutes = projectSetService.estimatedDurationMinutes
   ?? service.defaultEstimatedDurationMinutes
+baseSource = projectSetService.estimatedDurationMinutes != null
+  ? "PROJECT_SET" : "SERVICE_DEFAULT"
 
-if (operatorEditedMinutes) {
-  resolvedMinutes = operatorEditedMinutes
-  source = "WORK_ORDER"
-} else if (projectSetService.estimatedDurationMinutes != null) {
-  source = "PROJECT_SET"
+if (isCreatingWorkOrder) {
+  finalMinutes = submittedMinutes ?? baseMinutes
+  source = finalMinutes === baseMinutes ? baseSource : "WORK_ORDER"
 } else {
-  source = "SERVICE_DEFAULT"
+  finalMinutes = submittedMinutes
+  source = finalMinutes === workOrder.estimatedServiceDurationMinutes
+    ? workOrder.estimatedDurationSource : "WORK_ORDER"
 }
 
-workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
+workOrder.estimatedServiceDurationMinutes = finalMinutes
+workOrder.estimatedDurationSource = source</code></pre>
             <h3>接口规则</h3>
+            <div class="doc-table-wrap"><table class="doc-table"><thead><tr><th>接口对象</th><th>JSON 字段</th><th>方向</th><th>规则</th></tr></thead><tbody>
+              <tr><td>服务</td><td><code>defaultEstimatedDurationMinutes</code></td><td>读 / 写</td><td>5—1440 的整数分钟；上线迁移期读取可为空。</td></tr>
+              <tr><td>项目集服务</td><td><code>estimatedDurationMinutes</code></td><td>读 / 写</td><td>NULL 表示继承服务默认值，非空表示项目集覆盖。</td></tr>
+              <tr><td>工单</td><td><code>estimatedServiceDurationMinutes</code></td><td>读 / 写</td><td>适用业务保存时必填；历史数据可为空。</td></tr>
+              <tr><td>工单</td><td><code>estimatedDurationSource</code></td><td>只读</td><td>后端计算并返回，前端不得提交为可信值。</td></tr>
+              <tr><td>工单</td><td><code>estimatedDurationUpdatedBy</code> / <code>estimatedDurationUpdatedAt</code></td><td>只读</td><td>由后端按操作上下文记录。</td></tr>
+            </tbody></table></div>
             <ul>
               <li>服务与项目集接口统一返回分钟整数，不返回格式化小时字符串。</li>
               <li>工单创建/分诊/协调结果接口接收 <code>estimatedServiceDurationMinutes</code>；适用场景缺失时返回明确业务错误。</li>
+              <li>后端根据工单关联的项目集与服务解析基础值并校验归属关系，不接受前端传入项目集覆盖值或来源枚举作为可信依据。</li>
               <li>工单详情接口返回分钟值、来源枚举、最后修改人和修改时间。</li>
+              <li>来源枚举由后端按最终值计算，前端不得直接指定或覆盖 <code>estimatedDurationSource</code>。</li>
+              <li>数据不变量：预计分钟值与来源必须同时为空或同时非空；非适用工单及未迁移历史工单两者均为空。</li>
               <li>前端展示统一拼接“分钟”，不得自行转换为“小时”。</li>
             </ul>
             <h3>迁移策略</h3>
             <ol>
               <li>确认远程门诊旧“服务时长”字段、单位及使用接口。</li>
-              <li>优先复用旧字段；如必须迁移，按分钟原值写入新字段并保留一次性校验报表。</li>
-              <li>其他历史工单保持 NULL，不用当前服务配置回填。</li>
+              <li>若旧字段位于统一工单实体且语义一致，则直接复用或重命名；若位于远程门诊子表，则一次性回填统一工单字段。切换后只保留一个写入口，不长期双写。</li>
+              <li>其他历史工单保持 NULL，不用当前服务配置回填；详情显示“—”，且不阻断历史工单原有查看和流转。</li>
               <li>上线前完成适用服务的默认值配置；未配置服务进入阻断清单。</li>
             </ol>
           </article>
@@ -1134,7 +1237,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
             </tbody></table></div>
             <ul>
               <li>时长不包含患者隐私数据，但必须与工单权限一起返回，禁止独立越权查询。</li>
-              <li>患者端、专家端如当前未承担资源管理，不返回来源标签，不新增展示。</li>
+              <li>本期患者端、专家端均不新增预计服务时长展示；面向这些端的接口不新增来源标签。未来如承担资源管理能力需另行评审。</li>
               <li>删除或停用服务时沿用原业务约束，不删除历史工单快照。</li>
             </ul>
           </article>
@@ -1145,10 +1248,11 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
               <tr><td>为空</td><td>适用业务提交时阻断</td><td>请输入预计服务时长</td></tr>
               <tr><td>非整数、≤0、超出范围</td><td>前后端同时校验 5—1440</td><td>请输入 5—1440 之间的整数分钟</td></tr>
               <tr><td>服务未配置默认值且项目集未覆盖</td><td>不允许形成适用工单</td><td>当前服务未配置默认预计服务时长，请先完成服务配置</td></tr>
-              <tr><td>项目集覆盖值被清除</td><td>切换为继承并读取最新服务默认值</td><td>已切换为继承服务默认时长</td></tr>
+              <tr><td>项目集覆盖值被清除</td><td>切换为继承并读取最新服务默认值</td><td>已切换为继承服务默认值</td></tr>
               <tr><td>远程门诊结束时间跨日</td><td>按真实日期时间相加，允许跨日</td><td>展示计算后的完整结束日期与时间</td></tr>
               <tr><td>保存并发冲突</td><td>按现有版本号/更新时间机制处理，不静默覆盖</td><td>数据已被其他人更新，请刷新后重试</td></tr>
               <tr><td>接口读取失败</td><td>不得用 0 或任意默认值代替</td><td>预计服务时长加载失败，请稍后重试</td></tr>
+              <tr><td>非远程门诊历史工单时长为空</td><td>详情显示“—”并纳入数据质量监控，不用当前配置回填、不阻断原流程</td><td>无额外弹窗提示</td></tr>
             </tbody></table></div>
           </article>
 
@@ -1169,6 +1273,8 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
               <tr><td>AC-12</td><td>无编辑权限用户进入详情</td><td>可按原权限查看；不出现可修改入口</td></tr>
               <tr><td>AC-13</td><td>远程门诊历史数据迁移抽样与全量校验</td><td>分钟值差异为 0，结束时间计算结果一致</td></tr>
               <tr><td>AC-14</td><td>左侧菜单切换四类工单</td><td>页面、工单类型、面包屑及选中态同步更新</td></tr>
+              <tr><td>AC-15</td><td>人工修改任一适用工单的时长</td><td>详情来源统一显示“工单调整”，后端保存 WORK_ORDER；具体修改环节进入操作日志</td></tr>
+              <tr><td>AC-16</td><td>查看时长为空的非远程门诊历史工单</td><td>详情显示“—”，不以当前配置补值，不影响原有流程</td></tr>
             </tbody></table></div>
           </article>
 
@@ -1178,7 +1284,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
             <ol>
               <li>数据库字段与接口兼容先行，旧客户端/旧调用不受影响。</li>
               <li>执行远程门诊字段兼容或迁移，并完成全量值比对。</li>
-              <li>运营配置适用服务默认时长，输出未配置阻断清单。</li>
+              <li>运营配置适用服务的默认预计服务时长，输出未配置阻断清单。</li>
               <li>开放项目集覆盖配置，再开放四类工单入口。</li>
               <li>上线后一周监控缺失率、异常值、工单调整率与接口错误。</li>
             </ol>
@@ -1209,13 +1315,13 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
       <div class="drawer-head"><strong>配置项目集服务时长</strong><button class="drawer-close" data-close="project">×</button></div>
       <div class="drawer-body">
         <div class="form-row"><label>服务名称</label><input class="input readonly" id="drawer-service-name" readonly /></div>
-        <div class="form-row"><label>服务默认时长</label><input class="input readonly" id="drawer-service-default" readonly /></div>
+        <div class="form-row"><label>默认预计服务时长</label><input class="input readonly" id="drawer-service-default" readonly /></div>
         <div class="form-row">
-          <label class="required">本项目集执行时长</label>
-          <div class="radio-card" id="inherit-card"><span class="radio-dot"></span><span class="radio-copy"><strong>继承服务默认时长</strong><small>服务默认值后续调整时，仅影响新建工单。</small></span></div>
-          <div class="radio-card active" id="override-card"><span class="radio-dot"></span><span class="radio-copy"><strong>自定义本项目集时长</strong><small>用于本项目集下所有项目的新建工单。</small></span></div>
+          <label class="required">本项目集预计服务时长</label>
+          <div class="radio-card" id="inherit-card"><span class="radio-dot"></span><span class="radio-copy"><strong>继承服务默认值</strong><small>服务默认值后续调整时，仅影响新建工单。</small></span></div>
+          <div class="radio-card active" id="override-card"><span class="radio-dot"></span><span class="radio-copy"><strong>自定义本项目集预计时长</strong><small>用于本项目集下所有项目的新建工单。</small></span></div>
         </div>
-        <div class="form-row" id="override-input-wrap"><label class="required">自定义时长</label><div class="field"><input id="project-custom-duration" type="number" min="5" value="90" /><span class="unit-suffix">分钟</span></div></div>
+        <div class="form-row" id="override-input-wrap"><label class="required">自定义预计服务时长</label><div class="field"><input id="project-custom-duration" type="number" min="5" max="1440" step="1" value="90" /><span class="unit-suffix">分钟</span></div></div>
         <div class="form-row" id="override-reason-wrap"><label>覆盖原因</label><input class="input" value="根据项目执行要求调整" /></div>
         <div class="source-box">配置变化仅用于此后创建的工单，已有工单的预计时长保持不变。</div>
       </div>
@@ -1232,7 +1338,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
           <div class="form-row"><label class="required">申请人</label><div class="field-wrap"><select class="input" id="clinic-applicant"><option>张某</option></select><span class="new-user">＋　创建新用户</span></div></div>
           <div class="form-row"><label class="required">申请服务</label><div class="field-wrap"><select class="input" id="clinic-service"><option>专家面诊</option></select></div></div>
           <div class="form-row"><label class="required">服务时间</label><div class="field-wrap"><input class="input" id="clinic-start" type="datetime-local" value="2026-08-27T14:00" /></div></div>
-          <div class="form-row"><label class="required">预计服务时长</label><div class="field-wrap"><div class="field"><input id="clinic-duration" type="number" min="5" max="1440" value="30" /><span class="unit-suffix">分钟</span></div></div></div>
+          <div class="form-row"><label class="required">预计服务时长</label><div class="field-wrap"><div class="field"><input id="clinic-duration" type="number" min="5" max="1440" step="1" value="30" /><span class="unit-suffix">分钟</span></div></div></div>
           <div class="form-row"><label>专家</label><div class="field-wrap"><select class="input" id="clinic-expert"><option>李医生</option><option>请选择</option></select></div></div>
           <div class="form-row"><label>科室</label><div class="field-wrap"><select class="input" id="clinic-department"><option>神经内科</option><option>心血管内科</option><option>全科</option></select></div></div>
         </div>
@@ -1243,7 +1349,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
           <div class="form-row"><label class="required">申请服务</label><div class="field-wrap"><select class="input" id="remote-service"><option>远程门诊</option></select></div></div>
           <div class="form-row"><label class="required">出诊专家</label><div class="field-wrap"><select class="input" id="remote-visiting-expert"><option>钱教授</option><option>请选择</option></select></div></div>
           <div class="form-row"><label class="required">出诊时间</label><div class="field-wrap"><input class="input" id="remote-start" type="datetime-local" value="2026-08-27T15:00" /></div></div>
-          <div class="form-row"><label class="required">预计服务时长</label><div class="field-wrap"><div class="field"><input id="remote-duration" type="number" min="5" max="1440" value="240" /><span class="unit-suffix">分钟</span></div></div></div>
+          <div class="form-row"><label class="required">预计服务时长</label><div class="field-wrap"><div class="field"><input id="remote-duration" type="number" min="5" max="1440" step="1" value="240" /><span class="unit-suffix">分钟</span></div></div></div>
           <div class="form-row"><label>结束时间</label><div class="field-wrap"><input class="input readonly" id="remote-end" value="2026-08-27 19:00" readonly /></div></div>
           <div class="form-row"><label class="required">门诊医生</label><div class="field-wrap"><select class="input" id="remote-doctor"><option>赵医生</option><option>请选择</option></select></div></div>
           <div class="form-row"><label>门诊科室</label><div class="field-wrap"><div class="plain-value">精神心理科</div></div></div>
@@ -1270,7 +1376,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
           <div class="form-row"><label class="required">服务专家</label><select class="input" id="green-form-expert"><option>请选择</option><option>李医生</option></select></div>
           <div class="form-row"><label class="required">就诊日期</label><input class="input" id="green-form-date" type="date" value="2026-08-27" /></div>
           <div class="form-row"><label class="required">就诊时间</label><input class="input" id="green-form-time" type="time" value="16:00" /></div>
-          <div class="form-row"><label class="required">预计服务时长</label><div class="field"><input id="green-form-duration" type="number" min="5" max="1440" value="60" /><span class="unit-suffix">分钟</span></div></div>
+          <div class="form-row"><label class="required">预计服务时长</label><div class="field"><input id="green-form-duration" type="number" min="5" max="1440" step="1" value="60" /><span class="unit-suffix">分钟</span></div></div>
         </div>
         <div class="form-row"><label class="required">医院地址</label><textarea class="input textarea" id="green-form-address" placeholder="请详细描述（1–300字）">东城区东单北大街</textarea></div>
         <div class="form-row"><label class="required">携带证件</label><div class="check-line"><label><input type="checkbox" checked /> 身份证</label><label><input type="checkbox" /> 医保卡</label><label><input type="checkbox" checked /> 病历资料</label></div></div>
@@ -1293,7 +1399,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
         <div class="compact-row"><label class="required">会诊专家</label><select class="input" id="triage-expert"><option>王教授</option><option>李教授</option></select></div>
         <div class="compact-row"><label class="required">会诊日期</label><input class="input" id="triage-date" type="date" value="2026-08-27" /></div>
         <div class="compact-row"><label class="required">会诊时间</label><input class="input" id="triage-time" type="time" value="15:00" /></div>
-        <div class="compact-row"><label class="required">预计服务时长</label><div><div class="field"><input id="triage-duration" type="number" min="5" max="1440" value="90" /><span class="unit-suffix">分钟</span></div><div class="mini-note">来源：项目集覆盖配置，可在本次分诊时调整</div></div></div>
+        <div class="compact-row"><label class="required">预计服务时长</label><div><div class="field"><input id="triage-duration" type="number" min="5" max="1440" step="1" value="90" /><span class="unit-suffix">分钟</span></div><div class="mini-note">来源：项目集覆盖，可在本次分诊时调整；改变后来源为“工单调整”</div></div></div>
         <div class="divider"></div>
         <div class="compact-row"><label class="required">会诊方式</label><select class="input"><option>平台会诊</option></select></div>
         <div class="compact-row"><label class="required">房间类型</label><select class="input"><option>视频会诊室</option></select></div>
@@ -1306,8 +1412,389 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
 
   <div class="toast" id="toast">已保存</div>
 
+  <section class="annotation-panel" id="annotation-panel" role="dialog" aria-modal="false" aria-labelledby="annotation-panel-title">
+    <div class="annotation-panel-head" id="annotation-panel-drag">
+      <span class="annotation-panel-badge" id="annotation-panel-badge">1</span>
+      <span class="annotation-panel-title" id="annotation-panel-title">标注说明</span>
+      <button class="annotation-panel-close" id="annotation-panel-close" type="button" aria-label="关闭标注说明">×</button>
+    </div>
+    <div class="annotation-panel-meta" id="annotation-panel-meta">当前视图</div>
+    <div class="annotation-panel-body" id="annotation-panel-body"></div>
+  </section>
+
   <script>
+    const annotationNotes = {
+      'prototype-navigation': {
+        title: '原型导航与变更边界', location: '交互原型 / 左侧菜单与顶部评审导航',
+        sections: [
+          ['导航规则', ['左侧仅保留本需求相关菜单：服务、项目管理、会诊工单、诊所服务、远程门诊工单和绿通；点击后切换到对应原型并同步面包屑与选中态。', '菜单可见性继续沿用生产系统现有权限，不因预计服务时长新增独立菜单权限。']],
+          ['原型说明', ['顶部“服务默认配置 / 项目集覆盖 / 工单时长 / 本期规则与范围”及“显示标注”仅用于评审串联，不要求生产系统新增。', '未被规则标注指向的既有字段、状态、按钮和流程保持当前系统行为，不属于本需求改造范围。']],
+          ['数据边界', ['原型中的示例姓名、工单号、项目、合同、服务数量和时间仅用于展示布局，不作为测试固定数据或后端初始化要求。']]
+        ]
+      },
+      'service-duration': {
+        title: '默认预计服务时长', location: '产品服务 / 服务 / 属性配置 / 设置区',
+        sections: [
+          ['业务规则', ['所有产品类型的服务均维护默认预计服务时长，作为项目集和新工单的基础值。', '远程门诊沿用已有“服务时长”数据，只统一名称与分钟口径，不建立第二套数据。']],
+          ['展示规则', ['字段位于“设置”区域，必填标识与现有表单一致；单位固定显示“分钟”。', '该字段属于后台系统配置，不进入中间的“展示预览”，患者及申请人不可见。']],
+          ['交互与校验', ['仅允许 5—1440 之间的整数；空值、文本、小数或越界值阻断保存。', '快捷值依次为 10、15、20、30、60、120 分钟，点击后覆盖输入框当前值。']],
+          ['数据与影响', ['字段建议为 service.default_estimated_duration_minutes，接口统一传递分钟整数。', '修改服务默认值只影响后续新建工单，不追溯已创建工单快照。']],
+          ['权限与异常', ['沿用服务属性配置编辑权限；无编辑权限时只读。', '保存失败时保留当前输入并显示错误，不得回退为 0 或静默使用旧值。']]
+        ]
+      },
+      'service-save': {
+        title: '保存服务配置', location: '产品属性配置 / 页面操作区',
+        sections: [
+          ['交互规则', ['点击“保存”统一提交当前服务属性；提交中按钮禁用，避免重复请求。', '前端校验通过后再调用保存接口，成功后提示并保留当前页面。']],
+          ['数据规则', ['保存操作需同时写入修改人、修改时间和变更前后分钟值。', '默认时长变更事件不触发项目集覆盖值或历史工单的批量更新。']],
+          ['异常处理', ['存在非法时长时定位并聚焦字段；接口冲突时提示刷新后重试。', '接口失败不清空表单，不显示成功提示。']]
+        ]
+      },
+      'project-list-duration': {
+        title: '项目集服务时长展示', location: '项目集详情 / 服务内容 / 预计服务时长列',
+        sections: [
+          ['业务规则', ['无论服务通过“关联合同”还是“手动分配”进入项目集，都必须展示预计服务时长。', '合同和项目维度不重复维护时长，项目下所有新工单使用所属项目集服务配置。']],
+          ['展示规则', ['展示“分钟值 + 来源标签”：灰色为继承服务，橙色为项目集覆盖。', '列表值展示当前有效值；继承模式下读取服务最新默认值。']],
+          ['数据规则', ['项目集覆盖字段为空表示继承；非空表示覆盖，不额外保存一份继承值。', '历史工单始终读取自身快照，不根据列表当前值重新计算。']],
+          ['权限与异常', ['有项目集查看权限即可查看时长；无编辑权限时隐藏“配置时长”。', '服务默认值缺失时展示“未配置”，并阻断适用工单创建。']]
+        ]
+      },
+      'project-config-entry': {
+        title: '配置时长入口', location: '项目集详情 / 服务内容 / 操作列',
+        sections: [
+          ['显示与权限', ['仅项目集可编辑状态且当前用户具有项目集编辑权限时显示。', '入口对关联合同与手动分配服务保持一致，不因分配方式改变。']],
+          ['交互规则', ['点击后打开“配置项目集服务时长”抽屉，并带入服务名称、服务默认值和当前模式。', '入口只说明去向；继承、覆盖、校验和保存规则在抽屉标注中说明。']],
+          ['异常处理', ['加载配置失败时不打开空抽屉，提示“服务时长加载失败，请稍后重试”。']]
+        ]
+      },
+      'project-mode': {
+        title: '继承与覆盖模式', location: '配置项目集服务时长抽屉 / 模式选择区',
+        sections: [
+          ['业务规则', ['默认选择“继承服务默认值”；存在项目集覆盖值时回显“自定义本项目集预计时长”。', '从覆盖切回继承后清空项目集覆盖字段，后续新工单读取服务最新默认值。']],
+          ['交互规则', ['两种模式互斥；点击整张卡片即可切换。', '继承模式隐藏自定义时长和覆盖原因；覆盖模式显示并启用相关字段。']],
+          ['数据规则', ['继承保存 NULL；覆盖保存分钟整数，不复制服务默认值作为覆盖值。', '模式变化不回写已创建工单。']],
+          ['权限与异常', ['沿用项目集编辑权限；项目集归档或结束后按现有规则禁用编辑。']]
+        ]
+      },
+      'project-custom': {
+        title: '项目集自定义时长', location: '配置项目集服务时长抽屉 / 自定义字段',
+        sections: [
+          ['展示与交互', ['仅覆盖模式显示；单位固定为分钟。', '覆盖原因用于业务留痕，可选填，不参与取值计算。']],
+          ['校验规则', ['时长为必填整数，范围 5—1440；非法值在字段下方显示错误并阻断提交。']],
+          ['数据规则', ['保存至 project_set_service.estimated_duration_minutes。', '工单取值优先级为：工单调整 ＞ 项目集覆盖 ＞ 服务默认。']]
+        ]
+      },
+      'project-save': {
+        title: '保存项目集服务时长', location: '配置项目集服务时长抽屉 / 操作区',
+        sections: [
+          ['交互规则', ['确定后校验当前模式；提交中禁用确定按钮。', '成功后关闭抽屉、刷新当前服务行的分钟值和来源标签，并给出成功提示。']],
+          ['数据与留痕', ['记录模式、变更前后分钟值、覆盖原因、操作人和操作时间。', '配置变化仅影响保存成功后创建的工单。']],
+          ['异常处理', ['并发更新时提示刷新；接口失败时保留抽屉与输入，不修改列表。']]
+        ]
+      },
+      'workorder-scope': {
+        title: '工单类型与原型入口', location: '工单原型 / 顶部评审控制区',
+        sections: [
+          ['范围规则', ['本期工单仅覆盖会诊、诊所服务、远程门诊和绿通；报告解读、就医指导及其他无明确服务时间的类型不改造。', '服务配置仍覆盖所有产品类型，工单是否接入由产品类型是否具有明确服务日期与时间决定。']],
+          ['原型说明', ['工单类型下拉、“查看规则与范围”和右侧主按钮用于串联评审原型，不要求在生产系统新增统一工具栏。', '生产系统继续使用左侧各工单菜单及现有创建、分诊、协调和修改入口。']],
+          ['交互规则', ['左侧菜单或下拉切换时，工单类型、页面内容、面包屑和选中态必须一致。', '四类工单各自的字段位置与保存时机以当前详情及弹窗标注为准。']]
+        ]
+      },
+      'consult-duration': {
+        title: '会诊工单预计服务时长', location: '会诊工单详情 / 会诊信息',
+        sections: [
+          ['业务规则', ['会诊创建申请时不要求填写；在分诊安排会诊日期、时间和专家时形成工单时长快照。', '用于内部资源占用估算，不代表实际会诊时长或对患者的服务承诺。']],
+          ['展示规则', ['字段仅在“会诊信息”模块展示，样式与专家、科室、会诊时间等详情字段一致。', '同时展示统一来源标签：服务默认、项目集覆盖或工单调整。']],
+          ['数据规则', ['读取 work_order.estimated_service_duration_minutes 与 estimated_duration_source。', '配置层后续变化不得更新该工单值。']],
+          ['权限与异常', ['沿用会诊工单查看权限；缺失时显示“—”，并进入数据异常监控。']]
+        ]
+      },
+      'consult-edit': {
+        title: '修改会诊时间入口', location: '会诊工单详情 / 页面右侧操作区',
+        sections: [
+          ['显示规则', ['入口保持在页面右侧现有操作列，不在会诊信息标题区域新增重复按钮。', '仅工单状态允许修改且用户具有会诊安排权限时显示。']],
+          ['交互规则', ['点击打开分诊弹窗，回显当前专家、日期、时间、房间配置和预计服务时长。', '弹窗内字段、校验和提交结果由弹窗标注说明。']],
+          ['异常处理', ['工单已被取消、完成或数据版本变化时阻断打开并提示刷新。']]
+        ]
+      },
+      'triage-duration': {
+        title: '分诊预计服务时长', location: '分诊弹窗 / 会诊安排字段区',
+        sections: [
+          ['业务规则', ['与会诊专家、日期和时间一并必填；默认带入项目集覆盖值，未覆盖时带入服务默认值。', '操作人可按本次会诊实际安排修改，修改后来源统一记为“工单调整”/WORK_ORDER，具体分诊操作记录在工单日志。']],
+          ['展示与校验', ['单位固定为分钟，范围 5—1440 的整数。', '来源说明位于字段下方，不作为患者侧文案。']],
+          ['数据规则', ['提交时写入工单预计时长、来源、最后修改人和时间。', '房间结束时间或资源占用结束点后续可由会诊开始时间 + 预计时长计算。']],
+          ['异常处理', ['缺失或非法值阻断确定分诊；配置来源读取失败时不得默认为 0。']]
+        ]
+      },
+      'triage-save': {
+        title: '确定分诊', location: '分诊弹窗 / 操作区',
+        sections: [
+          ['交互规则', ['提交前统一校验会诊科室、专家、日期、时间、时长及房间字段。', '成功后关闭弹窗并刷新会诊信息；提交中禁止重复点击。']],
+          ['数据与状态', ['保存预计时长快照，但不新增工单状态；状态仍按现有分诊流程流转。', '若时长未改变则保留原来源，改变后来源更新为 WORK_ORDER。']],
+          ['异常处理', ['专家或房间冲突时保持弹窗并显示业务错误；不得只保存部分字段。']]
+        ]
+      },
+      'clinic-detail-duration': {
+        title: '诊所服务预计服务时长', location: '诊所服务详情 / 申请信息',
+        sections: [
+          ['业务与展示', ['创建诊所服务工单时形成时长快照，详情在“申请信息”服务字段组展示。', '展示分钟值与来源标签，样式与现有详情字段一致。']],
+          ['数据规则', ['默认取项目集覆盖值，否则取服务默认值；创建或修改时人工调整优先。', '后续配置变化不追溯当前工单。']],
+          ['权限与异常', ['沿用工单查看权限；缺失值进入异常清单，不在详情中自动补默认值。']]
+        ]
+      },
+      'clinic-detail-edit': {
+        title: '修改诊所服务工单', location: '诊所服务详情 / 申请信息操作区',
+        sections: [
+          ['显示与权限', ['按钮文案统一为“修改”，沿用现有工单修改权限和状态限制。']],
+          ['交互规则', ['点击打开当前创建/修改工单抽屉并回显服务时间、专家、科室和预计服务时长。', '保存后刷新详情分钟值和来源标签。']]
+        ]
+      },
+      'remote-detail-duration': {
+        title: '远程门诊预计服务时长', location: '远程门诊详情 / 申请信息',
+        sections: [
+          ['业务与兼容', ['沿用远程门诊原有“服务时长”数据，统一展示名称为“预计服务时长”。', '不得同时保留新旧两个可写字段，避免双数据源。']],
+          ['展示规则', ['展示分钟值与来源；不转换为小时。', '结束时间由出诊时间加预计服务时长计算，允许跨日。']],
+          ['数据规则', ['历史已有值直接作为工单快照；迁移前后分钟值差异必须为 0。']],
+          ['异常处理', ['旧数据为空时显示“—”并进入迁移异常清单，不用当前默认值回填历史。']]
+        ]
+      },
+      'remote-detail-edit': {
+        title: '修改远程门诊工单', location: '远程门诊详情 / 申请信息操作区',
+        sections: [
+          ['显示与权限', ['按钮文案为“修改”，沿用远程门诊现有修改入口、权限和状态限制。']],
+          ['交互规则', ['点击打开远程门诊创建/修改抽屉，回显当前出诊时间、时长及房间字段。', '保存后同步刷新时长，并按新值重算结束时间。']]
+        ]
+      },
+      'clinic-form-duration': {
+        title: '创建/修改诊所服务时长', location: '创建工单抽屉 / 诊所服务 / 申请信息',
+        sections: [
+          ['默认值', ['创建时按项目集覆盖 ＞ 服务默认带入；修改时回显工单快照。']],
+          ['展示与校验', ['保持当前系统字段顺序，在服务时间后增加预计服务时长；单位固定分钟。', '必填整数，范围 5—1440；非法值阻断“下一步”。']],
+          ['数据规则', ['人工改动后来源为 WORK_ORDER；未改动时保留 PROJECT_SET 或 SERVICE_DEFAULT。']],
+          ['权限与异常', ['沿用创建/修改工单权限；配置来源缺失时提示先完成服务配置。']]
+        ]
+      },
+      'remote-form-duration': {
+        title: '创建/修改远程门诊时长', location: '创建工单抽屉 / 远程门诊 / 申请信息',
+        sections: [
+          ['默认与兼容', ['创建时按项目集覆盖 ＞ 服务默认带入；编辑历史工单时回显原服务时长。', '前后端统一使用分钟整数，不新增重复字段。']],
+          ['展示与校验', ['字段位于出诊时间后、结束时间前；必填 5—1440 的整数分钟。']],
+          ['交互规则', ['开始时间或预计服务时长变化时，结束时间实时重新计算。']],
+          ['数据规则', ['人工修改来源记为 WORK_ORDER，并保存最后修改人和时间。']]
+        ]
+      },
+      'remote-end': {
+        title: '远程门诊结束时间', location: '创建工单抽屉 / 远程门诊 / 结束时间',
+        sections: [
+          ['计算规则', ['结束时间 = 出诊开始时间 + 预计服务时长，使用完整日期时间计算并允许跨日。']],
+          ['展示与交互', ['字段只读，用户不能直接输入；开始时间或时长变化后立即更新。']],
+          ['异常处理', ['任一计算输入无效时结束时间置空，并由对应必填字段给出错误，不展示 Invalid Date。']]
+        ]
+      },
+      'standard-form-save': {
+        title: '确认创建/修改工单', location: '创建工单抽屉 / 操作区',
+        sections: [
+          ['交互规则', ['创建态按钮为“下一步”，修改态按现有流程提交；提交中禁用重复操作。', '成功后关闭抽屉、刷新详情时长与来源。']],
+          ['数据规则', ['提交当前工单最终分钟值；与开始时间、专家、科室等字段保持同一事务。', '人工改动后来源为 WORK_ORDER，未改动则保留配置来源。']],
+          ['异常处理', ['任何必填项失败都不得部分保存；并发冲突提示刷新后重试。']]
+        ]
+      },
+      'green-detail-duration': {
+        title: '绿通预计服务时长', location: '绿通详情 / 安排资源',
+        sections: [
+          ['业务规则', ['绿通申请阶段不填写；安排协调结果并录入具体就诊日期、时间时形成时长快照。']],
+          ['展示规则', ['在“安排资源”区域展示分钟值与来源，位置与就诊时间、服务专家同组。']],
+          ['数据规则', ['默认取项目集覆盖值，否则取服务默认值；协调时调整优先。']],
+          ['异常处理', ['历史绿通无值时显示“—”，不自动使用当前配置回填。']]
+        ]
+      },
+      'green-detail-edit': {
+        title: '修改绿通协调结果', location: '绿通详情 / 安排资源操作区',
+        sections: [
+          ['显示与权限', ['沿用“修改协调结果”现有权限和状态限制，不新增独立时长权限。']],
+          ['交互规则', ['点击打开协调结果抽屉，回显就诊资源、具体时间及当前预计服务时长。', '保存后刷新安排资源区域。']]
+        ]
+      },
+      'green-form-duration': {
+        title: '协调结果预计服务时长', location: '协调结果抽屉 / 就诊安排字段区',
+        sections: [
+          ['业务与默认', ['首次安排时按项目集覆盖 ＞ 服务默认带入；修改时回显工单快照。']],
+          ['展示与校验', ['与就诊日期、就诊时间并列为必填；单位分钟，范围 5—1440 的整数。']],
+          ['数据规则', ['人工修改后来源统一为“工单调整”/WORK_ORDER，具体协调结果操作记录在工单日志。', '时长与就诊时间共同作为后续资源占用计算输入。']],
+          ['异常处理', ['缺失或非法值阻断确认；不得只保存就诊时间而漏存时长。']]
+        ]
+      },
+      'green-form-save': {
+        title: '保存协调结果', location: '协调结果抽屉 / 操作区',
+        sections: [
+          ['交互规则', ['统一校验城市、医院、科室、日期、时间、时长及必填说明。', '成功后关闭抽屉，刷新安排资源区域并提示保存成功。']],
+          ['数据与状态', ['保存时长快照但不新增工单状态，仍沿用绿通现有安排资源流程。']],
+          ['异常处理', ['资源失效或并发冲突时保留抽屉内容，不得部分提交。']]
+        ]
+      },
+      'matrix-rules': {
+        title: '统一规则口径', location: '本期规则与范围 / 统一业务规则',
+        sections: [
+          ['业务规则', ['配置采用服务默认值、项目集覆盖值、工单快照三级模型；合同和项目不重复配置。', '服务配置全量支持，工单只接入会诊、诊所服务、远程门诊和绿通。']],
+          ['开发说明', ['本页是研发评审说明页，不是生产系统新增页面。', '如本页与详情标注发生冲突，以 PRD 的字段模型、枚举和异常规则为实现基线，并同步修订原型。']]
+        ]
+      },
+      'matrix-adaptation': {
+        title: '四类工单适配矩阵', location: '本期规则与范围 / 本期工单适配',
+        sections: [
+          ['前端规则', ['严格按表中产生时机、详情区域和操作入口增加字段，不创建跨工单类型的通用生产入口。', '详情统一显示“分钟值 + 来源标签”；来源标签只使用服务默认、项目集覆盖、工单调整。']],
+          ['后端规则', ['四类工单统一写入预计分钟快照及来源枚举，差异只在触发保存的业务动作。', '配置变化不追溯已有工单；人工改变分钟值后来源为 WORK_ORDER。']]
+        ]
+      },
+      'matrix-exclusion': {
+        title: '本期排除范围', location: '本期规则与范围 / 排除项',
+        sections: [
+          ['范围规则', ['报告解读、就医指导以及购药、健康报告、电话咨询、慢病管理等当前无明确服务时间的工单，本期不增加工单字段、校验或页面。', '排除的是工单适配，不影响这些服务在服务层维护默认预计服务时长。']],
+          ['扩展规则', ['后续产品类型具备明确服务日期与时间后，必须单独评审其产生时机、展示区域和修改入口，再接入统一字段模型。']]
+        ]
+      }
+    };
+
+    const annotationTargets = [
+      { selector:'#sidebar .menu-label[data-menu="product"]', note:'prototype-navigation', number:'N', style:{ top:'8px', right:'8px' } },
+      { selector:'#service-duration', closest:'.form-row', note:'service-duration', number:'1', markerClass:'marker-inside' },
+      { selector:'#save-service', closest:'.page-head', note:'service-save', number:'2', style:{ top:'5px', right:'78px' } },
+      { selector:'#project-duration-a', closest:'td', note:'project-list-duration', number:'1', markerClass:'marker-inside' },
+      { selector:'#page-project .open-project-drawer', closest:'td', note:'project-config-entry', number:'2', style:{ top:'6px', right:'72px' } },
+      { selector:'#inherit-card', note:'project-mode', number:'1', markerClass:'marker-inside' },
+      { selector:'#override-input-wrap', note:'project-custom', number:'2', markerClass:'marker-inside' },
+      { selector:'#save-project-duration', closest:'.drawer-foot', note:'project-save', number:'3', style:{ top:'10px', right:'112px' } },
+      { selector:'#workorder-type', closest:'.type-toolbar', note:'workorder-scope', number:'1', style:{ top:'-10px', left:'250px' } },
+      { selector:'#consult-duration', closest:'.detail-field', note:'consult-duration', number:'2', markerClass:'marker-inside' },
+      { selector:'#consult-action-sidebar .open-triage-dialog', closest:'#consult-action-sidebar', note:'consult-edit', number:'3', style:{ top:'76px', right:'-9px' } },
+      { selector:'#triage-duration', closest:'.compact-row', note:'triage-duration', number:'1', markerClass:'marker-inside' },
+      { selector:'#save-triage', closest:'.dialog-foot', note:'triage-save', number:'2', style:{ top:'10px', right:'24px' } },
+      { selector:'#wo-duration', closest:'.detail-field', note:'standard-detail-duration', number:'2', markerClass:'marker-inside' },
+      { selector:'#standard-edit-button', closest:'.detail-head', note:'standard-detail-edit', number:'3', style:{ top:'3px', right:'75px' } },
+      { selector:'#clinic-duration', closest:'.form-row', note:'clinic-form-duration', number:'1', markerClass:'marker-inside' },
+      { selector:'#remote-duration', closest:'.form-row', note:'remote-form-duration', number:'1', markerClass:'marker-inside' },
+      { selector:'#remote-end', closest:'.form-row', note:'remote-end', number:'2', markerClass:'marker-inside' },
+      { selector:'#save-workorder-duration', closest:'.drawer-foot', note:'standard-form-save', number:'3', style:{ top:'10px', right:'112px' } },
+      { selector:'#green-duration', closest:'.detail-field', note:'green-detail-duration', number:'2', markerClass:'marker-inside' },
+      { selector:'#green-resource-section .open-green-drawer', closest:'.detail-head', note:'green-detail-edit', number:'3', style:{ top:'3px', right:'75px' } },
+      { selector:'#green-form-duration', closest:'.form-row', note:'green-form-duration', number:'1', markerClass:'marker-inside' },
+      { selector:'#save-green', closest:'.drawer-foot', note:'green-form-save', number:'2', style:{ top:'10px', right:'112px' } },
+      { selector:'#matrix-rule-card', note:'matrix-rules', number:'1', style:{ top:'10px', right:'10px' } },
+      { selector:'#matrix-adaptation-card', note:'matrix-adaptation', number:'2', style:{ top:'10px', right:'70px' } },
+      { selector:'#matrix-exclusion-card', note:'matrix-exclusion', number:'3', style:{ top:'10px', right:'10px' } }
+    ];
+
+    function resolveAnnotationKey(key) {
+      if (key === 'standard-detail-duration') return document.getElementById('workorder-type').value === 'remote' ? 'remote-detail-duration' : 'clinic-detail-duration';
+      if (key === 'standard-detail-edit') return document.getElementById('workorder-type').value === 'remote' ? 'remote-detail-edit' : 'clinic-detail-edit';
+      return key;
+    }
+
+    function closeAnnotationPanel() {
+      document.getElementById('annotation-panel')?.classList.remove('open');
+      document.querySelectorAll('.annotation-marker.active').forEach(marker => marker.classList.remove('active'));
+    }
+
+    function openAnnotationPanel(marker) {
+      const note = annotationNotes[resolveAnnotationKey(marker.dataset.note)];
+      if (!note) return;
+      document.querySelectorAll('.annotation-marker.active').forEach(item => item.classList.remove('active'));
+      marker.classList.add('active');
+      document.getElementById('annotation-panel-badge').textContent = marker.textContent;
+      document.getElementById('annotation-panel-title').textContent = note.title;
+      document.getElementById('annotation-panel-meta').textContent = note.location;
+      const body = document.getElementById('annotation-panel-body');
+      body.replaceChildren();
+      note.sections.forEach(([title, items]) => {
+        const section = document.createElement('section');
+        section.className = 'annotation-rule';
+        const heading = document.createElement('h4');
+        heading.textContent = title;
+        const list = document.createElement('ul');
+        items.forEach(text => { const li = document.createElement('li'); li.textContent = text; list.appendChild(li); });
+        section.append(heading, list);
+        body.appendChild(section);
+      });
+      document.getElementById('annotation-panel').classList.add('open');
+    }
+
+    function mountAnnotationMarkers() {
+      annotationTargets.forEach(config => {
+        const target = document.querySelector(config.selector);
+        if (!target) return;
+        const anchor = config.closest ? target.closest(config.closest) : target;
+        if (!anchor) return;
+        anchor.classList.add('annotation-anchor');
+        const marker = document.createElement('button');
+        marker.type = 'button';
+        marker.className = `annotation-marker ${config.markerClass || ''}`.trim();
+        marker.textContent = config.number;
+        marker.dataset.note = config.note;
+        marker.setAttribute('aria-label', `查看标注 ${config.number}`);
+        Object.assign(marker.style, config.style || {});
+        marker.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); openAnnotationPanel(marker); });
+        anchor.appendChild(marker);
+      });
+    }
+
+    mountAnnotationMarkers();
+    const annotationToggle = document.getElementById('annotation-toggle');
+    annotationToggle.addEventListener('click', () => {
+      const enabled = document.body.classList.toggle('annotations-on');
+      annotationToggle.classList.toggle('active', enabled);
+      annotationToggle.textContent = enabled ? '隐藏标注' : '显示标注';
+      annotationToggle.setAttribute('aria-pressed', String(enabled));
+      if (!enabled) closeAnnotationPanel();
+    });
+    document.getElementById('annotation-panel-close').addEventListener('click', closeAnnotationPanel);
+
+    const annotationPanel = document.getElementById('annotation-panel');
+    const annotationDrag = document.getElementById('annotation-panel-drag');
+    let annotationDragState = null;
+    annotationDrag.addEventListener('pointerdown', event => {
+      if (event.target.closest('button')) return;
+      const rect = annotationPanel.getBoundingClientRect();
+      annotationPanel.style.right = 'auto';
+      annotationPanel.style.left = `${rect.left}px`;
+      annotationPanel.style.top = `${rect.top}px`;
+      annotationDragState = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      annotationDrag.setPointerCapture(event.pointerId);
+    });
+    annotationDrag.addEventListener('pointermove', event => {
+      if (!annotationDragState) return;
+      const maxLeft = window.innerWidth - annotationPanel.offsetWidth - 8;
+      const maxTop = window.innerHeight - 70;
+      annotationPanel.style.left = `${Math.max(8, Math.min(maxLeft, event.clientX - annotationDragState.x))}px`;
+      annotationPanel.style.top = `${Math.max(68, Math.min(maxTop, event.clientY - annotationDragState.y))}px`;
+    });
+    annotationDrag.addEventListener('pointerup', event => {
+      annotationDragState = null;
+      if (annotationDrag.hasPointerCapture(event.pointerId)) annotationDrag.releasePointerCapture(event.pointerId);
+    });
+    annotationDrag.addEventListener('mousedown', event => {
+      if (event.target.closest('button')) return;
+      const rect = annotationPanel.getBoundingClientRect();
+      annotationPanel.style.right = 'auto';
+      annotationPanel.style.left = `${rect.left}px`;
+      annotationPanel.style.top = `${rect.top}px`;
+      annotationDragState = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    });
+    document.addEventListener('mousemove', event => {
+      if (!annotationDragState || event.buttons !== 1) return;
+      const maxLeft = window.innerWidth - annotationPanel.offsetWidth - 8;
+      const maxTop = window.innerHeight - 70;
+      annotationPanel.style.left = `${Math.max(8, Math.min(maxLeft, event.clientX - annotationDragState.x))}px`;
+      annotationPanel.style.top = `${Math.max(68, Math.min(maxTop, event.clientY - annotationDragState.y))}px`;
+    });
+    document.addEventListener('mouseup', () => { annotationDragState = null; });
+    annotationDrag.addEventListener('dblclick', () => {
+      annotationPanel.style.left = 'auto';
+      annotationPanel.style.right = '28px';
+      annotationPanel.style.top = '132px';
+    });
+
     function switchArtifactView(view) {
+      closeAnnotationPanel();
       document.querySelectorAll('.artifact-view').forEach(item => item.classList.toggle('active', item.id === `artifact-${view}`));
       document.querySelectorAll('.artifact-tab[data-artifact]').forEach(tab => {
         const active = tab.dataset.artifact === view;
@@ -1330,7 +1817,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     const workorderTypes = {
       consult: { label:'会诊工单', summary:'会诊在分诊时填写时长，并在“会诊信息”区域展示。', no:'HZ0825092935292030108', status:'待会诊', service:'专家案例培训', roleLabel:'会诊专家', expert:'王教授', startLabel:'会诊时间', start:'2026-08-27 15:00', duration:90, source:'项目集覆盖', sourceClass:'override', edit:'修改会诊时间', step:'会诊执行', execution:'视频会诊室' },
       clinic: { label:'诊所服务', summary:'创建工单时带入预计服务时长，详情在“申请信息”区域展示。', no:'ZS0825092935292030108', status:'待服务', service:'专家面诊', roleLabel:'服务专家', expert:'李医生', startLabel:'服务时间', start:'2026-08-27 14:00', duration:30, source:'服务默认', sourceClass:'inherit', edit:'修改', step:'服务执行', execution:'线下执行', departmentLabel:'科室', department:'神经内科' },
-      remote: { label:'远程门诊工单', summary:'创建表单沿用当前远程门诊字段，并新增预计服务时长。', no:'YC0825092935292030108', status:'待出诊', service:'远程门诊', roleLabel:'出诊专家', expert:'钱教授', startLabel:'出诊时间', start:'2026-08-27 15:00', duration:240, source:'服务默认', sourceClass:'inherit', edit:'修改', step:'服务执行', execution:'视频门诊室', departmentLabel:'门诊科室', department:'精神心理科' },
+      remote: { label:'远程门诊工单', summary:'创建表单沿用现有“服务时长”数据与字段能力，并统一展示为“预计服务时长”。', no:'YC0825092935292030108', status:'待出诊', service:'远程门诊', roleLabel:'出诊专家', expert:'钱教授', startLabel:'出诊时间', start:'2026-08-27 15:00', duration:240, source:'服务默认', sourceClass:'inherit', edit:'修改', step:'服务执行', execution:'视频门诊室', departmentLabel:'门诊科室', department:'精神心理科' },
       green: { label:'绿通', summary:'安排协调结果、录入就诊时间时填写预计服务时长，后续修改协调结果时可调整。', no:'LT0825143602831144380', status:'待总结', service:'门诊绿通', roleLabel:'服务专家', expert:'－', startLabel:'就诊时间', start:'2026-08-27 16:00', duration:60, source:'服务默认', sourceClass:'inherit', edit:'修改协调结果', step:'服务总结', execution:'线下就诊', city:'北京市－北京市－东城区', hospital:'北京尤迈医学诊所', department:'药剂科' }
     };
 
@@ -1341,6 +1828,30 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
       clearTimeout(window.toastTimer);
       window.toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
     }
+
+    const durationInputIds = ['service-duration', 'project-custom-duration', 'clinic-duration', 'remote-duration', 'green-form-duration', 'triage-duration'];
+    function readValidMinutes(input) {
+      const raw = input.value.trim();
+      const value = Number(raw);
+      return raw !== '' && Number.isInteger(value) && value >= 5 && value <= 1440 ? value : null;
+    }
+    function clearMinuteError(input) {
+      input.classList.remove('invalid');
+      input.removeAttribute('aria-invalid');
+    }
+    function requireValidMinutes(input) {
+      const value = readValidMinutes(input);
+      if (value !== null) {
+        clearMinuteError(input);
+        return value;
+      }
+      input.classList.add('invalid');
+      input.setAttribute('aria-invalid', 'true');
+      input.focus();
+      showToast('请输入 5—1440 之间的整数分钟');
+      return null;
+    }
+    durationInputIds.forEach(id => document.getElementById(id).addEventListener('input', event => clearMinuteError(event.target)));
 
     function updateSidebarState(scene, subKey) {
       const menuKey = scene === 'service' ? 'product' : scene === 'project' ? 'project' : 'workorder';
@@ -1357,6 +1868,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     }
 
     function switchScene(scene, workorderKey) {
+      closeAnnotationPanel();
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.scene-tab').forEach(t => t.classList.toggle('active', t.dataset.scene === scene));
       document.getElementById('page-' + scene).classList.add('active');
@@ -1384,12 +1896,16 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     });
 
     const serviceDuration = document.getElementById('service-duration');
-    document.querySelectorAll('[data-minute]').forEach(btn => btn.addEventListener('click', () => { serviceDuration.value = btn.dataset.minute; }));
-    document.getElementById('save-service').addEventListener('click', () => showToast('服务默认预计时长已保存（原型演示）'));
+    document.querySelectorAll('[data-minute]').forEach(btn => btn.addEventListener('click', () => { serviceDuration.value = btn.dataset.minute; clearMinuteError(serviceDuration); }));
+    document.getElementById('save-service').addEventListener('click', () => {
+      if (requireValidMinutes(serviceDuration) === null) return;
+      showToast('默认预计服务时长已保存（原型演示）');
+    });
 
     let projectTarget = null;
     let projectMode = 'override';
     document.querySelectorAll('.open-project-drawer').forEach(btn => btn.addEventListener('click', () => {
+      closeAnnotationPanel();
       projectTarget = btn;
       const isInherit = btn.dataset.inherit === 'true';
       projectMode = isInherit ? 'inherit' : 'override';
@@ -1409,10 +1925,13 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     document.getElementById('override-card').addEventListener('click', () => { projectMode = 'override'; refreshProjectMode(); });
     document.getElementById('save-project-duration').addEventListener('click', () => {
       if (!projectTarget) return;
+      const customInput = document.getElementById('project-custom-duration');
+      const customMinutes = projectMode === 'override' ? requireValidMinutes(customInput) : null;
+      if (projectMode === 'override' && customMinutes === null) return;
       const row = projectTarget.closest('tr');
       const durationEl = row.querySelector('.duration-main');
       const tagEl = row.querySelector('.tag');
-      const value = projectMode === 'inherit' ? projectTarget.dataset.default : document.getElementById('project-custom-duration').value;
+      const value = projectMode === 'inherit' ? Number(projectTarget.dataset.default) : customMinutes;
       durationEl.textContent = `${value}分钟`;
       tagEl.textContent = projectMode === 'inherit' ? '继承服务' : '项目集覆盖';
       tagEl.className = `tag ${projectMode === 'inherit' ? 'inherit' : 'override'}`;
@@ -1434,6 +1953,7 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     let currentWO = workorderTypes.consult;
     let workorderDrawerMode = 'edit';
     function renderWorkorder(key) {
+      closeAnnotationPanel();
       currentWO = workorderTypes[key];
       const isConsult = key === 'consult';
       const isGreen = key === 'green';
@@ -1456,6 +1976,8 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
       document.getElementById('green-resource-section').style.display = isGreen ? '' : 'none';
       document.getElementById('standard-service-fields').style.display = isStandard ? '' : 'none';
       document.getElementById('standard-edit-button').style.display = isStandard ? '' : 'none';
+      const standardEditMarker = document.querySelector('.annotation-marker[data-note="standard-detail-edit"]');
+      if (standardEditMarker) standardEditMarker.classList.toggle('context-hidden', !isStandard);
       document.getElementById('execution-section').style.display = isGreen ? 'none' : '';
       document.getElementById('create-workorder-btn').textContent = isConsult ? '进入分诊' : isGreen ? '填写协调结果' : '查看创建表单';
       if (document.getElementById('page-workorder').classList.contains('active')) updateSidebarState('workorder', key);
@@ -1491,12 +2013,17 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
 
     function formatForInput(dateString) { return dateString ? dateString.replace(' ', 'T') : ''; }
     function refreshRemoteEnd() {
-      const end = addMinutes(document.getElementById('remote-start').value, Number(document.getElementById('remote-duration').value || 0));
+      const durationInput = document.getElementById('remote-duration');
+      const minutes = readValidMinutes(durationInput);
+      const end = minutes === null ? '' : addMinutes(document.getElementById('remote-start').value, minutes);
       document.getElementById('remote-end').value = end;
     }
     function openWorkorderDrawer(mode) {
+      closeAnnotationPanel();
       workorderDrawerMode = mode;
       const isRemote = document.getElementById('workorder-type').value === 'remote';
+      const saveMarker = document.querySelector('#workorder-drawer .drawer-foot .annotation-marker[data-note="standard-form-save"]');
+      if (saveMarker) saveMarker.textContent = isRemote ? '3' : '2';
       document.getElementById('wo-drawer-title').textContent = mode === 'create' ? '创建工单' : '修改工单';
       document.getElementById('clinic-create-form').style.display = isRemote ? 'none' : '';
       document.getElementById('remote-create-form').style.display = isRemote ? '' : 'none';
@@ -1529,19 +2056,22 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     document.getElementById('remote-duration').addEventListener('input', refreshRemoteEnd);
     document.getElementById('save-workorder-duration').addEventListener('click', () => {
       const isRemote = document.getElementById('workorder-type').value === 'remote';
-      const newDuration = Number(document.getElementById(isRemote ? 'remote-duration' : 'clinic-duration').value || 0);
+      const durationInput = document.getElementById(isRemote ? 'remote-duration' : 'clinic-duration');
+      const newDuration = requireValidMinutes(durationInput);
+      if (newDuration === null) return;
       const changed = newDuration !== Number(currentWO.duration);
       currentWO.duration = newDuration;
       currentWO.start = document.getElementById(isRemote ? 'remote-start' : 'clinic-start').value.replace('T',' ');
       currentWO.expert = document.getElementById(isRemote ? 'remote-visiting-expert' : 'clinic-expert').value;
       if (!isRemote) currentWO.department = document.getElementById('clinic-department').value;
-      if (changed) { currentWO.source = workorderDrawerMode === 'create' ? '创建时调整' : '工单修改'; currentWO.sourceClass = 'override'; }
+      if (changed) { currentWO.source = '工单调整'; currentWO.sourceClass = 'adjusted'; }
       renderWorkorder(document.getElementById('workorder-type').value);
       document.getElementById('workorder-drawer').classList.remove('open');
       showToast(workorderDrawerMode === 'create' ? '创建表单已确认（原型演示）' : '本次工单预计时长已更新（原型演示）');
     });
 
     function openGreenDrawer() {
+      closeAnnotationPanel();
       document.getElementById('green-form-city').value = '北京市 / 北京市 / 东城区';
       document.getElementById('green-form-hospital').value = currentWO.hospital;
       document.getElementById('green-form-department').value = currentWO.department;
@@ -1554,19 +2084,22 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     document.querySelectorAll('.open-green-drawer').forEach(btn => btn.addEventListener('click', openGreenDrawer));
     document.getElementById('save-green').addEventListener('click', () => {
       const oldDuration = currentWO.duration;
+      const newDuration = requireValidMinutes(document.getElementById('green-form-duration'));
+      if (newDuration === null) return;
       currentWO.city = document.getElementById('green-form-city').value.replaceAll(' / ', '－');
       currentWO.hospital = document.getElementById('green-form-hospital').value;
       currentWO.department = document.getElementById('green-form-department').value;
       currentWO.expert = document.getElementById('green-form-expert').value === '请选择' ? '－' : document.getElementById('green-form-expert').value;
       currentWO.start = `${document.getElementById('green-form-date').value} ${document.getElementById('green-form-time').value}`;
-      currentWO.duration = Number(document.getElementById('green-form-duration').value || 0);
-      if (currentWO.duration !== oldDuration) { currentWO.source = '协调结果调整'; currentWO.sourceClass = 'override'; }
+      currentWO.duration = newDuration;
+      if (currentWO.duration !== oldDuration) { currentWO.source = '工单调整'; currentWO.sourceClass = 'adjusted'; }
       renderWorkorder('green');
       document.getElementById('green-drawer').classList.remove('open');
       showToast('协调结果已保存（原型演示）');
     });
 
     function openTriageDialog() {
+      closeAnnotationPanel();
       document.getElementById('triage-expert').value = currentWO.expert;
       document.getElementById('triage-date').value = currentWO.start.slice(0,10);
       document.getElementById('triage-time').value = currentWO.start.slice(11,16);
@@ -1576,10 +2109,12 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     document.querySelectorAll('.open-triage-dialog').forEach(btn => btn.addEventListener('click', openTriageDialog));
     document.getElementById('save-triage').addEventListener('click', () => {
       const oldDuration = currentWO.duration;
+      const newDuration = requireValidMinutes(document.getElementById('triage-duration'));
+      if (newDuration === null) return;
       currentWO.expert = document.getElementById('triage-expert').value;
       currentWO.start = `${document.getElementById('triage-date').value} ${document.getElementById('triage-time').value}`;
-      currentWO.duration = Number(document.getElementById('triage-duration').value || 0);
-      if (currentWO.duration !== oldDuration) { currentWO.source = '分诊时调整'; currentWO.sourceClass = 'override'; }
+      currentWO.duration = newDuration;
+      if (currentWO.duration !== oldDuration) { currentWO.source = '工单调整'; currentWO.sourceClass = 'adjusted'; }
       renderWorkorder('consult');
       document.getElementById('triage-dialog').classList.remove('open');
       showToast('分诊信息已确认（原型演示）');
@@ -1588,9 +2123,10 @@ workOrder.estimatedServiceDurationMinutes = resolvedMinutes</code></pre>
     document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => {
       const targetId = btn.dataset.close === 'triage' ? 'triage-dialog' : `${btn.dataset.close}-drawer`;
       document.getElementById(targetId).classList.remove('open');
+      closeAnnotationPanel();
     }));
-    document.querySelectorAll('.drawer-mask').forEach(mask => mask.addEventListener('click', e => { if (e.target === mask) mask.classList.remove('open'); }));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.drawer-mask').forEach(m => m.classList.remove('open')); });
+    document.querySelectorAll('.drawer-mask').forEach(mask => mask.addEventListener('click', e => { if (e.target === mask) { mask.classList.remove('open'); closeAnnotationPanel(); } }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.querySelectorAll('.drawer-mask').forEach(m => m.classList.remove('open')); closeAnnotationPanel(); } });
 
     renderWorkorder('consult');
   </script>
