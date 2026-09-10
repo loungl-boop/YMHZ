@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>会诊工单流程纠错 PRD</title>
+  <style>
+    :root {
+      --bg: #f3f5f7;
+      --card: #fff;
+      --text: #1f2329;
+      --muted: #646a73;
+      --line: #e5e6eb;
+      --green: #00856f;
+      --blue: #0052d9;
+      --soft-blue: #eef4ff;
+      --shadow: 0 10px 24px rgba(31, 35, 41, .08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding-top: 56px;
+      color: var(--text);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      min-height: 56px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      background: rgba(255, 255, 255, .94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; white-space: nowrap; }
+    .logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--green);
+      font-weight: 800;
+    }
+    .nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .nav a {
+      height: 30px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid transparent;
+      font-size: 13px;
+    }
+    .nav a.active { border-color: #8bb7ff; background: var(--soft-blue); color: var(--blue); }
+    .layout {
+      width: min(1120px, calc(100vw - 48px));
+      margin: 24px auto 56px;
+      display: block;
+    }
+    .doc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 28px 34px 40px;
+    }
+    .eyebrow { color: var(--green); font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+    h1 {
+      margin: 0 0 20px;
+      font-size: 28px;
+      line-height: 1.35;
+      letter-spacing: 0;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    h2 {
+      margin: 30px 0 12px;
+      padding-top: 6px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 22px 0 10px;
+      color: var(--green);
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    h4 { margin: 16px 0 8px; font-size: 15px; }
+    p { margin: 8px 0; color: #333842; }
+    ul, ol { margin: 8px 0 16px 22px; padding: 0; color: #333842; }
+    li { margin: 4px 0; }
+    code {
+      padding: 2px 5px;
+      border-radius: 3px;
+      background: #f2f3f5;
+      color: #1f2329;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+    .table-wrap { width: 100%; overflow-x: auto; margin: 10px 0 18px; }
+    table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #fafafa;
+      color: #4e5969;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: 0; }
+    th:last-child, td:last-child { border-right: 0; }
+    @media (max-width: 880px) {
+      body { padding-top: 90px; }
+      .topbar { align-items: flex-start; padding: 12px 16px; flex-direction: column; }
+      .layout { width: calc(100vw - 24px); }
+      .doc { padding: 22px 18px 30px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">Q</span><span>会诊工单流程纠错</span></div>
+    <nav class="nav"><a class="" href="./consultation-workorder-product-solution.html">整体方案</a><a class="" href="./consultation-workorder-exception-prototype.html">交互原型</a><a class="active" href="./consultation-workorder-status-rollback-prd.html">PRD文档</a></nav>
+  </header>
+  <main class="layout">
+    <article class="doc">
+      <div class="eyebrow">PRD 阅读版</div>
+      <h1 id="会诊工单流程纠错-PRD">会诊工单流程纠错 PRD</h1>
+<h2 id="1-背景">1. 背景</h2>
+<p>线上会诊工单已支持病历审核驳回、取消分诊、修改会诊时间、会诊意见审核驳回等标准流转。本次新增能力用于处理标准流程无法覆盖的纠错场景，重点解决“状态已进入下一节点，但业务判断需要回到前一关键处理节点”的问题。</p>
+<p>设计原则：</p>
+<ul>
+<li>尽量减少跨节点跳转，优先退回至前一个可承接处理的节点。</li>
+<li>不允许人工任意选择目标状态，目标状态由系统规则计算。</li>
+<li>操作入口展示具体业务动作，降低操作人员理解成本。</li>
+<li>所有纠错动作必须留痕，历史数据不物理删除。</li>
+<li>复用线上已有能力；待会诊、待上传会诊意见已支持的取消分诊、修改会诊时间不重复建设。</li>
+</ul>
+<h2 id="2-目标">2. 目标</h2>
+<ul>
+<li>在会诊工单详情页右侧“更多操作”中，根据当前状态、角色权限、数据条件展示具体流程纠错动作。</li>
+<li>点击动作后弹出确认弹窗，收集处理原因、必要的数据处理方式和补充说明。</li>
+<li>后端完成状态机校验、权限校验、数据处理和变更记录写入。</li>
+<li>支持技术同学明确实现：入口展示规则、字段校验规则、状态变更规则、会诊意见处理逻辑、变更记录规则。</li>
+</ul>
+<h2 id="3-范围">3. 范围</h2>
+<p>本次新增：</p>
+<div class="table-wrap"><table><thead><tr><th>当前状态</th><th>新增动作</th><th>处理后状态</th></tr></thead><tbody><tr><td>待分诊</td><td>退回至病历审核</td><td>待审核病历 / 待复审病历</td></tr><tr><td>待审核会诊意见</td><td>退回至待上传会诊意见</td><td>待上传会诊意见</td></tr><tr><td>待复审会诊意见</td><td>退回至待上传会诊意见</td><td>待上传会诊意见</td></tr><tr><td>待修改会诊意见</td><td>退回至待上传会诊意见</td><td>待上传会诊意见</td></tr><tr><td>已完成</td><td>退回至会诊意见审核</td><td>待审核会诊意见 / 待复审会诊意见</td></tr></tbody></table></div>
+<p>本次不新增：</p>
+<div class="table-wrap"><table><thead><tr><th>当前状态</th><th>处理方式</th></tr></thead><tbody><tr><td>待会诊</td><td>沿用线上修改会诊时间、取消分诊</td></tr><tr><td>待上传会诊意见</td><td>沿用线上取消分诊；不新增流程纠错动作</td></tr></tbody></table></div>
+<h2 id="4-页面入口">4. 页面入口</h2>
+<p>入口位置：会诊工单详情页右侧操作区，点击下箭头展开“更多操作”。</p>
+<p>展示规则：</p>
+<ul>
+<li>后端返回当前工单可执行动作列表，前端按线上按钮样式渲染。</li>
+<li>无可执行动作时，不展示本次新增动作按钮。</li>
+<li>同一状态下，如用户角色无权限或数据条件不满足，后端不返回该动作。</li>
+<li>按钮文案展示具体动作名称：<code>退回至病历审核</code>、<code>退回至待上传会诊意见</code>、<code>退回至会诊意见审核</code>。</li>
+</ul>
+<h2 id="5-通用交互流程">5. 通用交互流程</h2>
+<ol>
+<li>用户进入会诊工单详情页。</li>
+<li>点击右侧操作区下箭头，展开更多操作。</li>
+<li>系统展示当前可执行的具体纠错动作。</li>
+<li>用户点击动作。</li>
+<li>系统弹出确认弹窗。</li>
+<li>用户选择处理原因；如为会诊意见阶段退回，还需选择会诊意见处理方式。</li>
+<li>用户可填写补充说明。</li>
+<li>用户点击确认。</li>
+<li>后端校验状态、权限、动作合法性和字段完整性。</li>
+<li>校验通过后，后端完成状态变更、关联数据处理、变更记录写入。</li>
+<li>前端关闭弹窗并刷新工单详情。</li>
+</ol>
+<h2 id="6-弹窗字段规则">6. 弹窗字段规则</h2>
+<div class="table-wrap"><table><thead><tr><th>字段</th><th>类型</th><th>是否必填</th><th>展示规则</th><th>说明</th></tr></thead><tbody><tr><td>工单编号</td><td>文本</td><td>是</td><td>所有动作</td><td>系统带出，不可编辑</td></tr><tr><td>处理动作</td><td>文本</td><td>是</td><td>所有动作</td><td>系统带出，不可编辑</td></tr><tr><td>当前状态</td><td>文本</td><td>是</td><td>所有动作</td><td>系统带出，不可编辑</td></tr><tr><td>处理后状态</td><td>文本</td><td>是</td><td>所有动作</td><td>系统按规则计算，不可编辑</td></tr><tr><td>处理原因</td><td>下拉单选</td><td>是</td><td>所有动作</td><td>枚举按动作区分</td></tr><tr><td>会诊意见处理方式</td><td>单选</td><td>条件必填</td><td>仅会诊意见阶段退回展示</td><td>可选保留为草稿 / 作废当前意见</td></tr><tr><td>补充说明</td><td>多行文本</td><td>否</td><td>所有动作</td><td>用于记录处理背景、判断依据或沟通结论</td></tr><tr><td>影响说明</td><td>文本列表</td><td>是</td><td>所有动作</td><td>系统展示，不可编辑</td></tr></tbody></table></div>
+<p>校验规则：</p>
+<ul>
+<li><code>处理原因</code>：所有动作必填。</li>
+<li><code>会诊意见处理方式</code>：仅在 <code>待审核会诊意见 / 待复审会诊意见 / 待修改会诊意见</code> 执行 <code>退回至待上传会诊意见</code> 时展示并必填。</li>
+<li><code>补充说明</code>：非必填，不因为空阻断提交。</li>
+<li><code>影响说明</code>：根据动作和会诊意见处理方式动态展示。</li>
+</ul>
+<h2 id="7-动作规则">7. 动作规则</h2>
+<h3 id="7-1-待分诊-退回至病历审核">7.1 待分诊：退回至病历审核</h3>
+<div class="table-wrap"><table><thead><tr><th>项目</th><th>规则</th></tr></thead><tbody><tr><td>当前状态</td><td>待分诊</td></tr><tr><td>动作名称</td><td>退回至病历审核</td></tr><tr><td>处理后状态</td><td>待审核病历 / 待复审病历</td></tr><tr><td>目标状态判断</td><td>若工单曾因病历补充后重新提交并进入复审链路，则退回至待复审病历；否则退回至待审核病历</td></tr><tr><td>适用场景</td><td>病历审核通过进入待分诊后，发现病历资料仍有问题</td></tr><tr><td>后续流程</td><td>审核人员重新审核；如需补充，由审核人员按现有规则驳回至待用户补充病历或待协助补充病历</td></tr><tr><td>数据处理</td><td>保留原审核通过记录、分诊相关记录和本次退回记录</td></tr></tbody></table></div>
+<p>处理原因枚举：</p>
+<div class="table-wrap"><table><thead><tr><th>枚举值</th><th>说明</th></tr></thead><tbody><tr><td>病历资料缺失</td><td>必要病历材料未上传或不完整</td></tr><tr><td>病历资料有误</td><td>病历内容存在明显错误</td></tr><tr><td>患者信息不一致</td><td>病历、订单、患者基础信息不一致</td></tr><tr><td>专家反馈病历不完整</td><td>分诊或会诊准备阶段专家发现病历不足</td></tr><tr><td>审核通过有误</td><td>审核人员误操作通过</td></tr><tr><td>其他</td><td>需在补充说明中描述具体原因，补充说明仍非系统必填</td></tr></tbody></table></div>
+<h3 id="7-2-会诊意见阶段-退回至待上传会诊意见">7.2 会诊意见阶段：退回至待上传会诊意见</h3>
+<div class="table-wrap"><table><thead><tr><th>项目</th><th>规则</th></tr></thead><tbody><tr><td>当前状态</td><td>待审核会诊意见、待复审会诊意见、待修改会诊意见</td></tr><tr><td>动作名称</td><td>退回至待上传会诊意见</td></tr><tr><td>处理后状态</td><td>待上传会诊意见</td></tr><tr><td>适用场景</td><td>会诊未实际开始、需调整会诊时间、需取消分诊，或意见提交时机有误</td></tr><tr><td>后续流程</td><td>工单回到待上传会诊意见后，可继续使用线上已有修改会诊时间、取消分诊，或由专家重新提交意见</td></tr><tr><td>数据处理</td><td>按弹窗选择的会诊意见处理方式执行</td></tr></tbody></table></div>
+<p>处理原因枚举：</p>
+<div class="table-wrap"><table><thead><tr><th>枚举值</th><th>说明</th></tr></thead><tbody><tr><td>会诊未实际开始</td><td>会诊室开始触发状态变化，但业务上未形成真实会诊</td></tr><tr><td>需调整会诊时间</td><td>需要重新约定会诊时间</td></tr><tr><td>需取消分诊</td><td>需要回到待上传后再使用线上取消分诊能力</td></tr><tr><td>意见提交时机有误</td><td>专家提前提交或提交时点与实际会诊不一致</td></tr><tr><td>其他</td><td>需在补充说明中描述具体原因，补充说明仍非系统必填</td></tr></tbody></table></div>
+<p>会诊意见处理方式：</p>
+<div class="table-wrap"><table><thead><tr><th>选项</th><th>后端处理逻辑</th><th>专家后续体验</th><th>变更记录</th></tr></thead><tbody><tr><td>保留为草稿</td><td>将当前有效会诊意见从待审核/复审/修改链路中撤回，保留意见内容为可继续编辑的草稿；原提交、审核、退回历史保留</td><td>专家再次进入上传意见页面时，可继续基于原内容编辑并重新提交</td><td>记录“会诊意见处理方式：保留为草稿；意见内容已保留为草稿”</td></tr><tr><td>作废当前意见</td><td>将当前有效会诊意见标记为已作废，不作为后续审核对象；原提交、审核、修改历史保留</td><td>专家再次进入上传意见页面时，不默认沿用已作废意见作为当前草稿</td><td>记录“会诊意见处理方式：作废当前意见；意见单已作废”，并记录意见单 ID</td></tr></tbody></table></div>
+<p>实现要求：</p>
+<ul>
+<li><code>保留为草稿</code> 不等于审核驳回，不产生审核驳回结论。</li>
+<li><code>作废当前意见</code> 不物理删除意见单。</li>
+<li>两个选项都应使工单状态回到 <code>待上传会诊意见</code>。</li>
+<li>后端需保证同一时间只有一份当前有效会诊意见或当前草稿，避免重复提交产生多份有效意见。</li>
+</ul>
+<h3 id="7-3-已完成-退回至会诊意见审核">7.3 已完成：退回至会诊意见审核</h3>
+<div class="table-wrap"><table><thead><tr><th>项目</th><th>规则</th></tr></thead><tbody><tr><td>当前状态</td><td>已完成</td></tr><tr><td>动作名称</td><td>退回至会诊意见审核</td></tr><tr><td>处理后状态</td><td>待审核会诊意见 / 待复审会诊意见</td></tr><tr><td>目标状态判断</td><td>若完成前为首次审核通过，则退回至待审核会诊意见；若完成前为修改后复审通过，则退回至待复审会诊意见</td></tr><tr><td>适用场景</td><td>审核误通过、专家要求修改、意见内容有误、质控发现问题</td></tr><tr><td>后续流程</td><td>审核人员重新审核；如需专家修改，由审核人员按现有规则驳回至待修改会诊意见</td></tr><tr><td>数据处理</td><td>保留已完成记录、原意见内容、审核记录和本次退回记录</td></tr></tbody></table></div>
+<p>处理原因枚举：</p>
+<div class="table-wrap"><table><thead><tr><th>枚举值</th><th>说明</th></tr></thead><tbody><tr><td>审核误通过</td><td>审核人员误操作通过</td></tr><tr><td>专家要求修改</td><td>专家反馈已完成意见仍需调整</td></tr><tr><td>意见内容有误</td><td>意见存在事实、结论、措辞等错误</td></tr><tr><td>意见内容不完整</td><td>意见缺少必要内容</td></tr><tr><td>质控发现问题</td><td>平台质控或复核发现问题</td></tr><tr><td>其他</td><td>需在补充说明中描述具体原因，补充说明仍非系统必填</td></tr></tbody></table></div>
+<h2 id="8-后端校验规则">8. 后端校验规则</h2>
+<p>提交时后端必须校验：</p>
+<div class="table-wrap"><table><thead><tr><th>校验项</th><th>规则</th></tr></thead><tbody><tr><td>状态一致性</td><td>提交时工单状态必须仍为弹窗打开时的状态</td></tr><tr><td>权限</td><td>当前用户必须拥有该动作权限</td></tr><tr><td>动作合法性</td><td>当前状态、处理动作、处理后状态组合必须在规则配置内</td></tr><tr><td>目标状态</td><td>由后端按历史链路计算，不接收前端任意传入目标状态</td></tr><tr><td>处理原因</td><td>必填，且必须属于当前动作允许的枚举</td></tr><tr><td>会诊意见处理方式</td><td>会诊意见阶段退回时必填，且必须属于允许枚举</td></tr><tr><td>作废数据</td><td>选择作废当前意见时，必须存在可作废的当前有效意见单</td></tr><tr><td>事务一致性</td><td>状态变更、意见处理、变更记录写入必须成功或同时失败</td></tr></tbody></table></div>
+<p>校验失败时：</p>
+<ul>
+<li>不执行部分状态变更。</li>
+<li>返回明确错误信息。</li>
+<li>前端保留弹窗或提示刷新后重试，由实际接口错误码决定。</li>
+</ul>
+<h2 id="9-变更记录规则">9. 变更记录规则</h2>
+<p>每次流程纠错成功后，必须在变更记录中新增一条记录。</p>
+<p>基础字段：</p>
+<div class="table-wrap"><table><thead><tr><th>字段</th><th>说明</th></tr></thead><tbody><tr><td>工单编号</td><td>当前会诊工单编号</td></tr><tr><td>操作人 ID、姓名</td><td>当前登录用户</td></tr><tr><td>操作时间</td><td>后端服务时间</td></tr><tr><td>操作动作</td><td>具体动作名称</td></tr><tr><td>操作前状态</td><td>提交成功前的工单状态</td></tr><tr><td>操作后状态</td><td>后端最终变更后的工单状态</td></tr><tr><td>处理原因</td><td>弹窗选择的原因</td></tr><tr><td>补充说明</td><td>弹窗填写内容，可为空</td></tr></tbody></table></div>
+<p>会诊意见阶段额外字段：</p>
+<div class="table-wrap"><table><thead><tr><th>字段</th><th>说明</th></tr></thead><tbody><tr><td>会诊意见处理方式</td><td>保留为草稿 / 作废当前意见</td></tr><tr><td>意见单 ID</td><td>作废当前意见时记录</td></tr><tr><td>数据处理结果</td><td>意见内容已保留为草稿 / 意见单已作废</td></tr></tbody></table></div>
+<p>展示规则：</p>
+<ul>
+<li>查看入口沿用线上 <code>更多操作 &gt; 变更记录</code>。</li>
+<li>记录标题使用具体动作名称。</li>
+<li>按时间倒序展示。</li>
+<li>不覆盖历史记录。</li>
+</ul>
+<h2 id="10-权限建议">10. 权限建议</h2>
+<p>本功能属于流程纠错能力，建议仅开放给具备工单运营或管理权限的后台角色。</p>
+<p>权限控制建议：</p>
+<div class="table-wrap"><table><thead><tr><th>权限点</th><th>说明</th></tr></thead><tbody><tr><td>consultation_workorder.rollback_medical_review</td><td>待分诊退回病历审核</td></tr><tr><td>consultation_workorder.rollback_opinion_upload</td><td>会诊意见阶段退回待上传会诊意见</td></tr><tr><td>consultation_workorder.rollback_opinion_review</td><td>已完成退回会诊意见审核</td></tr></tbody></table></div>
+<p>前端展示以接口返回为准；后端必须独立校验权限。</p>
+<h2 id="11-原型说明">11. 原型说明</h2>
+<p>HTML 原型重点展示：</p>
+<ul>
+<li>线上风格的会诊工单详情页结构。</li>
+<li>右侧下箭头展开更多操作。</li>
+<li>当前状态切换后的动作展示差异。</li>
+<li>动作确认弹窗字段、校验点和影响说明。</li>
+<li>会诊意见处理方式对影响说明和变更记录的联动。</li>
+<li>变更记录面板中的新增记录示意。</li>
+<li>标注使用可拖拽浮窗展示，便于和页面原型对照查看。</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

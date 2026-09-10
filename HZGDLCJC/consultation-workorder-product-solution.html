@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>会诊工单流程纠错完整产品方案</title>
+  <style>
+    :root {
+      --bg: #f3f5f7;
+      --card: #fff;
+      --text: #1f2329;
+      --muted: #646a73;
+      --line: #e5e6eb;
+      --green: #00856f;
+      --blue: #0052d9;
+      --orange: #ed7b2f;
+      --red: #d54941;
+      --soft-green: #e8f7f3;
+      --soft-blue: #eef4ff;
+      --soft-orange: #fff4e8;
+      --soft-red: #fff0ed;
+      --soft-gray: #f7f8fa;
+      --shadow: 0 10px 24px rgba(31, 35, 41, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      padding-top: 56px;
+      color: var(--text);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      min-height: 56px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      background: rgba(255, 255, 255, .94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--green);
+      font-weight: 800;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .nav a {
+      height: 30px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid transparent;
+    }
+
+    .nav a.active {
+      color: var(--blue);
+      background: var(--soft-blue);
+      border-color: #8bb7ff;
+    }
+
+    .layout {
+      width: min(1120px, calc(100vw - 48px));
+      margin: 24px auto 56px;
+      display: block;
+    }
+
+    .main { min-width: 0; }
+
+    .hero,
+    .section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 30px 34px;
+    }
+
+    .eyebrow {
+      margin-bottom: 8px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .hero-desc {
+      max-width: 920px;
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    .meta-grid {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--line);
+    }
+
+    .meta-item {
+      padding: 14px 16px;
+      background: #fbfcfd;
+      border-right: 1px solid var(--line);
+    }
+
+    .meta-item:last-child { border-right: 0; }
+    .meta-label { color: var(--muted); font-size: 12px; }
+    .meta-value { margin-top: 4px; font-weight: 700; }
+
+    .section {
+      margin-top: 18px;
+      padding: 24px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 20px 0 10px;
+      color: var(--green);
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .info-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+      min-height: 118px;
+    }
+
+    .info-card b {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .info-card span,
+    .info-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-map {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(122px, 1fr));
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .node {
+      min-height: 126px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+      position: relative;
+    }
+
+    .node::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -9px;
+      width: 9px;
+      height: 1px;
+      background: #c9cdd4;
+    }
+
+    .node:last-child::after { display: none; }
+    .node.added { background: var(--soft-blue); border-color: #8bb7ff; }
+    .node.reuse { background: var(--soft-orange); border-color: #f6c27a; }
+    .node.finish { background: var(--soft-red); border-color: #ef9a94; }
+
+    .node-title { font-weight: 700; }
+    .node-sub { margin-top: 8px; color: var(--muted); font-size: 12px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 2px 8px;
+      margin-top: 8px;
+      border: 1px solid #8bb7ff;
+      background: #fff;
+      color: var(--blue);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .badge.gray {
+      color: var(--muted);
+      border-color: var(--line);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 10px 0 16px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #fafafa;
+      color: #4e5969;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    th:last-child, td:last-child { border-right: 0; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 1px 8px;
+      border: 1px solid #a8ddd2;
+      background: var(--soft-green);
+      color: var(--green);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .tag.blue {
+      color: var(--blue);
+      background: var(--soft-blue);
+      border-color: #8bb7ff;
+    }
+
+    .tag.orange {
+      color: var(--orange);
+      background: var(--soft-orange);
+      border-color: #f6c27a;
+    }
+
+    .tag.gray {
+      color: var(--muted);
+      background: var(--soft-gray);
+      border-color: var(--line);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .step {
+      position: relative;
+      min-height: 110px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .step::after {
+      content: "→";
+      position: absolute;
+      right: -13px;
+      top: 38px;
+      color: #86909c;
+      font-weight: 700;
+    }
+
+    .step:last-child::after { display: none; }
+    .step-num { color: var(--blue); font-weight: 700; }
+    .step-title { margin-top: 4px; font-weight: 700; }
+    .step-desc { margin-top: 6px; color: var(--muted); font-size: 12px; }
+
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .scenario {
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .scenario-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      font-weight: 700;
+    }
+
+    .scenario-body {
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .scenario-body ol {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .choice {
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .choice h3 {
+      margin: 0;
+      padding: 12px 14px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .choice ul {
+      margin: 0;
+      padding: 12px 18px 14px 30px;
+      color: var(--muted);
+    }
+
+    .rule-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .rule-box {
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .rule-box b { display: block; margin-bottom: 8px; }
+    .rule-box ul { margin: 0 0 0 18px; padding: 0; color: var(--muted); }
+
+    .record-demo {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr);
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .record-demo span {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .record-demo span:nth-child(odd) {
+      background: #fafafa;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: right;
+      border-right: 1px solid var(--line);
+    }
+
+    .record-demo span:nth-last-child(-n+2) { border-bottom: 0; }
+
+    .review-path {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      border: 1px solid var(--line);
+    }
+
+    .review-nav {
+      background: #fafafa;
+      border-right: 1px solid var(--line);
+    }
+
+    .review-nav div {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+    }
+
+    .review-main {
+      padding: 14px 16px;
+      color: var(--muted);
+    }
+
+    .review-main p { margin: 0 0 10px; }
+    .review-main p:last-child { margin-bottom: 0; }
+
+    ul { margin: 8px 0 14px 20px; padding: 0; }
+
+    @media (max-width: 880px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 16px;
+      }
+
+      body { padding-top: 90px; }
+      .layout { width: calc(100vw - 24px); }
+      .hero { padding: 24px 18px; }
+      .section { padding: 18px; }
+      h1 { font-size: 24px; }
+      .meta-grid,
+      .card-grid,
+      .flow,
+      .scenario-grid,
+      .compare,
+      .rule-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .meta-item {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .meta-item:last-child { border-bottom: 0; }
+      .step::after { display: none; }
+      .review-path { grid-template-columns: 1fr; }
+      .review-nav { border-right: 0; border-bottom: 1px solid var(--line); }
+      .hint { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">Q</span><span>会诊工单流程纠错</span></div>
+    <nav class="nav">
+      <a class="active" href="./consultation-workorder-product-solution.html">整体方案</a>
+      <a href="./consultation-workorder-exception-prototype.html">交互原型</a>
+      <a href="./consultation-workorder-status-rollback-prd.html">PRD文档</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <main class="main">
+      <section class="hero" id="overview">
+        <div class="eyebrow">完整产品方案</div>
+        <h1>会诊工单流程纠错：以具体动作方式支持必要状态回退</h1>
+        <p class="hero-desc">本方案用于处理会诊工单标准流转之外的纠错场景。核心思路是：不开放任意改状态，而是在右侧更多操作中展示具体动作，由后端按规则计算目标状态，并完整保留数据和变更记录。</p>
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">方案类型</div>
+            <div class="meta-value">后台工单流程纠错</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">新增动作</div>
+            <div class="meta-value">3 类</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">核心原则</div>
+            <div class="meta-value">退回前序节点，减少跨节点跳转</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">交付物</div>
+            <div class="meta-value">方案 HTML / 原型 / PRD</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="problem">
+        <div class="section-head">
+          <h2>2. 背景与问题</h2>
+          <div class="hint">先解释为什么需要新增能力</div>
+        </div>
+        <div class="card-grid">
+          <div class="info-card">
+            <b>线上已有能力</b>
+            <span>病历审核驳回、取消分诊、修改会诊时间、会诊意见审核驳回等主流程能力已存在。</span>
+          </div>
+          <div class="info-card">
+            <b>当前缺口</b>
+            <span>工单进入后续节点后，若发现前序处理有误，部分状态缺少合规回退入口。</span>
+          </div>
+          <div class="info-card">
+            <b>设计风险</b>
+            <span>如果提供自由改状态，容易造成流程断点、数据不一致和审计困难。</span>
+          </div>
+          <div class="info-card">
+            <b>方案方向</b>
+            <span>通过固定纠错动作承接异常场景，目标状态和数据处理由系统规则控制。</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="scope">
+        <div class="section-head">
+          <h2>3. 范围边界</h2>
+          <div class="hint">明确本次新增和不新增，减少评审分歧</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>类别</th>
+                <th>当前状态</th>
+                <th>处理方式</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag blue">本次新增</span></td>
+                <td>待分诊</td>
+                <td>退回至病历审核</td>
+                <td>病历审核通过后发现病历仍有问题。</td>
+              </tr>
+              <tr>
+                <td><span class="tag blue">本次新增</span></td>
+                <td>待审核 / 待复审 / 待修改会诊意见</td>
+                <td>退回至待上传会诊意见</td>
+                <td>需要处理专家已提交意见内容。</td>
+              </tr>
+              <tr>
+                <td><span class="tag blue">本次新增</span></td>
+                <td>已完成</td>
+                <td>退回至会诊意见审核</td>
+                <td>完结后发现意见仍需重新审核。</td>
+              </tr>
+              <tr>
+                <td><span class="tag orange">沿用线上</span></td>
+                <td>待会诊</td>
+                <td>修改会诊时间 / 取消分诊</td>
+                <td>线上已支持，无需新增流程纠错动作。</td>
+              </tr>
+              <tr>
+                <td><span class="tag orange">沿用线上</span></td>
+                <td>待上传会诊意见</td>
+                <td>取消分诊</td>
+                <td>线上已支持，不新增动作。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="map">
+        <div class="section-head">
+          <h2>4. 状态地图</h2>
+          <div class="hint">蓝色为新增动作，橙色为复用线上能力</div>
+        </div>
+        <div class="status-map">
+          <div class="node">
+            <div class="node-title">完善病历</div>
+            <div class="node-sub">待提交病历 / 待用户补充病历 / 协助补充病历</div>
+          </div>
+          <div class="node">
+            <div class="node-title">审核病历</div>
+            <div class="node-sub">待审核病历 / 待复审病历</div>
+          </div>
+          <div class="node added">
+            <div class="node-title">待分诊</div>
+            <div class="node-sub">病历审核通过后进入</div>
+            <span class="badge">新增：退回至病历审核</span>
+          </div>
+          <div class="node reuse">
+            <div class="node-title">待会诊</div>
+            <div class="node-sub">已分诊并等待会诊</div>
+            <span class="badge gray">沿用：修改时间 / 取消分诊</span>
+          </div>
+          <div class="node reuse">
+            <div class="node-title">待上传会诊意见</div>
+            <div class="node-sub">会诊开始后等待意见</div>
+            <span class="badge gray">沿用：取消分诊</span>
+          </div>
+          <div class="node added">
+            <div class="node-title">会诊意见阶段</div>
+            <div class="node-sub">待审核 / 待复审 / 待修改</div>
+            <span class="badge">新增：退回至待上传</span>
+          </div>
+          <div class="node finish">
+            <div class="node-title">已完成</div>
+            <div class="node-sub">意见审核通过后完结</div>
+            <span class="badge">新增：退回至审核</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="matrix">
+        <div class="section-head">
+          <h2>5. 状态动作矩阵</h2>
+          <div class="hint">前端展示具体动作，后端计算最终目标状态</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>当前状态</th>
+                <th>右侧更多操作展示</th>
+                <th>处理后状态</th>
+                <th>目标状态判断</th>
+                <th>是否需要会诊意见处理方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>待分诊</td>
+                <td><span class="tag blue">退回至病历审核</span></td>
+                <td>待审核病历 / 待复审病历</td>
+                <td>根据是否进入过病历复审链路判断。</td>
+                <td>否</td>
+              </tr>
+              <tr>
+                <td>待会诊</td>
+                <td><span class="tag gray">不展示新增动作</span></td>
+                <td>-</td>
+                <td>沿用线上取消分诊可回到待分诊。</td>
+                <td>否</td>
+              </tr>
+              <tr>
+                <td>待上传会诊意见</td>
+                <td><span class="tag gray">不展示新增动作</span></td>
+                <td>-</td>
+                <td>沿用线上取消分诊。</td>
+                <td>否</td>
+              </tr>
+              <tr>
+                <td>待审核 / 待复审 / 待修改会诊意见</td>
+                <td><span class="tag blue">退回至待上传会诊意见</span></td>
+                <td>待上传会诊意见</td>
+                <td>固定退回至待上传会诊意见。</td>
+                <td>是，必填</td>
+              </tr>
+              <tr>
+                <td>已完成</td>
+                <td><span class="tag blue">退回至会诊意见审核</span></td>
+                <td>待审核会诊意见 / 待复审会诊意见</td>
+                <td>根据完成前审核链路判断。</td>
+                <td>否</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="interaction">
+        <div class="section-head">
+          <h2>6. 通用交互流程</h2>
+          <div class="hint">从操作入口到后端成功处理的完整路径</div>
+        </div>
+        <div class="flow">
+          <div class="step">
+            <div class="step-num">01</div>
+            <div class="step-title">进入详情页</div>
+            <div class="step-desc">用户进入会诊工单详情页。</div>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <div class="step-title">展开更多操作</div>
+            <div class="step-desc">点击右侧操作区下箭头。</div>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <div class="step-title">点击具体动作</div>
+            <div class="step-desc">系统按状态和权限展示可执行动作。</div>
+          </div>
+          <div class="step">
+            <div class="step-num">04</div>
+            <div class="step-title">填写确认弹窗</div>
+            <div class="step-desc">选择处理原因，必要时选择会诊意见处理方式。</div>
+          </div>
+          <div class="step">
+            <div class="step-num">05</div>
+            <div class="step-title">后端校验处理</div>
+            <div class="step-desc">校验状态、权限、字段、数据条件。</div>
+          </div>
+          <div class="step">
+            <div class="step-num">06</div>
+            <div class="step-title">刷新并留痕</div>
+            <div class="step-desc">状态变更成功后刷新详情并写入变更记录。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="scenarios">
+        <div class="section-head">
+          <h2>7. 核心业务场景</h2>
+          <div class="hint">评审时用场景解释动作存在的必要性</div>
+        </div>
+        <div class="scenario-grid">
+          <div class="scenario">
+            <div class="scenario-head">场景一：待分诊发现病历问题</div>
+            <div class="scenario-body">
+              病历审核通过进入待分诊后，专家或分诊人员发现资料缺失、资料有误、患者信息不一致。
+              <ol>
+                <li>点击退回至病历审核。</li>
+                <li>后端判断进入待审核或待复审。</li>
+                <li>审核人员重新审核，必要时驳回补充病历。</li>
+              </ol>
+            </div>
+          </div>
+          <div class="scenario">
+            <div class="scenario-head">场景二：会诊意见提交但会诊未开始</div>
+            <div class="scenario-body">
+              医助进入会诊室触发待上传，专家提交意见进入审核，但地方医生未进入或需改期。
+              <ol>
+                <li>点击退回至待上传会诊意见。</li>
+                <li>选择保留草稿或作废意见。</li>
+                <li>回到待上传后沿用取消分诊或修改时间。</li>
+              </ol>
+            </div>
+          </div>
+          <div class="scenario">
+            <div class="scenario-head">场景三：已完成后发现意见问题</div>
+            <div class="scenario-body">
+              会诊意见审核通过后工单已完结，但审核误通过、专家要求修改或质控发现问题。
+              <ol>
+                <li>点击退回至会诊意见审核。</li>
+                <li>审核人员重新审核。</li>
+                <li>如需专家修改，沿用审核驳回至待修改意见流程。</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="dialog">
+        <div class="section-head">
+          <h2>8. 确认弹窗字段规则</h2>
+          <div class="hint">弹窗负责二次确认、收集原因、提示影响</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>字段</th>
+                <th>类型</th>
+                <th>是否必填</th>
+                <th>展示规则</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>工单编号</td>
+                <td>文本</td>
+                <td>是</td>
+                <td>所有动作</td>
+                <td>系统带出，不可编辑。</td>
+              </tr>
+              <tr>
+                <td>处理动作</td>
+                <td>文本</td>
+                <td>是</td>
+                <td>所有动作</td>
+                <td>系统带出，不可编辑。</td>
+              </tr>
+              <tr>
+                <td>当前状态</td>
+                <td>文本</td>
+                <td>是</td>
+                <td>所有动作</td>
+                <td>系统带出，不可编辑。</td>
+              </tr>
+              <tr>
+                <td>处理后状态</td>
+                <td>文本</td>
+                <td>是</td>
+                <td>所有动作</td>
+                <td>后端按规则计算，不允许操作人选择。</td>
+              </tr>
+              <tr>
+                <td>处理原因</td>
+                <td>下拉单选</td>
+                <td>是</td>
+                <td>所有动作</td>
+                <td>不同动作使用不同原因枚举。</td>
+              </tr>
+              <tr>
+                <td>会诊意见处理方式</td>
+                <td>单选</td>
+                <td>条件必填</td>
+                <td>会诊意见阶段退回展示</td>
+                <td>可选保留为草稿 / 作废当前意见。</td>
+              </tr>
+              <tr>
+                <td>补充说明</td>
+                <td>多行文本</td>
+                <td>否</td>
+                <td>所有动作</td>
+                <td>记录背景、判断依据或沟通结论。</td>
+              </tr>
+              <tr>
+                <td>影响说明</td>
+                <td>文本列表</td>
+                <td>系统展示</td>
+                <td>所有动作</td>
+                <td>根据动作和处理方式动态展示，不允许编辑。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="opinion">
+        <div class="section-head">
+          <h2>9. 会诊意见处理方式</h2>
+          <div class="hint">这是待审核/复审/修改会诊意见退回时的关键数据规则</div>
+        </div>
+        <div class="compare">
+          <div class="choice">
+            <h3>保留为草稿</h3>
+            <ul>
+              <li>将当前有效会诊意见从审核链路撤回。</li>
+              <li>保留意见内容为专家可继续编辑的草稿。</li>
+              <li>专家再次进入上传意见页面时，可基于原内容编辑并重新提交。</li>
+              <li>原提交、审核、退回历史保留。</li>
+              <li>变更记录写入“意见内容已保留为草稿”。</li>
+            </ul>
+          </div>
+          <div class="choice">
+            <h3>作废当前意见</h3>
+            <ul>
+              <li>将当前有效会诊意见标记为已作废。</li>
+              <li>已作废意见不作为后续审核对象。</li>
+              <li>专家再次进入上传意见页面时，不默认沿用已作废意见作为当前草稿。</li>
+              <li>原提交、审核、修改历史保留。</li>
+              <li>变更记录写入意见单 ID 和作废结果。</li>
+            </ul>
+          </div>
+        </div>
+        <h3>处理原因枚举</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>动作</th>
+                <th>原因枚举</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>退回至病历审核</td>
+                <td>病历资料缺失、病历资料有误、患者信息不一致、专家反馈病历不完整、审核通过有误、其他。</td>
+              </tr>
+              <tr>
+                <td>退回至待上传会诊意见</td>
+                <td>会诊未实际开始、需调整会诊时间、需取消分诊、意见提交时机有误、其他。</td>
+              </tr>
+              <tr>
+                <td>退回至会诊意见审核</td>
+                <td>审核误通过、专家要求修改、意见内容有误、意见内容不完整、质控发现问题、其他。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="backend">
+        <div class="section-head">
+          <h2>10. 后端实现规则</h2>
+          <div class="hint">前端展示不作为最终依据，提交以后端校验为准</div>
+        </div>
+        <div class="rule-grid">
+          <div class="rule-box">
+            <b>接口建议</b>
+            <ul>
+              <li>查询可执行动作：按状态、权限、数据条件返回按钮列表。</li>
+              <li>提交流程纠错：接收动作编码、原因、补充说明、会诊意见处理方式。</li>
+              <li>查询变更记录：沿用或扩展线上变更记录接口。</li>
+            </ul>
+          </div>
+          <div class="rule-box">
+            <b>提交校验</b>
+            <ul>
+              <li>校验提交时状态仍与弹窗打开时一致。</li>
+              <li>校验用户权限和动作合法性。</li>
+              <li>校验处理原因和会诊意见处理方式。</li>
+              <li>选择作废时校验存在可作废的当前有效意见单。</li>
+            </ul>
+          </div>
+          <div class="rule-box">
+            <b>目标状态计算</b>
+            <ul>
+              <li>待分诊退回：按病历审核历史判断待审核或待复审。</li>
+              <li>已完成退回：按完成前审核链路判断待审核意见或待复审意见。</li>
+              <li>会诊意见阶段：固定退回待上传会诊意见。</li>
+            </ul>
+          </div>
+          <div class="rule-box">
+            <b>事务一致性</b>
+            <ul>
+              <li>状态变更、意见处理、变更记录写入需同时成功或同时失败。</li>
+              <li>失败时不执行部分状态变更。</li>
+              <li>返回明确错误信息，前端提示刷新或重试。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="record">
+        <div class="section-head">
+          <h2>11. 变更记录规则</h2>
+          <div class="hint">每次纠错成功必须可追溯</div>
+        </div>
+        <div class="record-demo">
+          <span>操作时间</span><span>2026-07-01 15:21</span>
+          <span>操作人</span><span>质控管理员</span>
+          <span>操作动作</span><span>退回至待上传会诊意见</span>
+          <span>操作前状态</span><span>待审核会诊意见</span>
+          <span>操作后状态</span><span>待上传会诊意见</span>
+          <span>处理原因</span><span>会诊未实际开始</span>
+          <span>补充说明</span><span>医助进入会诊室后触发状态变化，但地方医生未进入，需重新确认会诊时间。</span>
+          <span>会诊意见处理方式</span><span>保留为草稿</span>
+          <span>关联结果</span><span>意见内容已保留为草稿，专家后续可继续编辑并重新提交。</span>
+        </div>
+        <h3>记录要求</h3>
+        <ul>
+          <li>查看入口沿用线上“更多操作 > 变更记录”。</li>
+          <li>记录标题使用具体动作名称，不使用抽象入口名称。</li>
+          <li>按时间倒序展示。</li>
+          <li>不覆盖历史记录，不物理删除历史数据。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="permissions">
+        <div class="section-head">
+          <h2>12. 权限与验收</h2>
+          <div class="hint">确保能力可控、可测、可上线</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>权限点</th>
+                <th>说明</th>
+                <th>验收口径</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>rollback_medical_review</td>
+                <td>待分诊退回病历审核</td>
+                <td>有权限且状态满足时展示动作，提交后按历史进入待审核或待复审病历。</td>
+              </tr>
+              <tr>
+                <td>rollback_opinion_upload</td>
+                <td>会诊意见阶段退回待上传会诊意见</td>
+                <td>必须选择会诊意见处理方式，成功后状态为待上传会诊意见。</td>
+              </tr>
+              <tr>
+                <td>rollback_opinion_review</td>
+                <td>已完成退回会诊意见审核</td>
+                <td>提交后按完成前链路进入待审核或待复审会诊意见。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="rule-grid">
+          <div class="rule-box">
+            <b>前端验收</b>
+            <ul>
+              <li>右侧更多操作样式与线上一致。</li>
+              <li>不同状态展示正确动作或不展示新增动作。</li>
+              <li>弹窗必填项、条件项、影响说明符合规则。</li>
+              <li>变更记录示例字段顺序清晰。</li>
+            </ul>
+          </div>
+          <div class="rule-box">
+            <b>后端验收</b>
+            <ul>
+              <li>权限、状态、动作、字段均由后端校验。</li>
+              <li>目标状态不由前端任意指定。</li>
+              <li>数据处理与状态变更事务一致。</li>
+              <li>所有成功操作写入完整变更记录。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="review">
+        <div class="section-head">
+          <h2>13. 评审讲解路径</h2>
+          <div class="hint">按这个顺序讲，先全局再细节</div>
+        </div>
+        <div class="review-path">
+          <div class="review-nav">
+            <div>第一步：讲完整方案</div>
+            <div>第二步：看交互原型</div>
+            <div>第三步：看标注规则</div>
+            <div>第四步：对照 PRD</div>
+          </div>
+          <div class="review-main">
+            <p><b>先讲本页：</b>统一背景、范围、状态动作、关键数据处理方式和后端实现边界。</p>
+            <p><b>再打开原型：</b>演示右侧更多操作、动作按钮、确认弹窗、变更记录和标注浮窗。</p>
+            <p><b>然后看标注：</b>逐个确认入口展示、弹窗字段、提交校验、数据处理和变更记录规则。</p>
+            <p><b>最后对照 PRD：</b>确认原因枚举、权限点、接口建议、事务一致性和验收口径。</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

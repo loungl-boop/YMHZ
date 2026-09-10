@@ -1,0 +1,1462 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>会诊详情 - 异常处理原型</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --card: #fff;
+      --text: #1f2329;
+      --sub: #646a73;
+      --muted: #8f959e;
+      --line: #e5e6eb;
+      --green: #009b7a;
+      --green-soft: #e6f7f2;
+      --blue: #245bff;
+      --orange: #ff7d00;
+      --orange-soft: #fff4e8;
+      --purple: #8e44ad;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding-top: 54px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    button, select, textarea { font: inherit; }
+
+    .solution-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 3000;
+      min-height: 54px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(255, 255, 255, .94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+
+    .solution-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: #1f2329;
+      white-space: nowrap;
+    }
+
+    .solution-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: #00856f;
+      font-weight: 800;
+    }
+
+    .solution-tabs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .solution-tabs a {
+      height: 30px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      color: var(--blue);
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+
+    .solution-tabs a.active {
+      color: var(--blue);
+      background: #eef4ff;
+      border-color: #8bb7ff;
+    }
+
+    .review-toolbar {
+      height: 40px;
+      padding: 0 24px;
+      background: #263445;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .review-toolbar span { color: #c8d3df; }
+
+    .demo-select { display: flex; align-items: center; gap: 8px; }
+
+    select {
+      height: 30px;
+      border: 1px solid #dcdfe6;
+      border-radius: 3px;
+      background: #fff;
+      padding: 0 8px;
+    }
+
+    .shell {
+      min-height: calc(100vh - 40px);
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #fff;
+      border-right: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .brand {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--line);
+      font-size: 20px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 3px solid #007f68;
+      color: #007f68;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .nav {
+      padding: 14px 0 40px;
+      color: #4e5969;
+    }
+
+    .nav-group {
+      margin-bottom: 8px;
+    }
+
+    .nav-title {
+      height: 38px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      color: #1f2329;
+    }
+
+    .nav-item {
+      height: 40px;
+      padding-left: 46px;
+      display: flex;
+      align-items: center;
+      color: #4e5969;
+    }
+
+    .nav-item.active {
+      margin: 0 16px 0 2px;
+      padding-left: 44px;
+      border-radius: 2px;
+      color: var(--green);
+      background: #e7f8ef;
+      font-weight: 600;
+    }
+
+    .main {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: 54px minmax(0, 1fr);
+    }
+
+    .topbar {
+      height: 54px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 16px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #8f959e;
+    }
+
+    .hamburger {
+      font-size: 24px;
+      color: #1f2329;
+      margin-right: 10px;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      color: #1f2329;
+    }
+
+    .page {
+      padding: 16px 16px 0;
+      overflow: auto;
+    }
+
+    .order-head {
+      height: 56px;
+      background: #fff;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      margin-bottom: 16px;
+    }
+
+    .order-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #1f2329;
+    }
+
+    .order-no {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .status {
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 8px;
+      border: 1px solid var(--blue);
+      color: var(--blue);
+      border-radius: 3px;
+      font-size: 13px;
+    }
+
+    .order-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #646a73;
+    }
+
+    .source-tag {
+      height: 24px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 3px;
+      background: #f2f3f5;
+      color: #646a73;
+      font-size: 13px;
+    }
+
+    .content-wrap {
+      display: grid;
+      grid-template-columns: minmax(780px, 928px) 146px;
+      gap: 16px;
+      justify-content: center;
+      align-items: start;
+    }
+
+    .content-wrap.record-mode {
+      grid-template-columns: minmax(640px, 780px) minmax(360px, 420px);
+    }
+
+    .content {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 5px;
+      padding: 28px;
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      color: var(--green);
+      font-size: 18px;
+      font-weight: 700;
+      position: relative;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .consult-grid {
+      display: grid;
+      grid-template-columns: 110px 1fr 110px 1fr;
+      row-gap: 18px;
+      align-items: center;
+    }
+
+    .label {
+      color: #646a73;
+    }
+
+    .value {
+      color: #1f2329;
+    }
+
+    .warn-tag {
+      float: right;
+      height: 24px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 3px;
+      background: var(--orange-soft);
+      color: var(--orange);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .room-link {
+      color: #0052d9;
+      text-decoration: none;
+    }
+
+    .qr {
+      margin-top: 6px;
+      width: 150px;
+      height: 150px;
+      display: grid;
+      place-items: center;
+      color: #007f68;
+      font-weight: 800;
+      font-size: 34px;
+      background:
+        repeating-linear-gradient(90deg, #111 0 4px, transparent 4px 10px),
+        repeating-linear-gradient(0deg, transparent 0 8px, #111 8px 11px, transparent 11px 18px);
+      background-size: 150px 150px;
+      border-radius: 4px;
+      opacity: .9;
+    }
+
+    .qr::after {
+      content: "Q";
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      border: 3px solid #007f68;
+    }
+
+    .medical-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .medical-title {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .hospital {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1f2329;
+      font-size: 12px;
+    }
+
+    .hospital-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid #007f68;
+    }
+
+    .green-line {
+      height: 4px;
+      border-top: 2px solid var(--green);
+      border-bottom: 1px solid var(--green);
+      margin-bottom: 20px;
+    }
+
+    .patient-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+      color: #1f2329;
+    }
+
+    .patient-meta i {
+      color: var(--green);
+      font-style: normal;
+      margin-right: 4px;
+    }
+
+    .info-box {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+    }
+
+    .info-box div {
+      min-height: 62px;
+      padding: 10px 14px;
+      border-right: 1px solid #dcdfe6;
+    }
+
+    .info-box div:last-child {
+      border-right: 0;
+    }
+
+    .sub-title {
+      margin-top: 32px;
+      color: var(--green);
+      font-size: 18px;
+      font-weight: 700;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .actions {
+      width: 146px;
+      position: sticky;
+      top: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .content-wrap.record-mode .actions {
+      width: 100%;
+    }
+
+    #actionButtons {
+      display: grid;
+      gap: 12px;
+    }
+
+    .action-btn {
+      position: relative;
+      width: 116px;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 3px;
+      background: #fff;
+      color: #1f2329;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      justify-self: start;
+    }
+
+    .action-btn:hover {
+      border-color: #c6e2ff;
+      color: #0052d9;
+      background: #f5f9ff;
+    }
+
+    .action-btn.icon {
+      font-size: 18px;
+    }
+
+    .extra-actions {
+      display: none;
+      gap: 12px;
+    }
+
+    .extra-actions.open {
+      display: grid;
+    }
+
+    .record-panel {
+      display: none;
+      width: 100%;
+      min-height: 430px;
+      background: #fff;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .record-panel.open {
+      display: block;
+    }
+
+    .record-head {
+      height: 42px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+    }
+
+    .record-back {
+      border: 0;
+      background: transparent;
+      color: #0052d9;
+      cursor: pointer;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    .record-list {
+      padding: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .record-item {
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 4px;
+      line-height: 1.45;
+    }
+
+    .record-item:last-child { border-bottom: 0; }
+
+    .record-time {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .record-title {
+      color: #1f2329;
+      font-weight: 700;
+    }
+
+    .record-desc {
+      color: #646a73;
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+    .record-detail-grid {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      margin-top: 2px;
+      font-size: 12px;
+      color: #1f2329;
+    }
+
+    .record-detail-grid span {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--line);
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .record-detail-grid span:nth-child(odd) {
+      background: #fafafa;
+      color: #646a73;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    @media (max-width: 1280px) {
+      .content-wrap.record-mode {
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .content-wrap,
+      .content-wrap.record-mode {
+        grid-template-columns: minmax(0, 1fr);
+        justify-content: stretch;
+      }
+
+      .actions,
+      .content-wrap.record-mode .actions {
+        width: 100%;
+        position: static;
+      }
+
+      .action-btn {
+        width: 100%;
+      }
+    }
+
+    .anno-dot {
+      position: absolute;
+      top: -9px;
+      right: -9px;
+      z-index: 5;
+      min-width: 30px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      border: 1px dashed var(--purple);
+      background: #fbf4ff;
+      color: #7d3c98;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: help;
+      line-height: 1;
+    }
+
+    .anno-dot:hover {
+      background: #f4e4ff;
+      border-color: #7d3c98;
+    }
+
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 100;
+    }
+
+    .modal-mask.open { display: flex; }
+
+    .modal {
+      position: relative;
+      width: 680px;
+      max-width: 100%;
+      max-height: calc(100vh - 48px);
+      background: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, .24);
+    }
+
+    .modal-head {
+      height: 54px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .close {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 22px;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow: auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .confirm-table, .annotation-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .confirm-table th,
+    .confirm-table td,
+    .annotation-table th,
+    .annotation-table td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      line-height: 1.5;
+      vertical-align: top;
+    }
+
+    .confirm-table th,
+    .annotation-table th {
+      width: 110px;
+      background: #fafafa;
+      color: var(--sub);
+      font-weight: 500;
+      text-align: right;
+    }
+
+    .form-row { display: grid; gap: 8px; }
+    .form-label { font-weight: 500; }
+    .required { color: #f56c6c; }
+
+    .radio-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .radio-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      align-items: start;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 10px;
+      color: #1f2329;
+      line-height: 1.5;
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .radio-card:has(input:checked) {
+      border-color: #0052d9;
+      background: #f5f9ff;
+    }
+
+    .radio-card small {
+      display: block;
+      color: var(--sub);
+      margin-top: 2px;
+    }
+
+    textarea {
+      min-height: 78px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 8px 10px;
+      resize: vertical;
+    }
+
+    .impact {
+      position: relative;
+      background: #fafafa;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+
+    .impact-title { font-weight: 600; margin-bottom: 6px; }
+    .impact ul { margin: 0; padding-left: 18px; color: var(--sub); line-height: 1.8; }
+
+    .modal-foot {
+      position: relative;
+      height: 56px;
+      padding: 0 16px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      background: #fafafa;
+    }
+
+    .modal-btn {
+      min-width: 86px;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 3px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .modal-btn.primary {
+      border-color: #0052d9;
+      background: #0052d9;
+      color: #fff;
+    }
+
+    .annotation-copy {
+      color: var(--sub);
+      line-height: 1.8;
+    }
+
+    .annotation-copy p { margin: 0 0 8px; }
+    .annotation-copy ul { margin: 0; padding-left: 18px; }
+
+    .annotation-popover {
+      position: fixed;
+      top: 88px;
+      right: 24px;
+      z-index: 130;
+      width: min(460px, calc(100vw - 48px));
+      max-height: calc(100vh - 112px);
+      background: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, .18);
+      display: none;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
+    }
+
+    .annotation-popover.open {
+      display: grid;
+    }
+
+    .annotation-popover.dragging {
+      user-select: none;
+      cursor: grabbing;
+    }
+
+    .annotation-popover .modal-head {
+      cursor: grab;
+      background: #fbfbfc;
+    }
+
+    .annotation-popover.dragging .modal-head {
+      cursor: grabbing;
+    }
+
+    .annotation-popover .modal-body {
+      max-height: calc(100vh - 220px);
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #303133;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 4px;
+      display: none;
+      z-index: 120;
+      max-width: 420px;
+    }
+
+    .toast.open { display: block; }
+
+    @media (max-width: 880px) {
+      body { padding-top: 96px; }
+
+      .solution-topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="solution-topbar">
+    <div class="solution-brand"><span class="solution-logo">Q</span><span>会诊工单流程纠错</span></div>
+    <nav class="solution-tabs">
+      <a href="./consultation-workorder-product-solution.html">整体方案</a>
+      <a class="active" href="./consultation-workorder-exception-prototype.html">交互原型</a>
+      <a href="./consultation-workorder-status-rollback-prd.html">PRD文档</a>
+    </nav>
+  </header>
+
+  <section class="review-toolbar">
+    <div><strong>评审辅助区（非业务页面内容）</strong> <span>切换状态演示异常处理动作；线上页面不展示此栏。</span></div>
+    <div class="demo-select">
+      <label for="statusSelect">演示状态</label>
+      <select id="statusSelect"></select>
+    </div>
+  </section>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">Q</span>尤迈会诊</div>
+      <nav class="nav">
+        <div class="nav-group">
+          <div class="nav-title">▣ 工作台 <span>⌃</span></div>
+          <div class="nav-item">待办</div>
+          <div class="nav-item">护士站</div>
+          <div class="nav-item">添加服务单</div>
+          <div class="nav-item">病历标记</div>
+          <div class="nav-item">慢病工作台</div>
+          <div class="nav-item">交班表</div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">☷ 用户中心 <span>⌄</span></div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">▤ 项目中心 <span>⌃</span></div>
+          <div class="nav-item">项目管理</div>
+          <div class="nav-item">已归档项目</div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">▤ 订单管理 <span>⌄</span></div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">▣ 工单管理 <span>⌃</span></div>
+          <div class="nav-item active">会诊工单</div>
+          <div class="nav-item">诊所服务</div>
+          <div class="nav-item">远程门诊工单</div>
+          <div class="nav-item">绿通</div>
+          <div class="nav-item">就医指导</div>
+          <div class="nav-item">报告解读</div>
+          <div class="nav-item">购药</div>
+        </div>
+      </nav>
+    </aside>
+
+    <section class="main">
+      <header class="topbar">
+        <div class="breadcrumb"><span class="hamburger">☰</span><span>工单管理</span><span>›</span><span>会诊工单</span><span>›</span><strong>会诊详情</strong></div>
+        <div class="user"><span>♧</span><span>杨小龙⌄</span></div>
+      </header>
+
+      <main class="page">
+        <section class="order-head">
+          <div class="order-left">
+            <span class="back">← 返回</span>
+            <span class="order-no">HZ0630141929463254170</span>
+            <span class="status" id="statusTag">待会诊</span>
+          </div>
+          <div class="order-right">
+            <span class="source-tag">中意2026单采项目</span>
+            <span>创建于2026-06-30 14:19:29</span>
+          </div>
+        </section>
+
+        <div class="content-wrap" id="contentWrap">
+          <div class="content">
+            <section class="card">
+              <h2 class="section-title">会诊信息 <span class="warn-tag">未填写会诊意见</span></h2>
+              <div class="consult-grid">
+                <div class="label">专家姓名</div><div class="value">尹朝华 ☎</div>
+                <div class="label">会诊科室</div><div class="value">心外科</div>
+                <div class="label">会诊时间</div><div class="value">2026-07-01 14:00</div>
+                <div class="label">会诊方式</div><div class="value">平台会诊</div>
+                <div class="label">房间号</div><div class="value">338651167 （ 视频会诊室-12人-标清 ）</div>
+                <div class="label"></div><div></div>
+                <div class="label">房间状态</div><div class="value"><span class="warn-tag" style="float:none;">未开始</span></div>
+                <div class="label"></div><div></div>
+                <div class="label">房间链接</div><div class="value" style="grid-column: span 3;"><a class="room-link" href="#">https://tlh.youmaijiankang.com/umlcicclient/#/local3?targetId=6835096618</a></div>
+                <div class="label">房间二维码</div><div class="value" style="grid-column: span 3;"><div class="qr"></div></div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="medical-head">
+                <div class="medical-title">董彦静的病历</div>
+                <div class="hospital"><span class="hospital-logo"></span><span>北京尤迈医学诊所<br>Beijing Union Clinic Partners</span></div>
+              </div>
+              <div class="green-line"></div>
+              <div class="patient-meta">
+                <span><i>♙</i>董彦静</span>
+                <span><i>♀</i>女</span>
+                <span><i>⚑</i>-</span>
+                <span><i>▤</i>41</span>
+                <span><i>☎</i>-</span>
+                <span><i>▣</i>12***********6524</span>
+                <span><i>☎</i>159****0861</span>
+              </div>
+              <div class="info-box">
+                <div><span class="label">紧急联系人</span></div>
+                <div><span class="label">申请人</span><br>董彦静 | 本人 159****0861</div>
+              </div>
+              <div class="sub-title">临床医生</div>
+            </section>
+          </div>
+
+          <aside class="actions" id="actionsPanel">
+            <div id="actionButtons">
+              <button class="action-btn">邀请填写会诊意见</button>
+              <button class="action-btn">修改会诊时间</button>
+              <button class="action-btn">取消分诊</button>
+              <button class="action-btn">编辑病历</button>
+              <div class="extra-actions" id="extraActions">
+                <button class="action-btn">取消会诊</button>
+                <button class="action-btn">订单详情</button>
+                <button class="action-btn" id="changeRecordBtn">变更记录<span class="anno-dot" data-annotation="A5" title="查看标注规则">标A5</span></button>
+                <button class="action-btn" id="exceptionBtn">退回至病历审核<span class="anno-dot" data-annotation="A1" title="查看标注规则">标A1</span></button>
+                <button class="action-btn">下载病历</button>
+                <button class="action-btn">分享病历</button>
+              </div>
+              <button class="action-btn icon" id="toggleMoreBtn">⌄</button>
+            </div>
+
+            <section class="record-panel" id="recordPanel">
+              <div class="record-head">
+                <span>变更记录</span>
+                <button class="record-back" id="backActionsBtn">返回</button>
+              </div>
+              <div class="record-list">
+                <div class="record-item">
+                  <div class="record-time">2026-07-01 15:21</div>
+                  <div class="record-title" id="latestRecordTitle">退回至病历审核</div>
+                  <div class="record-desc" id="latestRecordDesc"></div>
+                </div>
+                <div class="record-item">
+                  <div class="record-time">2026-07-01 14:05</div>
+                  <div class="record-title">系统状态变更</div>
+                  <div class="record-desc">会诊室开始触发，状态由待会诊变更为待上传会诊意见。</div>
+                </div>
+                <div class="record-item">
+                  <div class="record-time">2026-06-30 15:10</div>
+                  <div class="record-title">修改会诊时间</div>
+                  <div class="record-desc">会诊时间调整为 2026-07-01 14:00。</div>
+                </div>
+                <div class="record-item">
+                  <div class="record-time">2026-06-30 14:55</div>
+                  <div class="record-title">完成分诊</div>
+                  <div class="record-desc">分诊至心外科尹朝华医生，状态变更为待会诊。</div>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <div class="modal-mask" id="exceptionMask">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="exceptionTitle">
+      <span class="anno-dot" data-annotation="A3" title="查看标注规则" style="top:16px;right:52px;">标A3</span>
+      <div class="modal-head">
+        <h2 class="modal-title" id="exceptionTitle">退回至病历审核</h2>
+        <button class="close" type="button" id="closeException" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <table class="confirm-table">
+          <tr><th>工单编号</th><td>HZ0630141929463254170</td><th>处理动作</th><td id="modalActionName">退回至病历审核</td></tr>
+          <tr><th>当前状态</th><td id="modalFromState">待分诊</td><th>处理后状态</th><td id="modalToState">待审核病历 / 待复审病历</td></tr>
+        </table>
+        <div class="form-row">
+          <label class="form-label">处理原因 <span class="required">*</span></label>
+          <select id="reasonSelect"><option>病历资料有误</option></select>
+        </div>
+        <div class="form-row" id="opinionModeRow" style="display:none;">
+          <label class="form-label">会诊意见处理方式 <span class="required">*</span></label>
+          <div class="radio-group">
+            <label class="radio-card">
+              <input type="radio" name="opinionMode" value="draft" checked>
+              <span>保留为草稿<small>保留专家已填写内容，退回后可继续编辑并重新提交。</small></span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="opinionMode" value="void">
+              <span>作废当前意见<small>当前意见单标记作废，退回后需重新填写或上传。</small></span>
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">补充说明</label>
+          <textarea id="remarkText" placeholder="请填写处理背景、判断依据或沟通结论，便于后续审计。"></textarea>
+        </div>
+        <div class="impact">
+          <span class="anno-dot" data-annotation="A6" title="查看标注规则">标A6</span>
+          <div class="impact-title">影响说明</div>
+          <ul>
+            <li>工单将从待分诊退回病历审核节点。</li>
+            <li>目标状态由历史流转判断：首次审核后回待审核病历，补充后再提交回待复审病历。</li>
+            <li>后续如需用户补充病历，由审核人员执行驳回。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="modal-btn" type="button" id="cancelException">取消</button>
+        <button class="modal-btn primary" type="button" id="submitException">确认退回</button>
+        <span class="anno-dot" data-annotation="A4" title="查看标注规则" style="top:16px;right:16px;">标A4</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="annotation-popover" id="annotationPopover" role="dialog" aria-labelledby="annotationTitle">
+    <div class="modal-head" id="annotationDragHandle">
+      <h2 class="modal-title" id="annotationTitle">原型标注</h2>
+      <button class="close" type="button" id="closeAnnotation" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="annotation-copy" id="annotationContent"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn" type="button" id="resetAnnotationPosition">停靠右侧</button>
+      <button class="modal-btn primary" type="button" id="confirmAnnotation">知道了</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">已模拟提交。</div>
+
+  <script>
+    const states = ["待分诊", "待会诊", "待上传会诊意见", "待审核会诊意见", "待复审会诊意见", "待修改会诊意见", "已完成"];
+    const statusSelect = document.getElementById("statusSelect");
+    const statusTag = document.getElementById("statusTag");
+    const extraActions = document.getElementById("extraActions");
+    const contentWrap = document.getElementById("contentWrap");
+    const toggleMoreBtn = document.getElementById("toggleMoreBtn");
+    const changeRecordBtn = document.getElementById("changeRecordBtn");
+    const actionButtons = document.getElementById("actionButtons");
+    const recordPanel = document.getElementById("recordPanel");
+    const backActionsBtn = document.getElementById("backActionsBtn");
+    const exceptionBtn = document.getElementById("exceptionBtn");
+    const exceptionMask = document.getElementById("exceptionMask");
+    const exceptionTitle = document.getElementById("exceptionTitle");
+    const modalActionName = document.getElementById("modalActionName");
+    const modalFromState = document.getElementById("modalFromState");
+    const modalToState = document.getElementById("modalToState");
+    const reasonSelect = document.getElementById("reasonSelect");
+    const remarkText = document.getElementById("remarkText");
+    const opinionModeRow = document.getElementById("opinionModeRow");
+    const latestRecordTitle = document.getElementById("latestRecordTitle");
+    const latestRecordDesc = document.getElementById("latestRecordDesc");
+    const impactList = document.querySelector("#exceptionMask .impact ul");
+    const submitException = document.getElementById("submitException");
+    const annotationPopover = document.getElementById("annotationPopover");
+    const annotationDragHandle = document.getElementById("annotationDragHandle");
+    const annotationTitle = document.getElementById("annotationTitle");
+    const annotationContent = document.getElementById("annotationContent");
+    const toast = document.getElementById("toast");
+    let annotationDrag = null;
+
+    states.forEach((state) => {
+      const option = document.createElement("option");
+      option.value = state;
+      option.textContent = state;
+      statusSelect.appendChild(option);
+    });
+    statusSelect.value = "待分诊";
+
+    const actionConfig = {
+      "待分诊": {
+        buttonText: "退回至病历审核",
+        modalTitle: "退回至病历审核",
+        actionName: "退回至病历审核",
+        from: "待分诊",
+        to: "待审核病历 / 待复审病历",
+        reasonOptions: ["病历资料缺失", "病历资料有误", "患者信息不一致", "专家反馈病历不完整", "审核通过有误", "其他"],
+        reasonDefault: "病历资料有误",
+        remarkRequired: false,
+        submitText: "确认退回",
+        impacts: [
+          "工单将从待分诊退回病历审核节点。",
+          "目标状态由历史流转判断：首次审核后回待审核病历，补充后再提交回待复审病历。",
+          "后续如需用户补充病历，由审核人员执行驳回。"
+        ],
+        recordTitle: "退回至病历审核",
+        recordDetails: [
+          ["操作时间", "2026-07-01 15:21"],
+          ["操作人", "运营管理员"],
+          ["操作动作", "退回至病历审核"],
+          ["操作前状态", "待分诊"],
+          ["操作后状态", "待复审病历"],
+          ["处理原因", "病历资料有误"],
+          ["补充说明", "分诊前专家反馈检查资料与主诉不一致，需审核人员重新确认。"],
+          ["会诊意见处理方式", "-"],
+          ["关联结果", "保留原审核通过记录、分诊记录和本次退回记录。"]
+        ]
+      },
+      "待审核会诊意见": null,
+      "待复审会诊意见": null,
+      "待修改会诊意见": null,
+      "已完成": {
+        buttonText: "退回至会诊意见审核",
+        modalTitle: "退回至会诊意见审核",
+        actionName: "退回至会诊意见审核",
+        from: "已完成",
+        to: "待审核会诊意见 / 待复审会诊意见",
+        reasonOptions: ["审核误通过", "专家要求修改", "意见内容有误", "意见内容不完整", "质控发现问题", "其他"],
+        reasonDefault: "审核误通过",
+        remarkRequired: true,
+        submitText: "确认退回",
+        impacts: [
+          "工单将从已完成恢复至会诊意见审核节点。",
+          "目标状态由完成前流转判断：首次审核通过回待审核会诊意见，修改后复审通过回待复审会诊意见。",
+          "如需专家修改，由审核人员重新驳回至待修改会诊意见。"
+        ],
+        recordTitle: "退回至会诊意见审核",
+        recordDetails: [
+          ["操作时间", "2026-07-01 15:21"],
+          ["操作人", "质控管理员"],
+          ["操作动作", "退回至会诊意见审核"],
+          ["操作前状态", "已完成"],
+          ["操作后状态", "待复审会诊意见"],
+          ["处理原因", "审核误通过"],
+          ["补充说明", "质控复核发现会诊意见中随访建议不完整，需审核人员重新判断是否驳回专家修改。"],
+          ["会诊意见处理方式", "-"],
+          ["关联结果", "保留已完成记录、原意见内容、审核记录和本次退回记录。"]
+        ]
+      }
+    };
+
+    const opinionRollbackAction = {
+      buttonText: "退回至待上传会诊意见",
+      modalTitle: "退回至待上传会诊意见",
+      actionName: "退回至待上传会诊意见",
+      from: "待审核/复审/修改会诊意见",
+      to: "待上传会诊意见",
+      reasonOptions: ["会诊未实际开始", "需调整会诊时间", "需取消分诊", "意见提交时机有误", "其他"],
+      reasonDefault: "会诊未实际开始",
+      remarkRequired: true,
+      submitText: "确认退回",
+      opinionMode: true,
+      impacts: [
+        "工单将退回至待上传会诊意见状态。",
+        "当前会诊意见内容将保留为草稿。",
+        "后续专家可继续编辑并重新提交，原提交和审核记录保留。"
+      ],
+      draftImpacts: [
+        "工单将退回至待上传会诊意见状态。",
+        "当前会诊意见内容将保留为草稿。",
+        "后续专家可继续编辑并重新提交，原提交和审核记录保留。"
+      ],
+      voidImpacts: [
+        "工单将退回至待上传会诊意见状态。",
+        "当前会诊意见单将标记为已作废。",
+        "后续专家需重新填写或上传会诊意见，原提交和审核记录保留。"
+      ],
+      recordTitle: "退回至待上传会诊意见",
+      draftRecordDetails: [
+        ["操作时间", "2026-07-01 15:21"],
+        ["操作人", "质控管理员"],
+        ["操作动作", "退回至待上传会诊意见"],
+        ["操作前状态", "待审核会诊意见"],
+        ["操作后状态", "待上传会诊意见"],
+        ["处理原因", "会诊未实际开始"],
+        ["补充说明", "医助进入会诊室后触发状态变化，但地方医生未进入，需重新确认会诊时间。"],
+        ["会诊意见处理方式", "保留为草稿"],
+        ["关联结果", "意见内容已保留为草稿，专家后续可继续编辑并重新提交。"]
+      ],
+      voidRecordDetails: [
+        ["操作时间", "2026-07-01 15:21"],
+        ["操作人", "质控管理员"],
+        ["操作动作", "退回至待上传会诊意见"],
+        ["操作前状态", "待审核会诊意见"],
+        ["操作后状态", "待上传会诊意见"],
+        ["处理原因", "会诊未实际开始"],
+        ["补充说明", "医助进入会诊室后触发状态变化，但会诊未真实开始，本次意见不再作为有效审核对象。"],
+        ["会诊意见处理方式", "作废当前意见"],
+        ["关联结果", "意见单 YJ202607010001 已作废，原提交和审核记录保留。"]
+      ]
+    };
+
+    actionConfig["待审核会诊意见"] = opinionRollbackAction;
+    actionConfig["待复审会诊意见"] = opinionRollbackAction;
+    actionConfig["待修改会诊意见"] = opinionRollbackAction;
+
+    const annotationData = {
+      A1: {
+        title: "标A1：更多操作动作规则",
+        html: `<p>右侧“更多操作”按当前状态展示一个具体流程纠错动作；没有可执行纠错动作时，不展示新增按钮。</p><table class="annotation-table"><tr><th>待分诊</th><td>展示“退回至病历审核”。目标状态由后端按历史流转判断为待审核病历或待复审病历。</td></tr><tr><th>待审核/待复审/待修改会诊意见</th><td>展示“退回至待上传会诊意见”。弹窗中必须选择会诊意见处理方式。</td></tr><tr><th>已完成</th><td>展示“退回至会诊意见审核”。目标状态由后端按完成前审核链路判断为待审核会诊意见或待复审会诊意见。</td></tr><tr><th>待会诊、待上传会诊意见</th><td>不展示本次新增动作，继续使用线上已有修改会诊时间、取消分诊等能力。</td></tr></table><ul><li>动作展示由后端根据状态、角色权限、数据条件返回，前端只负责渲染。</li><li>同一状态如后端返回不可操作，前端隐藏该动作。</li></ul>`
+      },
+      A3: {
+        title: "标A3：弹窗字段规则",
+        html: `<p>点击具体动作后弹出确认弹窗，用于二次确认、收集处理原因，并提示操作影响。</p><table class="annotation-table"><tr><th>基础信息</th><td>工单编号、处理动作、当前状态、处理后状态。由系统带出，不允许编辑。</td></tr><tr><th>处理原因</th><td>必填，下拉单选。不同动作使用不同原因枚举，枚举以 PRD 配置表为准。</td></tr><tr><th>会诊意见处理方式</th><td>条件必填。仅在会诊意见阶段退回至待上传会诊意见时展示，可选“保留为草稿”或“作废当前意见”。</td></tr><tr><th>补充说明</th><td>非必填，多行文本。用于记录处理背景、判断依据或沟通结论。</td></tr><tr><th>影响说明</th><td>系统自动展示，不可编辑；选择不同会诊意见处理方式时，影响说明同步变化。</td></tr></table>`
+      },
+      A4: {
+        title: "标A4：提交与后端校验",
+        html: `<p>点击确认后，以后端校验和后端状态机结果为准；前端展示不能作为最终依据。</p><table class="annotation-table"><tr><th>状态校验</th><td>校验提交时工单状态仍与弹窗打开时一致，避免多人同时操作导致状态错乱。</td></tr><tr><th>权限校验</th><td>校验当前用户拥有该纠错动作权限。</td></tr><tr><th>动作校验</th><td>校验当前状态、处理动作、目标状态组合是否合法。</td></tr><tr><th>字段校验</th><td>处理原因必填；会诊意见阶段的会诊意见处理方式必填；补充说明不做必填校验。</td></tr><tr><th>数据校验</th><td>选择“作废当前意见”时，需存在可作废的当前有效意见单；校验失败时不执行部分变更。</td></tr><tr><th>成功后处理</th><td>状态变更、会诊意见数据处理、变更记录写入需要在同一事务内完成。</td></tr></table>`
+      },
+      A5: {
+        title: "标A5：变更记录规则",
+        html: `<p>每次流程纠错成功后，在“更多操作 > 变更记录”追加一条记录，用于还原操作者、原因、状态变化和关联数据处理结果。</p><table class="annotation-table"><tr><th>记录触发</th><td>后端状态变更成功后写入；失败不写入成功记录。</td></tr><tr><th>基础字段</th><td>操作时间、操作人、操作动作、操作前状态、操作后状态、处理原因、补充说明。</td></tr><tr><th>会诊意见字段</th><td>会诊意见阶段额外记录会诊意见处理方式：保留为草稿 / 作废当前意见。</td></tr><tr><th>关联结果</th><td>保留为草稿时记录“意见内容已保留为草稿”；作废当前意见时记录意见单 ID 和作废结果。</td></tr><tr><th>展示文案</th><td>记录标题使用具体动作名称，如“退回至病历审核”“退回至待上传会诊意见”“退回至会诊意见审核”。</td></tr></table>`
+      },
+      A6: {
+        title: "标A6：数据处理规则",
+        html: `<p>流程纠错只做状态调整和数据状态标记，不物理删除历史数据。</p><table class="annotation-table"><tr><th>退回病历审核</th><td>保留原病历审核通过记录、分诊记录和本次退回记录；后续由审核人员重新审核。</td></tr><tr><th>保留为草稿</th><td>当前会诊意见内容转为专家可继续编辑的草稿；原提交、审核、退回记录保留。</td></tr><tr><th>作废当前意见</th><td>当前有效意见单标记为已作废，不作为后续审核对象；历史提交和审核记录保留。</td></tr><tr><th>退回会诊意见审核</th><td>已完成工单重新进入意见审核节点；完成记录和退回记录均保留，后续由审核人员重新判断是否驳回。</td></tr></table>`
+      }
+    };
+
+    function closeException() {
+      exceptionMask.classList.remove("open");
+    }
+
+    function openAnnotation(key) {
+      const annotation = annotationData[key];
+      if (!annotation) return;
+      annotationTitle.textContent = annotation.title;
+      annotationContent.innerHTML = annotation.html;
+      annotationPopover.classList.add("open");
+    }
+
+    function closeAnnotation() {
+      annotationPopover.classList.remove("open");
+    }
+
+    function dockAnnotation() {
+      annotationPopover.style.left = "";
+      annotationPopover.style.top = "";
+      annotationPopover.style.right = "24px";
+    }
+
+    function getCurrentAction() {
+      return actionConfig[statusSelect.value] || null;
+    }
+
+    function renderCurrentAction() {
+      const action = getCurrentAction();
+      statusTag.textContent = statusSelect.value;
+
+      if (!action) {
+        exceptionBtn.style.display = "none";
+        return;
+      }
+
+      exceptionBtn.style.display = "inline-flex";
+      exceptionBtn.childNodes[0].nodeValue = action.buttonText;
+      exceptionTitle.textContent = action.modalTitle;
+      modalActionName.textContent = action.actionName;
+      modalFromState.textContent = action.from;
+      modalToState.textContent = action.to;
+      reasonSelect.innerHTML = action.reasonOptions.map((reason) => `<option${reason === action.reasonDefault ? " selected" : ""}>${reason}</option>`).join("");
+      remarkText.value = "";
+      opinionModeRow.style.display = action.opinionMode ? "grid" : "none";
+      if (action.opinionMode) {
+        document.querySelector('input[name="opinionMode"][value="draft"]').checked = true;
+      }
+      submitException.textContent = action.submitText;
+      renderOpinionMode();
+    }
+
+    function renderOpinionMode() {
+      const action = getCurrentAction();
+      if (!action) return;
+
+      latestRecordTitle.textContent = action.recordTitle;
+
+      if (action.opinionMode) {
+        const mode = document.querySelector('input[name="opinionMode"]:checked').value;
+        const impacts = mode === "void" ? action.voidImpacts : action.draftImpacts;
+        impactList.innerHTML = impacts.map((item) => `<li>${item}</li>`).join("");
+        renderRecordDetails(mode === "void" ? action.voidRecordDetails : action.draftRecordDetails);
+        return;
+      }
+
+      impactList.innerHTML = action.impacts.map((item) => `<li>${item}</li>`).join("");
+      renderRecordDetails(action.recordDetails);
+    }
+
+    function renderRecordDetails(details) {
+      latestRecordDesc.innerHTML = `<div class="record-detail-grid">${details.map(([label, value]) => `<span>${label}</span><span>${value}</span>`).join("")}</div>`;
+    }
+
+    statusSelect.addEventListener("change", () => {
+      renderCurrentAction();
+    });
+
+    document.querySelectorAll('input[name="opinionMode"]').forEach((input) => {
+      input.addEventListener("change", renderOpinionMode);
+    });
+
+    toggleMoreBtn.addEventListener("click", () => {
+      extraActions.classList.toggle("open");
+      toggleMoreBtn.textContent = extraActions.classList.contains("open") ? "⌃" : "⌄";
+    });
+
+    changeRecordBtn.addEventListener("click", () => {
+      contentWrap.classList.add("record-mode");
+      actionButtons.style.display = "none";
+      recordPanel.classList.add("open");
+    });
+
+    backActionsBtn.addEventListener("click", () => {
+      recordPanel.classList.remove("open");
+      contentWrap.classList.remove("record-mode");
+      actionButtons.style.display = "grid";
+    });
+
+    exceptionBtn.addEventListener("click", () => {
+      renderCurrentAction();
+      exceptionMask.classList.add("open");
+    });
+
+    document.getElementById("closeException").addEventListener("click", closeException);
+    document.getElementById("cancelException").addEventListener("click", closeException);
+    submitException.addEventListener("click", () => {
+      closeException();
+      const action = getCurrentAction();
+      toast.textContent = "已模拟提交：" + (action ? action.actionName : "流程操作") + "，变更记录中展示操作后的记录。";
+      toast.classList.add("open");
+      setTimeout(() => toast.classList.remove("open"), 3200);
+    });
+
+    document.getElementById("closeAnnotation").addEventListener("click", closeAnnotation);
+    document.getElementById("confirmAnnotation").addEventListener("click", closeAnnotation);
+    document.getElementById("resetAnnotationPosition").addEventListener("click", dockAnnotation);
+
+    annotationDragHandle.addEventListener("mousedown", (event) => {
+      if (event.target.closest("button")) return;
+      const rect = annotationPopover.getBoundingClientRect();
+      annotationDrag = {
+        startX: event.clientX,
+        startY: event.clientY,
+        left: rect.left,
+        top: rect.top
+      };
+      annotationPopover.classList.add("dragging");
+      event.preventDefault();
+    });
+
+    document.addEventListener("mousemove", (event) => {
+      if (!annotationDrag) return;
+      const nextLeft = annotationDrag.left + event.clientX - annotationDrag.startX;
+      const nextTop = annotationDrag.top + event.clientY - annotationDrag.startY;
+      const maxLeft = window.innerWidth - annotationPopover.offsetWidth - 12;
+      const maxTop = window.innerHeight - annotationPopover.offsetHeight - 12;
+      annotationPopover.style.left = Math.max(12, Math.min(maxLeft, nextLeft)) + "px";
+      annotationPopover.style.top = Math.max(12, Math.min(maxTop, nextTop)) + "px";
+      annotationPopover.style.right = "auto";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (!annotationDrag) return;
+      annotationDrag = null;
+      annotationPopover.classList.remove("dragging");
+    });
+
+    document.addEventListener("click", (event) => {
+      const marker = event.target.closest("[data-annotation]");
+      if (!marker) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openAnnotation(marker.dataset.annotation);
+    }, true);
+
+    exceptionMask.addEventListener("click", (event) => {
+      if (event.target === exceptionMask) closeException();
+    });
+
+    renderCurrentAction();
+
+  </script>
+</body>
+</html>
