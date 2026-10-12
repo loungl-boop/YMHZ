@@ -1,0 +1,1423 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>会诊意见数字化交付｜一期产品方案</title>
+  <style>
+    :root {
+      --ink: #13251f;
+      --muted: #63756e;
+      --line: #dbe5e0;
+      --soft-line: #edf2ef;
+      --paper: #ffffff;
+      --canvas: #f3f7f5;
+      --brand: #0f6b50;
+      --brand-2: #148965;
+      --brand-soft: #e8f5ef;
+      --accent: #e6532f;
+      --warn: #a96912;
+      --warn-soft: #fff5df;
+      --danger: #b83c3c;
+      --danger-soft: #fff0ef;
+      --blue: #276ea7;
+      --blue-soft: #edf5ff;
+      --shadow: 0 16px 40px rgba(26, 64, 50, .10);
+      --radius: 16px;
+      --font-sans: "Avenir Next", "Noto Sans SC", "PingFang SC", sans-serif;
+      --font-serif: "Songti SC", "Noto Serif SC", serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 9% 3%, rgba(20,137,101,.10), transparent 28rem),
+        linear-gradient(180deg, #f9fbfa 0, var(--canvas) 34rem, #f6f8f7 100%);
+      font-family: var(--font-sans);
+      line-height: 1.65;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(20,137,101,.25);
+      outline-offset: 2px;
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      min-height: 72px;
+      padding: 10px 28px;
+      color: white;
+      background: rgba(8, 58, 43, .96);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand-lockup { display: flex; align-items: center; gap: 12px; min-width: 250px; }
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.5);
+      border-radius: 50%;
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .brand-copy strong { display: block; letter-spacing: .04em; }
+    .brand-copy span { display: block; color: rgba(255,255,255,.64); font-size: 11px; }
+
+    .top-nav { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+    .top-nav button {
+      padding: 9px 12px;
+      color: rgba(255,255,255,.72);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      transition: .18s ease;
+    }
+    .top-nav button:hover, .top-nav button.active {
+      color: white;
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.12);
+    }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fade-in .28s ease both; }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(6px); } }
+
+    .wrap { width: min(1440px, calc(100% - 40px)); margin: 0 auto; padding: 38px 0 72px; }
+    .narrow { width: min(1120px, calc(100% - 40px)); }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 48px;
+      color: white;
+      background:
+        linear-gradient(130deg, rgba(7,53,40,.98), rgba(15,107,80,.94)),
+        var(--brand);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      position: absolute;
+      right: -80px;
+      bottom: -110px;
+      width: 360px;
+      height: 360px;
+      content: "";
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%;
+      box-shadow: 0 0 0 42px rgba(255,255,255,.035), 0 0 0 96px rgba(255,255,255,.025);
+    }
+    .eyebrow { margin: 0 0 12px; color: #99d9c3; font-size: 13px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+    .hero h1 { max-width: 780px; margin: 0; font-family: var(--font-serif); font-size: clamp(34px, 5vw, 62px); line-height: 1.12; letter-spacing: .02em; }
+    .hero p { max-width: 780px; margin: 20px 0 0; color: rgba(255,255,255,.78); font-size: 17px; }
+    .hero-meta { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+    .hero-meta span { padding: 7px 11px; color: #dcf5eb; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.14); border-radius: 999px; font-size: 12px; }
+
+    .section { margin-top: 28px; padding: 28px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 28px rgba(26,64,50,.05); }
+    .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 20px; }
+    .section-head h2, .section-head h3 { margin: 0; font-family: var(--font-serif); }
+    .section-head p { max-width: 660px; margin: 0; color: var(--muted); }
+    .kicker { display: block; margin-bottom: 4px; color: var(--brand); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+
+    .grid-2, .grid-3, .grid-4 { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .card { padding: 20px; background: #fbfdfc; border: 1px solid var(--soft-line); border-radius: 13px; }
+    .card h3, .card h4 { margin: 0 0 8px; }
+    .card p { margin: 0; color: var(--muted); }
+    .review-card strong { display: block; margin-bottom: 6px; color: var(--brand); }
+    .scope-in { border-top: 4px solid var(--brand); }
+    .scope-out { border-top: 4px solid #92a59d; }
+
+    .flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .flow-step { position: relative; min-height: 128px; padding: 18px 14px; background: var(--brand-soft); border: 1px solid #cde7dc; border-radius: 12px; }
+    .flow-step::after { position: absolute; right: -9px; top: 52px; z-index: 2; content: "→"; color: var(--brand); font-weight: 800; }
+    .flow-step:last-child::after { content: ""; }
+    .flow-step b { display: inline-grid; width: 28px; height: 28px; place-items: center; color: white; background: var(--brand); border-radius: 50%; }
+    .flow-step strong { display: block; margin-top: 10px; }
+    .flow-step span { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--soft-line); text-align: left; vertical-align: top; }
+    th { color: #43554e; background: #f5f8f6; font-size: 12px; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+
+    .tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .tag.green { color: #08724f; background: #e5f7ef; }
+    .tag.gray { color: #66746f; background: #eef1f0; }
+    .tag.gold { color: #8a5b09; background: #fff0c9; }
+    .tag.blue { color: #276ea7; background: var(--blue-soft); }
+    .tag.red { color: #a63131; background: var(--danger-soft); }
+
+    .prototype-shell { min-height: 760px; overflow: hidden; background: #f0f2f1; border: 1px solid #cfd8d4; border-radius: 18px; box-shadow: var(--shadow); }
+    .prototype-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .prototype-toolbar .views { display: flex; gap: 8px; flex-wrap: wrap; }
+    .prototype-toolbar button { padding: 8px 12px; color: #52625c; background: white; border: 1px solid var(--line); border-radius: 9px; }
+    .prototype-toolbar button.active { color: white; background: var(--brand); border-color: var(--brand); }
+
+    .admin-app { display: grid; grid-template-columns: 176px 1fr; min-height: 760px; }
+    .admin-side { padding: 18px 12px; color: #50635c; background: white; border-right: 1px solid var(--line); }
+    .admin-logo { margin: 0 8px 24px; color: var(--brand); font-family: var(--font-serif); font-size: 18px; font-weight: 800; }
+    .side-item { width: 100%; margin-bottom: 5px; padding: 10px 12px; text-align: left; color: inherit; background: transparent; border: 0; border-radius: 8px; }
+    .side-item.active { color: var(--brand); background: var(--brand-soft); font-weight: 700; }
+    .admin-main { min-width: 0; }
+    .admin-top { display: flex; justify-content: space-between; align-items: center; height: 56px; padding: 0 20px; background: white; border-bottom: 1px solid var(--line); }
+    .admin-content { padding: 18px; }
+    .admin-view { display: none; }
+    .admin-view.active { display: block; animation: fade-in .2s ease both; }
+    .page-title-row { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 14px; }
+    .page-title-row h3 { margin: 0; }
+    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn { padding: 9px 14px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 8px; }
+    .btn:hover { border-color: #9eb7ad; }
+    .btn.primary { color: white; background: var(--brand); border-color: var(--brand); }
+    .btn.danger { color: var(--danger); background: var(--danger-soft); border-color: #f0caca; }
+    .btn.small { padding: 6px 10px; font-size: 12px; }
+    .btn.text { padding: 3px 5px; color: var(--brand); background: transparent; border: 0; }
+    .btn:disabled { cursor: not-allowed; color: #97a49f; background: #f1f3f2; border-color: #e1e6e3; }
+    .stats { display: grid; grid-template-columns: repeat(6, minmax(96px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .stat { min-height: 76px; padding: 11px 13px; background: #fff3ef; border: 1px solid #f5dcd3; border-radius: 9px; }
+    .stat.actionable { cursor: pointer; }
+    .stat.actionable:hover { border-color: #e9a58f; box-shadow: 0 4px 14px rgba(230,83,47,.08); }
+    .stat b { display: block; font-size: 22px; line-height: 1.2; }
+    .stat span { color: var(--muted); font-size: 12px; }
+    .filter-shell { margin-bottom: 12px; padding: 12px; background: white; border: 1px solid var(--line); border-radius: 10px; }
+    .filters { display: grid; grid-template-columns: .9fr .75fr 1.2fr .85fr .85fr auto; gap: 8px; align-items: center; }
+    .advanced-filters { display: none; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap: 8px; padding-top: 10px; margin-top: 10px; border-top: 1px dashed var(--line); }
+    .advanced-filters.show { display: grid; }
+    .filter-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .filter-toggle { white-space: nowrap; }
+    .filter-summary { display: none; margin-left: 4px; padding: 1px 6px; color: white; background: var(--accent); border-radius: 999px; font-size: 10px; }
+    .filter-summary.show { display: inline-flex; }
+    .control { width: 100%; padding: 9px 10px; background: white; border: 1px solid var(--line); border-radius: 7px; }
+    .multi-select { position: relative; min-width: 0; }
+    .multi-select-trigger { display: flex; justify-content: space-between; align-items: center; min-height: 39px; text-align: left; cursor: pointer; }
+    .multi-select-trigger.has-value { color: var(--brand); border-color: #78aa98; background: var(--brand-soft); }
+    .multi-select-panel { position: absolute; top: calc(100% + 5px); left: 0; z-index: 80; display: none; min-width: 210px; padding: 8px; background: white; border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 14px 30px rgba(17,49,39,.18); }
+    .multi-select.open .multi-select-panel { display: grid; }
+    .multi-select-panel label { display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+    .multi-select-panel label:hover { background: var(--brand-soft); }
+    .admin-table { min-width: 1780px; font-size: 12px; }
+    .admin-table td { white-space: nowrap; }
+    .admin-table .col-time { position: sticky; left: 0; z-index: 3; min-width: 154px; background: white; }
+    .admin-table th.col-time { z-index: 5; background: #f5f8f6; }
+    .admin-table .col-progress { position: sticky; left: 154px; z-index: 3; min-width: 96px; background: white; }
+    .admin-table th.col-progress { z-index: 5; background: #f5f8f6; }
+    .admin-table .col-patient { position: sticky; left: 250px; z-index: 3; min-width: 104px; background: white; box-shadow: 8px 0 12px rgba(22,54,43,.04); }
+    .admin-table th.col-patient { z-index: 5; background: #f5f8f6; }
+    .admin-table .col-actions { position: sticky; right: 0; z-index: 4; min-width: 126px; background: white; box-shadow: -8px 0 12px rgba(22,54,43,.06); }
+    .admin-table th.col-actions { z-index: 6; background: #f5f8f6; }
+    .status-stack { display: grid; gap: 3px; }
+    .status-stack span { font-size: 11px; }
+    .opinion-state { display: grid; gap: 4px; }
+    .opinion-state small { color: var(--muted); }
+    .row-actions { position: relative; display: flex; gap: 4px; align-items: center; }
+    .action-menu { position: fixed; z-index: 220; display: none; min-width: 164px; padding: 6px; background: white; border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 14px 30px rgba(17,49,39,.22); }
+    .action-menu.show { display: grid; }
+    .action-menu button { padding: 8px 10px; text-align: left; color: var(--ink); background: transparent; border: 0; border-radius: 6px; }
+    .action-menu button:hover { background: var(--brand-soft); }
+    .action-menu button:disabled { color: #9aa6a2; background: transparent; }
+    .sub-page-back { display: inline-flex; align-items: center; gap: 5px; margin-bottom: 5px; padding: 0; color: var(--brand); background: transparent; border: 0; }
+    .table-empty { padding: 54px 20px; text-align: center; color: var(--muted); background: white; }
+    .table-empty strong { display: block; margin-bottom: 6px; color: var(--ink); font-size: 16px; }
+    .pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 12px; }
+
+    .phrase-admin { display: grid; grid-template-columns: 170px 1fr; min-height: 620px; background: white; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .dept-list { padding: 14px; border-right: 1px solid var(--line); }
+    .dept-list button { width: 100%; padding: 9px 10px; text-align: left; background: transparent; border: 0; border-radius: 7px; }
+    .dept-list button.active { color: var(--brand); background: var(--brand-soft); font-weight: 700; }
+    .phrase-canvas { padding: 22px; }
+    .field-block { margin-bottom: 18px; }
+    .field-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-weight: 800; }
+    textarea { resize: vertical; }
+    .fake-textarea, .editor-textarea { width: 100%; min-height: 88px; padding: 12px; background: white; border: 1px solid #cad7d1; border-radius: 8px; }
+    .editor-textarea.tall { min-height: 150px; }
+    .phrase-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .phrase-chip { max-width: 250px; padding: 6px 10px; overflow: hidden; color: #245447; background: #edf7f3; border: 1px solid #cde6dc; border-radius: 7px; text-overflow: ellipsis; white-space: nowrap; }
+    .phrase-chip:hover { background: #dff1e9; }
+    .phrase-chip.disabled { color: #87958f; background: #f2f4f3; border-style: dashed; text-decoration: line-through; }
+
+    .expert-app { min-height: 760px; background: #f4f6f5; }
+    .expert-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; background: #0d5e47; color: white; }
+    .expert-head strong { display: block; }
+    .expert-head span { color: rgba(255,255,255,.7); font-size: 12px; }
+    .period-tabs { display: flex; gap: 6px; padding: 5px; background: rgba(255,255,255,.10); border-radius: 9px; }
+    .period-tabs button { padding: 7px 14px; color: rgba(255,255,255,.74); background: transparent; border: 0; border-radius: 7px; }
+    .period-tabs button.active { color: var(--brand); background: white; font-weight: 800; }
+    .expert-grid { display: grid; grid-template-columns: 310px minmax(0, 1fr); min-height: 704px; }
+    .patient-pane { background: white; border-right: 1px solid var(--line); }
+    .patient-tools { padding: 12px; border-bottom: 1px solid var(--line); }
+    .patient-list { max-height: 624px; overflow-y: auto; }
+    .patient-item { display: block; width: 100%; padding: 13px 14px; text-align: left; background: white; border: 0; border-bottom: 1px solid var(--soft-line); }
+    .patient-item:hover, .patient-item.active { background: #eef8f4; }
+    .patient-item.active { box-shadow: inset 4px 0 var(--brand); }
+    .patient-item-head { display: flex; justify-content: space-between; gap: 10px; }
+    .patient-item small { display: block; margin-top: 5px; color: var(--muted); }
+    .editor-pane { padding: 20px 24px 92px; overflow: auto; position: relative; }
+    .editor-card { max-width: 900px; margin: 0 auto; padding: 24px; background: white; border: 1px solid var(--line); border-radius: 14px; }
+    .patient-summary { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 15px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .patient-summary h3 { margin: 0 0 4px; }
+    .edit-banner { display: none; margin-bottom: 14px; padding: 10px 12px; color: #7a4b05; background: var(--warn-soft); border: 1px solid #efd7a2; border-radius: 8px; }
+    .edit-banner.show { display: block; }
+    .editor-actions { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 8px; padding: 12px 24px; margin: 20px -24px -24px; background: rgba(255,255,255,.96); border-top: 1px solid var(--line); backdrop-filter: blur(10px); }
+    .save-state { margin-right: auto; align-self: center; color: var(--muted); font-size: 12px; }
+    .save-state.error { color: var(--danger); font-weight: 700; }
+    .signature-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 72px; padding: 12px; background: #fafcfb; border: 1px dashed #b9cbc3; border-radius: 9px; }
+    .signature-ink { font-family: "STKaiti", "KaiTi", cursive; font-size: 30px; transform: rotate(-5deg); }
+    .signature-box img, .signature-preview img { max-width: 150px; max-height: 58px; object-fit: contain; }
+
+    .mobile-stage { min-height: 760px; padding: 32px; background: linear-gradient(145deg, #e9f3ef, #f7f8f7); }
+    .mobile-board { width: min(430px, 100%); min-height: 690px; margin: 0 auto; overflow: hidden; background: white; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+    .mobile-head { padding: 20px; color: white; background: var(--brand); }
+    .mobile-head strong { display: block; font-size: 18px; }
+    .mobile-body { padding: 20px; }
+    .verify-box { padding: 22px; background: #f7faf8; border: 1px solid var(--line); border-radius: 14px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 700; }
+    .opinion-mobile { display: none; }
+    .opinion-mobile.show { display: block; }
+    .verify-view.hide { display: none; }
+    .inline-error { min-height: 22px; margin-top: 5px; color: var(--danger); font-size: 12px; }
+    .expired-view { display: none; padding: 54px 24px; text-align: center; }
+    .expired-view.show { display: block; }
+    .expired-icon { display: grid; width: 58px; height: 58px; margin: 0 auto 16px; place-items: center; color: var(--warn); background: var(--warn-soft); border-radius: 50%; font-size: 24px; }
+
+    .paper {
+      width: min(820px, 100%);
+      min-height: 1120px;
+      margin: 0 auto;
+      padding: 55px 48px;
+      color: #1f2825;
+      background: white;
+      border: 1px solid #d5ded9;
+      box-shadow: 0 14px 34px rgba(26,64,50,.09);
+      font-family: var(--font-serif);
+    }
+    .paper-logo { display: flex; justify-content: flex-end; align-items: center; gap: 10px; color: #07583e; font-family: var(--font-sans); font-weight: 800; }
+    .paper-logo-mark { display: grid; width: 44px; height: 44px; place-items: center; border: 2px solid #07583e; border-radius: 50%; font-size: 24px; }
+    .paper-line { height: 7px; margin: 20px 0 16px; border-top: 3px solid #07583e; border-bottom: 2px solid #07583e; }
+    .paper h2 { margin: 0 0 16px; text-align: center; font-size: 28px; letter-spacing: .14em; }
+    .paper-date { margin-bottom: 10px; text-align: right; }
+    .paper-grid { display: grid; grid-template-columns: 1.15fr .75fr .9fr 2.7fr; border-top: 1px solid #222; border-left: 1px solid #222; }
+    .paper-cell { min-height: 38px; padding: 7px 9px; border-right: 1px solid #222; border-bottom: 1px solid #222; }
+    .paper-cell.span-2 { grid-column: span 2; }
+    .paper-body { min-height: 680px; padding: 10px 12px 24px; border: 1px solid #222; border-top: 0; }
+    .paper-body h4 { margin: 0 0 4px; font-size: 18px; }
+    .paper-body p { min-height: 56px; margin: 0 0 16px; white-space: pre-wrap; }
+    .paper-sign { margin: 18px 110px 8px 0; text-align: right; }
+    .paper-note { text-align: center; }
+    #printPaper { display: grid; gap: 18px; }
+    .paper-brand { padding-bottom: 14px; color: #07583e; border-bottom: 4px double #07583e; text-align: right; font-weight: 800; }
+    .paper-meta { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); border: 1px solid #25322d; border-bottom: 0; }
+    .paper-meta span { padding: 8px 9px; border-right: 1px solid #25322d; }
+    .paper-meta span:last-child { border-right: 0; }
+    .paper-section { padding: 12px; border: 1px solid #25322d; border-bottom: 0; }
+    .paper-section p { min-height: 70px; margin: 8px 0 0; white-space: normal; }
+    .paper-foot { margin-top: auto; padding-top: 20px; text-align: center; color: #495b54; }
+    .word-sheet { outline: 3px solid #2f73c8; outline-offset: -3px; }
+
+    .doc-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 18px; }
+    .doc-toc { position: sticky; top: 94px; align-self: start; padding: 16px; background: white; border: 1px solid var(--line); border-radius: 12px; }
+    .doc-toc a { display: block; padding: 7px 8px; color: var(--muted); text-decoration: none; border-radius: 6px; }
+    .doc-toc a:hover { color: var(--brand); background: var(--brand-soft); }
+    .doc-content { min-width: 0; }
+    .doc-content h2 { margin-top: 0; font-family: var(--font-serif); }
+    .doc-content h3 { margin-top: 26px; color: var(--brand); }
+    .code-flow { padding: 16px; overflow: auto; color: #d6f5e8; background: #0b392d; border-radius: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(4,28,21,.55); }
+    .modal-backdrop.show { display: flex; }
+    .modal { width: min(680px, 100%); max-height: 88vh; overflow: auto; background: white; border-radius: 16px; box-shadow: 0 28px 80px rgba(0,0,0,.26); }
+    .modal.wide { width: min(980px, 100%); }
+    .modal-head, .modal-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    .modal-head h3 { margin: 0; }
+    .modal-body { padding: 20px; }
+    .modal-foot { justify-content: flex-end; border-top: 1px solid var(--line); border-bottom: 0; }
+    .drawer { position: fixed; right: 0; top: 0; z-index: 210; width: min(640px, 96vw); height: 100vh; overflow: auto; padding: 0; background: white; box-shadow: -18px 0 50px rgba(0,0,0,.18); transform: translateX(105%); visibility: hidden; pointer-events: none; transition: transform .22s ease, visibility 0s linear .22s; }
+    .drawer.show { transform: translateX(0); visibility: visible; pointer-events: auto; transition-delay: 0s; }
+    .drawer-head { position: sticky; top: 0; z-index: 8; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(10px); }
+    .drawer-head h2 { margin: 0; font-size: 18px; }
+    .drawer-body { padding: 18px 22px 92px; }
+    .drawer-actions { position: sticky; bottom: 0; z-index: 8; display: flex; gap: 8px; justify-content: flex-end; padding: 12px 20px; background: rgba(255,255,255,.97); border-top: 1px solid var(--line); backdrop-filter: blur(10px); }
+    .visit-steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin: 6px 0 24px; }
+    .visit-step { position: relative; padding-top: 18px; color: #9aa6a2; text-align: center; font-size: 12px; }
+    .visit-step::before { position: absolute; left: 50%; top: 4px; z-index: 2; width: 8px; height: 8px; content: ''; background: white; border: 2px solid #c8d3ce; border-radius: 50%; transform: translateX(-50%); }
+    .visit-step::after { position: absolute; right: 50%; top: 8px; width: 100%; height: 2px; content: ''; background: #dce4e0; }
+    .visit-step:first-child::after { display: none; }
+    .visit-step.done { color: var(--ink); }
+    .visit-step.done::before { border-color: var(--accent); background: var(--accent); }
+    .visit-step.done::after { background: var(--accent); }
+    .detail-section { margin-top: 22px; }
+    .detail-section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .detail-section-title h3 { margin: 0; font-size: 15px; }
+    .detail-section-title h3::before { display: inline-block; width: 4px; height: 17px; margin-right: 10px; content: ''; vertical-align: -3px; background: var(--accent); border-radius: 2px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; font-size: 13px; }
+    .detail-item { display: grid; grid-template-columns: 80px 1fr; gap: 8px; }
+    .detail-item span:first-child { color: var(--muted); }
+    .document-pages { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; }
+    .document-page { flex: 0 0 154px; min-height: 210px; padding: 16px 13px; color: #2a332f; background: #fff; border: 1px solid #ccd7d2; box-shadow: 0 5px 14px rgba(20,48,39,.10); font-family: var(--font-serif); font-size: 8px; }
+    .document-page strong { display: block; margin-bottom: 9px; text-align: center; font-size: 11px; }
+    .doc-line { height: 5px; margin: 5px 0; background: #e8ecea; border-radius: 2px; }
+    .doc-line.short { width: 62%; }
+    .doc-sign { margin-top: 18px; text-align: right; font-family: 'STKaiti','KaiTi',cursive; font-size: 15px; }
+    .page-label { display: block; margin-top: 9px; color: var(--muted); text-align: center; font-family: var(--font-sans); font-size: 10px; }
+    .version-list { display: grid; gap: 8px; }
+    .version-item { display: grid; grid-template-columns: 54px 1fr auto; gap: 10px; align-items: start; padding: 11px 12px; background: #f8faf9; border: 1px solid var(--soft-line); border-radius: 9px; font-size: 12px; }
+    .version-item.current { border-color: #abd7c6; background: #eef8f4; }
+    /* Axure式标注层：序号只覆盖在原型之上，永远不参与原型排版。 */
+    :is(#admin-prototype, #expert-prototype, #patient-prototype, .modal-backdrop, .drawer) *:has(> .anno-marker) { position: relative; }
+    .anno-marker {
+      position: absolute;
+      top: -11px;
+      right: -11px;
+      z-index: 260;
+      display: none;
+      width: 24px;
+      height: 24px;
+      margin: 0;
+      padding: 0;
+      place-items: center;
+      flex: 0 0 auto;
+      color: white;
+      background: var(--accent);
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+      font-size: 11px;
+      line-height: 1;
+    }
+    body.annotations-on .anno-marker { display: grid; }
+    body.annotations-on .anno-marker:hover { transform: translateY(-1px); box-shadow: 0 5px 12px rgba(0,0,0,.22); }
+    /* 左侧科室菜单的通用button规则不得覆盖标注圆点。 */
+    .dept-list .anno-marker {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      text-align: center;
+      color: white;
+      background: var(--accent);
+      border: 2px solid white;
+      border-radius: 50%;
+    }
+    /* 同一容器内有多个标注时，分别锚定到对应操作区域。 */
+    .anno-marker[data-anno="expert-session"] { right: auto; left: -11px; }
+    .anno-marker[data-anno="expert-signature-entry"] { right: 82px; }
+    .anno-marker[data-anno="expert-end-entry"] { right: -11px; }
+    .anno-marker[data-anno="patient-verify"] { right: 24px; }
+    .anno-marker[data-anno="patient-code"] { right: -11px; }
+    .annotation-modal { width: min(1080px, 100%); }
+    .anno-panel { max-height: 70vh; overflow: auto; }
+    .anno-panel h4 { margin: 22px 0 8px; color: var(--brand); }
+    .anno-panel h4:first-child { margin-top: 0; }
+    .anno-panel p { margin: 6px 0 12px; }
+    .anno-summary { padding: 12px 14px; color: #274b40; background: #f1f8f5; border-left: 4px solid var(--brand); border-radius: 8px; }
+    .anno-table { font-size: 12px; line-height: 1.55; }
+    .anno-table th { position: sticky; top: 0; z-index: 1; }
+    .anno-table td:first-child { min-width: 110px; color: var(--ink); font-weight: 700; }
+    .anno-sequence { margin: 8px 0 0; padding-left: 22px; }
+    .anno-sequence li { margin-bottom: 7px; }
+    .rule-grid { display: grid; grid-template-columns: 140px 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    .rule-grid > div { padding: 9px 11px; border-bottom: 1px solid var(--soft-line); }
+    .rule-grid > div:nth-child(odd) { color: #3f554d; background: #f6f9f7; font-weight: 700; }
+    .rule-grid > div:nth-last-child(-n+2) { border-bottom: 0; }
+    .annotation-catalog { display: grid; gap: 8px; margin-bottom: 18px; }
+    .annotation-catalog button { display: flex; gap: 10px; align-items: center; width: 100%; padding: 10px 12px; text-align: left; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 8px; }
+    .annotation-catalog button:hover { border-color: var(--brand); background: var(--brand-soft); }
+    .annotation-catalog b { display: grid; width: 22px; height: 22px; place-items: center; color: white; background: var(--accent); border-radius: 50%; font-size: 11px; }
+
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 300; min-width: 260px; padding: 13px 16px; color: white; background: #173f33; border-radius: 10px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .muted { color: var(--muted); }
+    .note { padding: 12px 14px; color: #76500f; background: var(--warn-soft); border-left: 4px solid #d99a2b; border-radius: 7px; }
+    .success-note { padding: 12px 14px; color: #0c6247; background: var(--brand-soft); border-left: 4px solid var(--brand); border-radius: 7px; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 1050px) {
+      .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow { grid-template-columns: repeat(3, 1fr); }
+      .stats { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; }
+      .stat { min-height: 68px; padding: 9px 10px; }
+      .filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .advanced-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .doc-layout { grid-template-columns: 1fr; }
+      .doc-toc { position: static; }
+    }
+    @media (max-width: 780px) {
+      .app-header { position: static; align-items: flex-start; flex-direction: column; padding: 14px 18px; }
+      .top-nav { justify-content: flex-start; }
+      .wrap, .narrow { width: min(100% - 20px, 100%); padding-top: 18px; }
+      .hero { padding: 30px 22px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .flow-step::after { content: "↓"; right: 50%; top: auto; bottom: -17px; }
+      .admin-app { grid-template-columns: 1fr; }
+      .admin-side { display: none; }
+      .expert-grid { grid-template-columns: 1fr; }
+      .patient-pane { max-height: 280px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .patient-list { max-height: 210px; }
+      .phrase-admin { grid-template-columns: 1fr; }
+      .dept-list { border-right: 0; border-bottom: 1px solid var(--line); }
+      .paper { min-height: auto; padding: 30px 18px; }
+      .paper-grid { grid-template-columns: 1fr 1fr; }
+      .paper-cell.span-2 { grid-column: span 2; }
+      .paper-body { min-height: 540px; }
+      .filters, .advanced-filters { grid-template-columns: 1fr; }
+      .filter-actions { justify-content: flex-start; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      .app-header, .prototype-toolbar, .doc-toc, .no-print { display: none !important; }
+      body { background: white; }
+      .page { display: none !important; }
+      .page.print-target { display: block !important; }
+      .wrap { width: 100%; padding: 0; }
+      .paper { width: 100%; min-height: 0; padding: 20mm 16mm; border: 0; box-shadow: none; }
+      body.printing-images > * { display: none !important; }
+      body.printing-images #paperModal { position: static; display: block !important; padding: 0; background: white; }
+      body.printing-images #paperModal .modal { width: 100%; max-height: none; border: 0; box-shadow: none; }
+      body.printing-images #paperModal .modal-head,
+      body.printing-images #paperModal .modal-foot,
+      body.printing-images #imagePreviewMeta { display: none !important; }
+      body.printing-images #paperModal .modal-body { padding: 0; overflow: visible; }
+      body.printing-images #printPaper { display: block; }
+      body.printing-images #printPaper .paper { min-height: 257mm; break-after: page; }
+      body.printing-images #printPaper .paper:last-child { break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-lockup">
+      <div class="brand-mark">尤</div>
+      <div class="brand-copy"><strong>会诊意见数字化交付</strong><span>一期产品方案 · 定稿</span></div>
+    </div>
+    <nav class="top-nav" aria-label="方案导航">
+      <button class="active" data-page="overview">整体方案说明</button>
+      <button data-page="admin-prototype">原型-管理后台</button>
+      <button data-page="expert-prototype">原型-专家工作台</button>
+      <button data-page="patient-prototype">原型-患者端</button>
+      <button data-page="prd">PRD文档</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="overview" class="page active">
+      <div class="wrap narrow">
+        <div class="hero">
+          <p class="eyebrow">Product Solution · Phase 1</p>
+          <h1>把专家手写意见，升级为可填写、可签署、可交付的数字化闭环</h1>
+          <p>基于现有活动详情、完整患者名单和预约详情抽屉，新增临时专家工作台、结构化会诊意见、活动级签名、固定Word转分页图片、手写意见图片上传、双渠道交付及版本追溯。</p>
+          <div class="hero-meta"><span>范围：一期</span><span>形态：现有平台模块化升级</span><span>日期：2026-09-24</span><span>二期智能能力不在本方案展开</span></div>
+        </div>
+
+        <section class="section">
+          <div class="section-head"><div><span class="kicker">REVIEW SUMMARY</span><h2>评审结论</h2></div><p>以下结论均为当前版本的确定规则，不包含讨论过程和备选方案。</p></div>
+          <div class="grid-4">
+            <div class="card review-card"><strong>交付内容</strong><p>专家工作台、固定意见表单、常用语、签名、Word与分页图片、手写图片上传、双渠道通知、辅助打印。</p></div>
+            <div class="card review-card"><strong>影响端</strong><p>管理后台、临时专家工作台、患者安全查看H5；不新增独立专家账号。</p></div>
+            <div class="card review-card"><strong>状态变化</strong><p>后台意见状态为未提供、草稿、已完成；专家在线提交成功或手写图片上传成功均使就诊进度变为已完成。</p></div>
+            <div class="card review-card"><strong>权限策略</strong><p>复用现有菜单权限，并对临时专家会话执行活动＋日期＋专家的模块内范围控制。</p></div>
+            <div class="card review-card"><strong>数据变化</strong><p>新增意见、签名资产、常用语、专家偏好、临时会话及双渠道交付记录。</p></div>
+            <div class="card review-card"><strong>兼容策略</strong><p>取号、叫号、就诊节点沿用现状；“已完成”统一由任一正式意见路径成功触发，历史手写意见不批量迁移。</p></div>
+            <div class="card review-card"><strong>文件标准</strong><p>在线填写按固定模板生成Word并转为一张或多张图片；患者查看与现场打印统一使用图片，Word仅供内部查看。</p></div>
+            <div class="card review-card"><strong>人工成本</strong><p>不增加患者理解确认、打印申请和人工回执；通知与查看状态自动记录。</p></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><div><span class="kicker">BUSINESS FLOW</span><h2>端到端业务闭环</h2></div><p>从活动详情进入，到专家提交、双渠道交付和现场辅助打印。</p></div>
+          <div class="flow">
+            <div class="flow-step"><b>1</b><strong>开启工作台</strong><span>工作人员先选择活动日期，再选择该日期下的专家，创建固定范围的临时会话。</span></div>
+            <div class="flow-step"><b>2</b><strong>连续填写</strong><span>专家按上午/下午查看患者，在左右分栏页面连续录入。</span></div>
+            <div class="flow-step"><b>3</b><strong>确认签署</strong><span>引用活动内签名，确认提交；草稿不能对外展示。</span></div>
+            <div class="flow-step"><b>4</b><strong>形成正式版本</strong><span>在线路径生成Word与分页图片；上传路径校验手写图片。</span></div>
+            <div class="flow-step"><b>5</b><strong>双渠道交付</strong><span>短信与企业微信同时发送，分别记录结果与查看状态。</span></div>
+            <div class="flow-step"><b>6</b><strong>辅助打印</strong><span>现场人员核对完整预约信息后，打印当前版本全部图片。</span></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><div><span class="kicker">DELIVERY SCOPE</span><h2>交付范围与边界</h2></div></div>
+          <div class="grid-2">
+            <div class="card scope-in"><h3>纳入当前版本</h3><p>活动详情内整合意见字段与操作；专家选择与临时会话；上午/下午切换；左侧患者列表；VIP标签与预约/加号就诊类型；主诉、诊断、咨询意见；自动保存；科室公共与专家个人常用语；活动级多签名管理；固定模板Word转图片；手写图片上传；版本记录；短信和企业微信同时发送；手机号验证；辅助打印。</p></div>
+            <div class="card scope-out"><h3>不纳入当前版本</h3><p>独立专家账号；通用全平台数据隔离；公共模板配置；专科提示文案；行动清单、注意事项、随访建议；患者理解确认；患者线上打印申请；打印状态和打印次数管理；复杂更正版本中心；录音、转写及AI起草；中意或企业客户查看个人意见。</p></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><div><span class="kicker">RULES</span><h2>核心规则</h2></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>对象</th><th>确定规则</th><th>留痕</th></tr></thead>
+              <tbody>
+                <tr><td>临时专家会话</td><td>多日活动在入口先选择日期，再选择该日期下的专家；工作台内固定活动、日期和专家，不允许切换日期或专家，仅允许切换上午/下午。</td><td>开启人、活动日期、专家、开始与结束时间。</td></tr>
+                <tr><td>意见与进度</td><td>未提供 → 草稿 → 已完成；任一正式路径成功后，就诊进度由已就诊变为已完成。</td><td>保存、提交、来源、版本、进度变化及操作主体。</td></tr>
+                <tr><td>签名</td><td>支持画图、上传和引用本活动已用签名；专家可增删清空；活动结束清空可复用原图。</td><td>使用患者、提交时间、签名快照；正式文件不因原图清空而变化。</td></tr>
+                <tr><td>常用语</td><td>科室公共配置；专家个人新增、隐藏、编辑和排序只影响本人，不影响同科室专家。</td><td>创建来源、专家、字段、顺序、最后更新时间。</td></tr>
+                <tr><td>交付</td><td>短信与企业微信同时发送；未绑定企微时先发短信，绑定后补推企微。</td><td>每次发送、失败原因、重试、补发及首次/最近查看时间。</td></tr>
+                <tr><td>打印</td><td>只打印当前成功版本的全部图片；不限制次数，不建立业务状态，不要求线上申请。</td><td>当前版本不要求打印业务留痕。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="admin-prototype" class="page">
+      <div class="wrap">
+        <div class="prototype-toolbar no-print">
+          <div class="views">
+            <button class="active" data-admin-view="activity">活动详情</button>
+            <button id="showActivityEmpty">列表空态</button>
+            <button data-admin-view="phrases">常用语配置</button>
+          </div>
+          <button id="toggleAnnotations">显示标注</button>
+        </div>
+        <div class="prototype-shell admin-app">
+          <aside class="admin-side">
+            <div class="admin-logo">尤迈会诊 <button class="anno-marker" data-anno="admin-nav">1</button></div>
+            <button class="side-item active" data-go-admin="activity" data-side-section="activity">活动管理</button>
+            <button class="side-item" data-go-admin="phrases" data-side-section="phrases">会诊配置</button>
+          </aside>
+          <div class="admin-main">
+            <div class="admin-top"><span id="adminBreadcrumb">活动管理　›　详情</span><span>superadmin⌄</span></div>
+            <div class="admin-content">
+              <div class="admin-view active" data-view="activity">
+                <div class="page-title-row">
+                  <div><span class="muted">← 返回</span><h3>走进昆仑物流宣传活动　<span class="tag green">进行中</span></h3></div>
+                  <div class="actions"><button class="anno-marker" data-anno="admin-entry">2</button><button class="btn primary" id="openExpertLauncher">专家工作台</button></div>
+                </div>
+                <div class="stats"><button class="anno-marker" data-anno="admin-activity-stats">3</button><div class="stat"><b>176</b><span>预约人数</span></div><div class="stat"><b>153</b><span>取号人数</span></div><div class="stat"><b>146</b><span>就诊人数</span></div><div class="stat actionable" data-stat-filter="已完成"><b>121</b><span>已完成人数</span></div><div class="stat actionable" data-stat-filter="通知异常"><b>3</b><span>通知异常</span></div><div class="stat"><b>7</b><span>取消人数</span></div></div>
+                <div class="filter-shell">
+                  <div class="filters"><select id="activityDate" class="control"><option value="">预约时间</option><option>2026-09-24</option><option>2026-09-25</option></select><select id="activityPeriod" class="control"><option value="">时间段</option><option>上午</option><option>下午</option></select><input id="activityKeyword" class="control" placeholder="就诊号、姓名、身份证号、手机号"><select id="activityVisit" class="control"><option value="">就诊进度</option><option>待叫号</option><option>待就诊</option><option>已就诊</option><option>已完成</option><option>已取消</option></select><div class="multi-select" id="activityOpinion"><button type="button" class="control multi-select-trigger"><span>意见状态</span><b>⌄</b></button><div class="multi-select-panel"><label><input type="checkbox" value="未提供"> 未提供</label><label><input type="checkbox" value="草稿"> 草稿</label><label><input type="checkbox" value="已完成 在线签署"> 已完成·在线签署</label><label><input type="checkbox" value="已完成 图片上传"> 已完成·图片上传</label></div></div><button class="btn filter-toggle" id="toggleAdvancedFilters">更多筛选 <span id="advancedFilterCount" class="filter-summary"></span>　⌄</button></div>
+                  <div class="advanced-filters" id="advancedFilters"><select id="activityExpert" class="control"><option value="">就诊科室</option><option>心内科-张云</option><option>内分泌科-赵维纲</option></select><select id="activityType" class="control"><option value="">就诊类型</option><option>预约</option><option>加号</option></select><select id="activityLocation" class="control"><option value="">地点</option><option>昆仑物流有限公司会议中心</option></select><select id="activityTag" class="control"><option value="">VIP</option><option>VIP</option></select><select id="activityFollowup" class="control"><option value="">回访状态</option><option>已回访</option><option>未回访</option></select><div class="multi-select" id="activityDelivery"><button type="button" class="control multi-select-trigger"><span>交付状态</span><b>⌄</b></button><div class="multi-select-panel"><label><input type="checkbox" value="已通知"> 已通知</label><label><input type="checkbox" value="通知异常"> 通知异常</label><label><input type="checkbox" value="已查看"> 已查看</label><label><input type="checkbox" value="未查看"> 未查看</label></div></div></div>
+                  <div class="filter-actions" style="margin-top:10px"><button class="btn primary" id="activitySearch">查询</button><button class="btn" id="activityReset">重置</button><button class="btn" id="activityExport">↓ 导出</button><button class="btn" id="activityImport">↑ 导入</button><button class="anno-marker" data-anno="admin-activity-filter">4</button></div>
+                </div>
+                <div class="table-wrap" id="activityTableWrap"><table class="admin-table"><thead><tr><th class="col-time">预约时间</th><th class="col-progress">就诊进度</th><th class="col-patient">患者</th><th>身份证号</th><th>手机号</th><th>回访状态</th><th>就诊科室</th><th>就诊号</th><th>地点</th><th>就诊类型</th><th>意见状态</th><th>最后提交</th><th>交付状态</th><th class="col-actions">操作</th></tr></thead><tbody id="activityTableBody">
+                  <tr data-patient="崔明" data-source="online" data-search="2026-09-24 上午 崔明 6003 1353808 心内科-张云 已完成 在线签署 V2 VIP 未回访 预约 已通知 已查看"><td class="col-time">2026-09-24 上午</td><td class="col-progress"><span class="tag green">已完成</span></td><td class="col-patient">崔明<br><span class="tag gold">VIP</span></td><td>654225****2014</td><td>135****3808</td><td>未回访</td><td>心内科-张云</td><td>6003</td><td>昆仑物流有限公司会议中心</td><td>预约</td><td><div class="opinion-state"><span class="tag green">已完成</span><small>在线签署 · V2</small></div></td><td>2026-09-24<br>14:32</td><td><div class="status-stack"><span>短信：<b style="color:#08724f">成功</b></span><span>企微：<b style="color:#08724f">成功</b></span><span>查看：<b style="color:#08724f">已查看</b></span></div></td><td class="col-actions"><div class="row-actions"><button class="btn text open-patient-detail">查看</button><button class="btn text toggle-action-menu">更多⌄</button><div class="action-menu"><button class="open-image">查看图片</button><button class="view-word">查看Word版</button><button class="print-image">打印</button><button class="resend">同时补发</button><button class="upload-opinion">上传更新版本</button></div></div></td></tr>
+                  <tr data-patient="夏娜" data-source="upload" data-search="2026-09-24 上午 夏娜 6002 1366529 内分泌科-赵维纲 已完成 图片上传 V1 加号 未回访 已通知 通知异常 未查看"><td class="col-time">2026-09-24 上午</td><td class="col-progress"><span class="tag green">已完成</span></td><td class="col-patient">夏娜</td><td>650202****3072X</td><td>136****6529</td><td>未回访</td><td>内分泌科-赵维纲</td><td>6002</td><td>昆仑物流有限公司会议中心</td><td>加号</td><td><div class="opinion-state"><span class="tag green">已完成</span><small>图片上传 · V1</small></div></td><td>2026-09-24<br>14:28</td><td><div class="status-stack"><span>短信：<b style="color:#08724f">成功</b></span><span>企微：<b style="color:#b83c3c">失败</b></span><span>查看：未查看</span></div></td><td class="col-actions"><div class="row-actions"><button class="btn text open-patient-detail">查看</button><button class="btn text toggle-action-menu">更多⌄</button><div class="action-menu"><button class="open-image">查看图片</button><button class="print-image">打印</button><button class="resend">同时补发</button><button class="upload-opinion">上传更新版本</button></div></div></td></tr>
+                  <tr data-patient="覃祖云" data-source="draft" data-search="2026-09-24 下午 覃祖云 6001 1352727 内分泌科-赵维纲 已就诊 草稿 未回访 预约"><td class="col-time">2026-09-24 下午</td><td class="col-progress"><span class="tag blue">已就诊</span></td><td class="col-patient">覃祖云</td><td>650104****2511</td><td>135****2727</td><td>未回访</td><td>内分泌科-赵维纲</td><td>6001</td><td>昆仑物流有限公司会议中心</td><td>预约</td><td><div class="opinion-state"><span class="tag gold">草稿</span><small>在线草稿</small></div></td><td>—</td><td>不适用</td><td class="col-actions"><div class="row-actions"><button class="btn text open-patient-detail">查看</button><button class="btn text toggle-action-menu">更多⌄</button><div class="action-menu"><button class="upload-opinion">上传手写意见</button><button disabled>等待专家提交</button></div></div></td></tr>
+                  <tr data-patient="孙德辉" data-source="none" data-search="2026-09-24 下午 孙德辉 6004 1396678 心内科-张云 待就诊 未提供 未回访 预约"><td class="col-time">2026-09-24 下午</td><td class="col-progress"><span class="tag gray">待就诊</span></td><td class="col-patient">孙德辉</td><td>230603****2518</td><td>139****6678</td><td>未回访</td><td>心内科-张云</td><td>6004</td><td>昆仑物流有限公司会议中心</td><td>预约</td><td><span class="tag gray">未提供</span></td><td>—</td><td>不适用</td><td class="col-actions"><div class="row-actions"><button class="btn text open-patient-detail">查看</button><button class="btn text toggle-action-menu">更多⌄</button><div class="action-menu"><button disabled>就诊后可上传意见</button></div></div></td></tr>
+                </tbody></table><div class="table-empty hidden" id="activityEmpty"><strong>未找到符合条件的患者</strong>请调整筛选条件后重新查询。</div></div>
+                <div class="pager"><span id="activityResultCount">共 4 条结果</span><div class="actions"><span class="muted">已固定预约时间、就诊进度、患者和操作列</span><button class="btn small" disabled>上一页</button><button class="btn small primary">1</button><button class="btn small" disabled>下一页</button><button class="anno-marker" data-anno="admin-activity-list">5</button></div></div>
+              </div>
+
+              <div class="admin-view" data-view="phrases">
+                <div class="page-title-row"><div><span class="muted">会诊配置</span><h3>会诊意见常用语</h3></div><button class="anno-marker" data-anno="admin-phrases-overview">1</button></div>
+                <div class="phrase-admin">
+                  <aside class="dept-list"><p class="muted">按科室查看 <button class="anno-marker" data-anno="admin-phrase-dept">2</button></p><button data-dept="全部科室/通用">全部科室/通用</button><button data-dept="心内科">心内科</button><button class="active" data-dept="内分泌科">内分泌科</button><button data-dept="骨科">骨科</button><button data-dept="神经内科">神经内科</button></aside>
+                  <div class="phrase-canvas">
+                    <div class="success-note" id="currentDepartment">当前科室：内分泌科。下方顺序与专家工作台一致。</div>
+                    <div class="field-block"><div class="field-title"><span>主诉</span><div class="actions"><button class="btn small add-phrase" data-field="主诉">＋新增常用语</button><button class="anno-marker" data-anno="admin-phrase-field">3</button></div></div><div class="fake-textarea muted">专家在此填写主诉</div><div class="phrase-row editable-phrases"><button class="phrase-chip configurable-phrase">血糖升高多年，近期波动明显</button><button class="phrase-chip configurable-phrase">甲状腺结节复查咨询</button><button class="phrase-chip configurable-phrase">近期乏力、体重变化</button></div></div>
+                    <div class="field-block"><div class="field-title"><span>诊断</span><button class="btn small add-phrase" data-field="诊断">＋新增常用语</button></div><div class="fake-textarea muted">专家在此填写诊断</div><div class="phrase-row editable-phrases"><button class="phrase-chip configurable-phrase">2型糖尿病</button><button class="phrase-chip configurable-phrase">高脂血症</button><button class="phrase-chip configurable-phrase">甲状腺结节</button></div></div>
+                    <div class="field-block"><div class="field-title"><span>咨询意见</span><div class="actions"><button class="btn small" id="togglePhraseOrder">调整顺序</button><button class="btn small add-phrase" data-field="咨询意见">＋新增常用语</button><button class="anno-marker" data-anno="admin-phrase-actions">4</button></div></div><div class="fake-textarea muted">专家在此填写咨询意见</div><div class="phrase-row editable-phrases" id="advicePhraseList"><button class="phrase-chip configurable-phrase">建议定期监测血糖</button><button class="phrase-chip configurable-phrase">建议完善糖化血红蛋白检查</button><button class="phrase-chip configurable-phrase">建议一个月后复诊</button></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="expert-prototype" class="page">
+      <div class="wrap">
+        <div class="prototype-toolbar no-print"><div class="views"><button class="active expert-state" data-expert-state="default">默认态</button><button class="expert-state" data-expert-state="signed">已签署态</button><button class="expert-state" data-expert-state="empty">列表空态</button><button class="expert-state" data-expert-state="save-error">保存异常态</button></div><button id="toggleExpertAnnotations">显示标注</button></div>
+        <div class="prototype-shell expert-app">
+          <header class="expert-head">
+            <div><strong>走进昆仑物流宣传活动｜<span id="expertWorkDate">2026-09-24</span></strong><span><span id="expertWorkIdentity">内分泌科 · 赵维纲专家</span>　开启人：医助李某</span></div>
+            <div class="period-tabs"><button class="active" data-period="am">上午 4</button><button data-period="pm">下午 3</button></div>
+            <div class="actions"><button class="anno-marker" data-anno="expert-session">1</button><button class="btn small" id="signatureManager">签名管理</button><button class="anno-marker" data-anno="expert-signature-entry">2</button><button class="btn small" id="endWorkbench">结束工作台</button><button class="anno-marker" data-anno="expert-end-entry">3</button></div>
+          </header>
+          <div class="expert-grid">
+            <aside class="patient-pane">
+              <div class="patient-tools"><div class="actions"><input id="patientSearch" class="control" placeholder="搜索姓名或就诊号"><button class="anno-marker" data-anno="expert-list">4</button></div><div class="phrase-row"><button class="tag gray patient-filter" data-filter="all">全部</button><button class="tag gray patient-filter" data-filter="未填写">未填写</button><button class="tag gray patient-filter" data-filter="草稿">草稿</button><button class="tag gray patient-filter" data-filter="已签署">已签署</button></div></div>
+              <div class="patient-list" id="patientList"></div>
+            </aside>
+            <section class="editor-pane">
+              <div class="table-empty hidden" id="expertEmpty"><strong>当前条件下暂无患者</strong>可切换上午/下午，或清除搜索和状态筛选。</div>
+              <div class="editor-card" id="expertEditorCard">
+                <div class="patient-summary"><div><h3 id="editorPatientName">—</h3><span id="editorPatientMeta" class="muted">—</span></div><div class="actions"><span id="editorOpinionTag" class="tag gray">未填写</span><button class="anno-marker" data-anno="expert-patient">5</button></div></div>
+                <div id="editingBanner" class="edit-banner">当前为修改稿，尚未更新正式意见。再次确认提交后才会替换患者看到的内容。</div>
+                <div class="field-block"><div class="field-title"><span>主诉</span><div class="actions"><button class="btn text adjust-phrases" data-field="complaint" data-field-label="主诉">调整常用语</button><button class="anno-marker" data-anno="expert-form">6</button></div></div><textarea id="complaint" class="editor-textarea" placeholder="填写患者本次咨询的主要问题"></textarea><div class="phrase-row field-phrases" data-for="complaint"><button class="phrase-chip">血糖升高多年，近期波动明显</button><button class="phrase-chip">近期乏力、体重变化</button></div></div>
+                <div class="field-block"><div class="field-title"><span>诊断</span><button class="btn text adjust-phrases" data-field="diagnosis" data-field-label="诊断">调整常用语</button></div><textarea id="diagnosis" class="editor-textarea" placeholder="填写诊断"></textarea><div class="phrase-row field-phrases" data-for="diagnosis"><button class="phrase-chip">2型糖尿病</button><button class="phrase-chip">高血压</button><button class="phrase-chip">高脂血症</button></div></div>
+                <div class="field-block"><div class="field-title"><span>咨询意见</span><button class="btn text adjust-phrases" data-field="advice" data-field-label="咨询意见">调整常用语</button></div><textarea id="advice" class="editor-textarea tall" placeholder="填写专家咨询意见"></textarea><div class="phrase-row field-phrases" data-for="advice"><button class="phrase-chip">建议定期监测血糖</button><button class="phrase-chip">建议完善糖化血红蛋白检查</button><button class="phrase-chip">建议一个月后复诊</button><button class="phrase-chip hidden extra-phrase">建议继续观察症状变化</button><button class="btn text" id="morePhrases">更多</button></div></div>
+                <div class="field-block"><div class="field-title"><span>专家签名</span><button class="anno-marker" data-anno="expert-signature">7</button></div><div class="signature-box"><div><span class="muted">本次使用签名</span><div class="signature-preview"><span class="signature-ink">赵维纲</span></div></div><div class="actions"><button class="btn" id="useStoredSignature">选择已存签名</button><button class="btn" id="changeSignature">签名管理</button></div></div></div>
+                <div class="editor-actions"><span class="save-state" id="saveState">已自动保存</span><button class="anno-marker" data-anno="expert-actions">8</button><button class="btn" id="editSigned">编辑修改</button><button class="btn" id="saveDraft">保存草稿</button><button class="btn" id="saveNext">保存并下一位</button><button class="btn" id="previewOpinion">预览</button><button class="btn primary" id="submitOpinion">确认提交</button><button class="btn primary" id="submitNext">确认提交并下一位</button></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="patient-prototype" class="page">
+      <div class="wrap narrow">
+        <div class="prototype-toolbar no-print"><div class="views"><button class="active" data-patient-view="verify">身份验证</button><button data-patient-view="opinion">正式意见</button><button data-patient-view="expired">链接失效</button></div><button id="togglePatientAnnotations">显示标注</button></div>
+        <div class="mobile-stage prototype-shell">
+          <div class="mobile-board">
+            <div class="mobile-head"><strong>尤迈专家咨询</strong><span>安全查看本人会诊意见</span></div>
+            <div class="mobile-body verify-view" id="verifyView">
+              <div class="verify-box"><h3>身份验证</h3><p class="muted">为保护个人健康信息，请验证活动登记手机号。</p><div class="form-row"><label>手机号</label><input id="verifyPhone" class="control" value="135****3808" readonly></div><div class="form-row"><label>短信验证码</label><div class="actions"><input id="verifyCode" class="control" placeholder="请输入验证码"><button class="btn" id="sendCode">获取验证码</button></div><div class="inline-error" id="verifyError"></div></div><button class="btn primary" style="width:100%" id="verifySubmit">验证并查看</button><button class="anno-marker" data-anno="patient-verify">1</button><button class="anno-marker" data-anno="patient-code">2</button></div>
+            </div>
+            <div class="mobile-body opinion-mobile" id="patientOpinionView">
+              <div class="success-note">当前展示最新正式意见 V2 · 专家确认时间 2026-09-24 14:32</div>
+              <h3>会诊意见</h3>
+              <p class="muted">唐垒｜内分泌科｜赵维纲专家｜共2页</p>
+              <div class="document-pages" style="display:grid;grid-template-columns:1fr;overflow:visible"><div class="document-page" style="width:100%;min-height:430px"><strong>北京尤迈医学诊所·咨询记录</strong><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line short"></div><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line short"></div><div class="doc-sign">赵维纲</div><span class="page-label">第1页</span></div><div class="document-page" style="width:100%;min-height:430px"><strong>咨询记录·续页</strong><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line short"></div><div class="doc-line"></div><span class="page-label">第2页</span></div></div>
+              <p class="muted" style="font-size:12px">线上咨询，根据患者提供资料，专家意见仅供参考。</p>
+              <div class="actions"><button class="btn" id="patientImages">查看大图</button><button class="btn" id="savePatientImages">保存图片</button><button class="anno-marker" data-anno="patient-opinion">1</button></div>
+            </div>
+            <div class="mobile-body expired-view" id="patientExpiredView"><div class="expired-icon">!</div><h3>查看链接已失效</h3><p class="muted">安全链接自生成起7×24小时有效。请联系现场工作人员在活动详情中补发；系统将生成新链接。</p><button class="btn" id="expiredHelp">我知道了</button><button class="anno-marker" data-anno="patient-expired">1</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="prd" class="page">
+      <div class="wrap">
+        <div class="doc-layout">
+          <nav class="doc-toc" aria-label="PRD目录">
+            <strong>PRD目录</strong>
+            <a href="#prd-summary">1. 概要说明</a><a href="#prd-users">2. 用户与用户故事</a><a href="#prd-ia">3. 信息架构</a><a href="#prd-rules">4. 业务与状态规则</a><a href="#prd-pages">5. 页面功能</a><a href="#prd-data">6. 业务数据规则</a><a href="#prd-security">7. 安全与审计</a><a href="#prd-nfr">8. 非功能要求</a><a href="#prd-acceptance">9. 验收标准</a><a href="#prd-events">10. 运营记录</a>
+          </nav>
+          <article class="doc-content">
+            <section class="section" id="prd-summary">
+              <span class="kicker">01 / EXECUTIVE SUMMARY</span><h2>概要说明</h2>
+              <h3>问题陈述</h3><p>当前专家通过手写咨询意见、患者拍照、医助留存原稿完成交付，存在字迹难辨、内容难检索、签名和交付不可追踪、纸质文件易丢失等问题。</p>
+              <h3>解决方案</h3><p>在现有活动详情完整名单中整合意见状态、交付状态和相关操作；保留医助手写图片上传路径，同时新增临时专家工作台。在线意见按固定模板生成Word并转换为分页图片，两条路径共用版本、通知、患者查看和图片打印规则。</p>
+              <h3>成功标准</h3><ul><li>在线提交均可生成固定模板Word及页数完整的图片；手写图片可按页上传。</li><li>跨专家、跨活动和跨患者的越权访问测试全部被阻断。</li><li>任一正式路径成功后，就诊进度变为已完成，并创建短信和企业微信两条独立交付任务。</li><li>修改稿或失败的新版本不替换患者当前正式版本。</li><li>签名原始资产在活动结束后不可继续调用，历史正式图片中的签名快照保持不变。</li></ul>
+              <h3>非目标</h3><p>本方案不建设独立专家账号、全平台通用数据隔离、公共模板配置、理解确认、线上打印申请、打印状态、复杂版本中心、录音转写、AI起草、专业随访以及客户侧个人意见查询。</p>
+            </section>
+
+            <section class="section" id="prd-users">
+              <span class="kicker">02 / USERS</span><h2>用户与用户故事</h2>
+              <div class="table-wrap"><table><thead><tr><th>用户</th><th>目标</th><th>权限边界</th></tr></thead><tbody>
+                <tr><td>现场工作人员/医助</td><td>为指定专家开启工作台，查看交付状态，补发和辅助打印。</td><td>不能代专家填写、确认或管理其他活动的临时专家会话。</td></tr>
+                <tr><td>专家</td><td>连续查看本人患者，快速填写、签名、提交和直接修改。</td><td>临时会话固定活动、日期和专家，仅访问分配给当前专家的患者。</td></tr>
+                <tr><td>患者</td><td>通过短信和企业微信收到通知，并安全查看本人最新正式意见。</td><td>完成手机号验证后仅访问本人内容。</td></tr>
+                <tr><td>平台管理员</td><td>维护科室公共常用语，查看活动内意见与通知执行情况。</td><td>专业内容只读；不能代专家签署。</td></tr>
+              </tbody></table></div>
+              <h3>用户故事</h3>
+              <ul><li>作为现场工作人员，我希望从活动详情先选择活动日期、再选择该日期下的专家并打开固定工作台，以便多日活动中专家无需注册账号即可准确使用。</li><li>作为专家，我希望在左侧患者列表和右侧表单之间连续操作，以便快速完成整场意见录入。</li><li>作为专家，我希望复用本活动签名并管理自己的签名素材，以便减少重复手写且保留掌控感。</li><li>作为专家，我希望维护不影响同科室其他人的个人常用语，以便形成自己的录入习惯。</li><li>作为患者，我希望通过任一通知渠道进入安全页面，以便随时查看和保存正式意见。</li><li>作为运营人员，我希望看到短信、企业微信和患者查看结果，以便处理通知异常。</li></ul>
+            </section>
+
+            <section class="section" id="prd-ia">
+              <span class="kicker">03 / INFORMATION ARCHITECTURE</span><h2>信息架构</h2>
+              <div class="code-flow">管理后台
+├─ 活动详情
+│  ├─ 专家工作台入口 → 选择活动日期 → 选择该日期专家 → 创建临时会话
+│  ├─ 完整患者列表 → 现有字段＋意见状态＋最后提交＋交付状态
+│  └─ 预约详情 → 预约/就诊/病历＋意见图片＋版本＋补发/打印
+├─ 会诊配置
+│  └─ 会诊意见常用语 → 按科室、按字段配置
+│
+临时专家工作台
+├─ 上午 / 下午
+├─ 患者列表
+├─ 会诊意见填写
+├─ 个人常用语调整
+└─ 活动级签名管理
+
+患者安全查看H5
+├─ 手机号验证
+├─ 最新正式版本分页图片
+└─ 图片放大/保存</div>
+            </section>
+
+            <section class="section" id="prd-rules">
+              <span class="kicker">04 / RULES</span><h2>业务与状态规则</h2>
+              <h3>意见状态与就诊进度</h3><div class="table-wrap"><table><thead><tr><th>意见状态</th><th>进入条件</th><th>就诊进度</th><th>允许操作</th></tr></thead><tbody><tr><td>未提供</td><td>无在线草稿且无正式图片</td><td>沿用当前就诊节点</td><td>就诊后填写或上传</td></tr><tr><td>草稿</td><td>存在在线已保存内容但尚未形成正式图片</td><td>已就诊</td><td>继续填写、预览、确认提交；也可上传手写意见</td></tr><tr><td>已完成</td><td>在线分页图片全部成功，或手写图片上传全部成功</td><td>已完成</td><td>查看图片、打印、补发、形成更新版本</td></tr></tbody></table></div>
+              <h3>日期与时段规则</h3><p>多日活动在活动详情入口先选择工作日期，再选择该日期下的专家。工作台日期和专家固定，不提供切换；患者以预约数据中的上午/下午字段分组，专家可以自由切换时段。首次进入时，将当前系统时间与平台配置的上午/下午分界时间比较，默认打开对应时段；不使用自然中午、不因当前时段无患者而自动跳转。</p>
+              <h3>更新与版本规则</h3><p>在线已完成意见点击“编辑修改”后形成修改稿；上一正式版本继续用于患者查看和打印。在线再次提交或工作人员上传手写图片，只要全部处理成功即形成下一版本，后成功者成为当前版本并触发更新通知；任一页失败时不替换上一版本。</p>
+              <h3>签名规则</h3><p>签名支持手写画图、图片上传和引用本活动已用签名。专家可在工作台增删、设置默认和清空。活动结束时清除可复用原图；正式文件保存签署时的快照。原始签名不提供公开URL和单独下载。</p>
+              <h3>常用语规则</h3><p>公共层按科室＋字段配置和排序。专家操作形成个人覆盖层：可新增个人内容、调整顺序、隐藏公共内容和恢复科室默认。任何个人调整均不影响其他专家。</p>
+              <h3>交付规则</h3><p>正式文件生成后同时创建短信和企业微信任务。企微未绑定时，短信正常发送；患者绑定后补推企业微信。任一渠道成功即视为已通知，但后台保留另一个渠道的失败提示和独立重试。</p>
+            </section>
+
+            <section class="section" id="prd-pages">
+              <span class="kicker">05 / PAGE REQUIREMENTS</span><h2>页面功能</h2>
+              <div class="table-wrap"><table><thead><tr><th>页面/视图</th><th>入口</th><th>核心字段与动作</th><th>异常与空态</th></tr></thead><tbody>
+                <tr><td>活动详情</td><td>活动管理＞详情</td><td>保留现有统计、筛选、导入导出和全部患者字段；新增专家工作台、意见字段、展开筛选及图片/Word/补发/打印操作。</td><td>宽表横向滚动并固定关键列；活动无专家时禁用工作台入口。</td></tr>
+                <tr><td>开启专家工作台弹窗</td><td>点击专家工作台</td><td>先选择活动日期，再列出该日期专家；专家格式“科室-专家”，不展示诊室号；确认后创建临时会话。</td><td>未选日期、未选专家、日期无专家和开启失败均保留在弹窗内处理。</td></tr>
+                <tr><td>专家工作台</td><td>临时会话</td><td>上午/下午、搜索、状态筛选、患者标签、固定三字段、常用语、签名、保存、预览、确认、下一位。</td><td>自动保存失败时阻止切换并保留当前输入。</td></tr>
+                <tr><td>签名管理</td><td>工作台顶部/签名区</td><td>手写、上传、已用签名、设置默认、删除、清空。</td><td>签名文件格式异常时拒绝保存；无签名时不能确认提交。</td></tr>
+                <tr><td>常用语配置</td><td>会诊配置菜单</td><td>科室、字段、内容、顺序、启停；所见即所得。</td><td>空科室显示三个固定字段和新增入口。</td></tr>
+                <tr><td>预约详情</td><td>活动详情列表“查看”</td><td>保留预约、就诊、病历，新增当前意见图片、来源、版本记录、交付结果、上传、Word、补发和打印。</td><td>无正式意见显示空态；通知失败显示具体渠道。</td></tr>
+                <tr><td>患者验证</td><td>短信/企微安全链接</td><td>登记手机号、验证码、验证并查看。</td><td>验证码错误、过期或次数受限时不展示任何健康信息。</td></tr>
+                <tr><td>患者正式意见</td><td>验证成功</td><td>当前版本号、确认时间和全部分页图片；支持放大与保存图片。</td><td>图片加载异常显示重试，不展示草稿或Word。</td></tr>
+              </tbody></table></div>
+            </section>
+
+            <section class="section" id="prd-data">
+              <span class="kicker">06 / BUSINESS DATA</span><h2>业务数据与处理规则</h2>
+              <h3>业务对象</h3><div class="table-wrap"><table><thead><tr><th>业务对象</th><th>需要记录的业务信息</th><th>产品规则</th></tr></thead><tbody>
+                <tr><td>临时专家工作台</td><td>活动、工作日期、专家、开启人、开始与结束时间、当前状态</td><td>一次工作台固定一个活动日期和一名专家；页面内不能切换范围。</td></tr>
+                <tr><td>会诊意见</td><td>患者、专家、主诉、诊断、咨询意见、意见状态、保存时间、正式确认时间</td><td>固定三项正文；所有未正式确认内容均为草稿。</td></tr>
+                <tr><td>正式版本</td><td>版本号、形成来源、成功时间、分页图片、在线版Word、当前标识、更新原因</td><td>两条路径共用版本链；最后成功版本唯一标记为当前，失败不占版本号。</td></tr>
+                <tr><td>签名</td><td>所属活动、专家、产生方式、是否当前使用、清空时间</td><td>活动内可复用；正式文件保存提交时的签名快照。</td></tr>
+                <tr><td>科室常用语</td><td>科室、适用字段、内容、展示顺序、启用状态</td><td>平台公共能力，不与活动绑定。</td></tr>
+                <tr><td>专家个人常用语</td><td>专家、适用字段、个人新增内容、隐藏内容、个人顺序</td><td>绑定专家档案，不要求专家拥有登录账号。</td></tr>
+                <tr><td>通知记录</td><td>对应正式意见、通知渠道、发送时间、发送结果、失败原因、补发次数</td><td>短信和企业微信分别记录；后续补发不覆盖历史结果。</td></tr>
+                <tr><td>患者查看记录</td><td>对应患者、验证结果、首次查看时间、最近查看时间</td><td>只有成功展示正式意见后才记录为已查看。</td></tr>
+              </tbody></table></div>
+              <h3>正式版本形成后的业务顺序</h3><ol><li>在线路径由专家核对正文与签名，生成固定Word并转为分页图片；上传路径由工作人员选择全部手写图片并确认页序。</li><li>校验本次全部图片成功后创建新版本，并将其标记为当前版本。</li><li>意见状态和就诊进度均更新为已完成，记录最后提交时间。</li><li>同时发起短信和企业微信通知，并分别记录结果。</li><li>任一通知渠道失败不撤销正式版本，可在活动详情补发。</li></ol>
+              <h3>失败边界</h3><p>Word或任一页图片未成功时不创建新正式版本、不发送通知；若已有成功版本，继续向患者展示和打印上一版本。单一通知渠道失败时正式意见仍有效，后台明确显示失败渠道和补发操作。</p>
+            </section>
+
+            <section class="section" id="prd-security">
+              <span class="kicker">07 / SECURITY</span><h2>安全、权限与审计</h2>
+              <ul><li>临时专家工作台必须由已登录工作人员从活动详情开启，并固定活动、日期和专家。</li><li>专家只能看到当前工作台范围内的患者；任何跨活动、跨日期、跨专家或跨患者访问都应被阻止。</li><li>患者通过安全链接进入，首次查看必须完成登记手机号验证。</li><li>短信和企业微信正文不包含诊断、主诉、咨询意见等健康内容。</li><li>签名与会诊图片需验证真实图片类型和大小，移除附带信息，并按敏感资料保护。</li><li>正式意见、版本、签名、通知和查看操作均记录时间、对象、结果和操作主体。</li><li>中意和企业客户不获得患者个人会诊意见；内部人员按现有菜单权限访问管理入口。</li><li>患者与打印只使用当前正式图片；Word仅内部可见，工作人员不能编辑专家在线正文或打印草稿。</li></ul>
+            </section>
+
+            <section class="section" id="prd-nfr">
+              <span class="kicker">08 / NON-FUNCTIONAL</span><h2>非功能要求</h2>
+              <div class="table-wrap"><table><thead><tr><th>类别</th><th>要求</th></tr></thead><tbody>
+                <tr><td>兼容性</td><td>管理后台与专家工作台支持当前项目统一支持的桌面浏览器；患者页面支持主流手机浏览器和企业微信内置浏览器。</td></tr>
+                <tr><td>可用性</td><td>自动保存显示“保存中/已保存/保存失败”；保存失败不清空输入、不允许静默切换患者。</td></tr>
+                <tr><td>防重复操作</td><td>正式提交、补发和通知重试进入处理中后禁用重复点击；用户重复操作不产生多份正式意见或重复通知。</td></tr>
+                <tr><td>可恢复性</td><td>通知失败可补发；Word或图片生成失败保留草稿/上一正式版本；活动签名清空任务失败时告警并重试。</td></tr>
+                <tr><td>可访问性</td><td>关键按钮支持键盘焦点；状态不只依赖颜色；正文与背景满足清晰可读的对比度。</td></tr>
+                <tr><td>打印</td><td>A4纵向，短内容保持单页模板，长内容自动分页；正文、签名和底部说明不得重叠。</td></tr>
+              </tbody></table></div>
+            </section>
+
+            <section class="section" id="prd-acceptance">
+              <span class="kicker">09 / ACCEPTANCE</span><h2>验收标准</h2>
+              <div class="table-wrap"><table><thead><tr><th>场景</th><th>验收结果</th></tr></thead><tbody>
+                <tr><td>临时工作台</td><td>多日活动必须先选日期，再选择该日期下以“科室-专家”展示的专家；工作台固定日期和专家，仅能切换上午/下午；任何方式都不能跨范围访问。</td></tr>
+                <tr><td>患者列表</td><td>展示当前活动、日期、专家和时段下全部未取消预约，按现有叫号队列顺序排列；VIP以标签展示，加号/预约以就诊类型展示。</td></tr>
+                <tr><td>意见填写</td><td>固定三字段；自动保存成功后才能切换；未正式提交均显示草稿。</td></tr>
+                <tr><td>常用语</td><td>按科室和字段展示；点击插入后可编辑；专家个人增删和排序不影响同科室其他专家。</td></tr>
+                <tr><td>签名</td><td>手写、上传和引用均可用；删除原图不改变已签署文件；活动结束后原图不可再次调用。</td></tr>
+                <tr><td>正式提交</td><td>在线填写成功生成固定Word与全部分页图片；重复点击只形成一个版本；图片未完整生成时不完成、不通知。</td></tr>
+                <tr><td>手写上传</td><td>支持一张或多张JPG/PNG并保留页序；成功后与在线签署等效，进度变为已完成并双渠道通知。</td></tr>
+                <tr><td>直接修改</td><td>修改稿不替换患者当前版本；再次成功提交后生成下一版本并触发双渠道更新通知。</td></tr>
+                <tr><td>双渠道通知</td><td>短信和企微分别执行和记录；企微未绑定不阻断短信；绑定后补推；补发不修改专业内容。</td></tr>
+                <tr><td>患者查看</td><td>未验证用户无法看到健康内容；验证后仅展示本人当前正式版本的全部图片，不提供Word。</td></tr>
+                <tr><td>辅助打印</td><td>活动完整名单可搜索患者并打印当前正式版本全部图片；不建立打印状态、不限制次数、不打印草稿。</td></tr>
+              </tbody></table></div>
+            </section>
+
+            <section class="section" id="prd-events">
+              <span class="kicker">10 / OPERATION RECORDS</span><h2>运营记录</h2>
+              <div class="table-wrap"><table><thead><tr><th>记录事项</th><th>记录内容</th><th>用途</th></tr></thead><tbody>
+                <tr><td>开启专家工作台</td><td>活动、日期、专家、开启人、结果</td><td>临时工作台使用追踪</td></tr>
+                <tr><td>保存意见草稿</td><td>患者、专家、保存时间、保存结果</td><td>自动保存稳定性</td></tr>
+                <tr><td>正式确认意见</td><td>患者、专家、确认时间、文件生成结果</td><td>意见完成与文件交付</td></tr>
+                <tr><td>修改正式意见</td><td>患者、修改开始时间、再次确认时间</td><td>内容更新追踪</td></tr>
+                <tr><td>使用常用语</td><td>科室、适用字段、科室公共或专家个人</td><td>常用语有效性</td></tr>
+                <tr><td>发送查看通知</td><td>患者、渠道、发送次数、发送结果</td><td>通道质量与异常处理</td></tr>
+                <tr><td>患者查看意见</td><td>患者、入口渠道、首次或再次、查看时间</td><td>交付触达分析</td></tr>
+                <tr><td>清空活动签名</td><td>活动、专家、执行时间、执行结果</td><td>签名安全清理验证</td></tr>
+              </tbody></table></div>
+              <p class="note">业务指标目标值须在试点活动建立现状基线后再评审。本方案不将历史建议阈值直接写入合同或SLA。</p>
+            </section>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="expertLauncherModal" role="dialog" aria-modal="true" aria-labelledby="expertLauncherTitle">
+    <div class="modal"><div class="modal-head"><h3 id="expertLauncherTitle">开启专家工作台</h3><div class="actions"><button class="anno-marker" data-anno="launcher-overview">1</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><p class="muted">多日活动先选择工作日期，再选择该日期下的专家。开启后页面内不允许切换日期或专家。</p><div class="form-row"><label>工作日期 <span style="color:#b83c3c">*</span></label><div class="actions"><select class="control" id="activityDateSelect"><option value="">请选择活动日期</option><option value="2026-09-24">2026-09-24（周四）</option><option value="2026-09-25">2026-09-25（周五）</option></select><button class="anno-marker" data-anno="launcher-date">2</button></div></div><div class="form-row"><label>选择专家 <span style="color:#b83c3c">*</span></label><div class="actions"><select class="control" id="expertSelect" disabled><option value="">请先选择活动日期</option></select><button class="anno-marker" data-anno="launcher-expert">3</button></div></div><div id="launcherError" class="inline-error"></div><div id="expertConfirmCopy" class="success-note hidden"></div></div><div class="modal-foot"><button class="btn modal-close">取消</button><button class="btn primary" id="confirmLaunchExpert">确认开启</button></div></div>
+  </div>
+
+  <div class="drawer" id="patientDrawer">
+    <div class="drawer-head"><div class="actions"><h2>预约详情</h2><span id="drawerVisitTag" class="tag green">已完成</span><button class="anno-marker" data-anno="admin-patient-detail">6</button></div><button class="btn text" data-close-patient-drawer>关闭</button></div>
+    <div class="drawer-body">
+      <div class="visit-steps" id="drawerVisitSteps"><div class="visit-step done">取号</div><div class="visit-step done">叫号</div><div class="visit-step done">就诊</div><div class="visit-step done">已完成</div></div>
+      <div class="detail-section"><div class="detail-section-title"><h3>预约信息</h3></div><div class="detail-grid"><div class="detail-item"><span>患者姓名</span><b id="drawerName">崔明</b></div><div class="detail-item"><span>身份证号</span><b id="drawerIdentity">654225****2014</b></div><div class="detail-item"><span>手机号</span><b id="drawerPhone">135****3808</b></div><div class="detail-item"><span>预约时间</span><b id="drawerAppointment">2026-09-24 上午</b></div><div class="detail-item"><span>预约科室</span><b id="drawerDepartment">心内科-张云</b></div><div class="detail-item"><span>预约地点</span><b id="drawerLocation">昆仑物流有限公司会议中心</b></div></div></div>
+      <div class="detail-section"><div class="detail-section-title"><h3>就诊信息</h3></div><div class="detail-grid"><div class="detail-item"><span>就诊号</span><b id="drawerNumber">6003</b></div><div class="detail-item"><span>就诊科室</span><b id="drawerClinic">心内科-张云</b></div><div class="detail-item"><span>取号时间</span><b id="drawerTicketTime">09:46:18</b></div><div class="detail-item"><span>就诊时间</span><b id="drawerVisitTime">10:18:30</b></div><div class="detail-item"><span>完成时间</span><b id="drawerCompleteTime">14:32:10</b></div></div></div>
+      <div class="detail-section"><div class="detail-section-title"><h3>患者病历</h3></div><div class="document-pages"><div class="document-page"><strong>门诊病历</strong><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line short"></div><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line short"></div><span class="page-label">病历图片 1</span></div></div></div>
+      <div class="detail-section" id="drawerOpinionSection"><div class="detail-section-title"><h3>会诊意见</h3><div class="actions"><span id="drawerOpinionState" class="tag green">已完成</span><button class="anno-marker" data-anno="admin-opinion-detail">7</button></div></div><div id="drawerOpinionMeta" class="success-note">当前版本 V2 · 在线签署 · 2026-09-24 14:32</div><div class="document-pages" id="drawerOpinionPages"></div><div id="drawerOpinionEmpty" class="table-empty hidden"><strong>尚未形成正式会诊意见</strong>草稿不向患者交付，也不允许打印。</div><div id="drawerDelivery" class="status-stack" style="margin-top:12px"><span>短信：<b style="color:#08724f">成功</b></span><span>企微：<b style="color:#08724f">成功</b></span><span>患者查看：<b style="color:#08724f">已查看</b></span></div></div>
+      <div class="detail-section"><div class="detail-section-title"><h3>版本记录</h3><button class="anno-marker" data-anno="admin-version-history">8</button></div><div class="version-list" id="drawerVersionList"></div></div>
+    </div>
+    <div class="drawer-actions"><button class="btn" id="drawerUpload">上传新版本</button><button class="btn" id="drawerImage">查看图片</button><button class="btn" id="drawerWord">查看Word版</button><button class="btn" id="drawerResend">同时补发</button><button class="btn primary" id="drawerPrint">打印</button></div>
+  </div>
+
+  <div class="modal-backdrop" id="phraseModal"><div class="modal"><div class="modal-head"><h3 id="phraseModalTitle">新增常用语</h3><div class="actions"><button class="anno-marker" data-anno="phrase-editor">5</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><p class="muted" id="phraseFieldLabel">所属字段：—</p><div class="form-row"><label>常用语内容 <span style="color:#b83c3c">*</span></label><textarea id="newPhraseContent" class="editor-textarea" maxlength="200" placeholder="输入点击后插入的完整内容"></textarea><div class="inline-error" id="phraseError"></div></div><label><input type="checkbox" id="phraseEnabled" checked> 启用，启用后在专家工作台展示</label></div><div class="modal-foot"><button class="btn danger hidden" id="deletePhrase">删除</button><button class="btn modal-close">取消</button><button class="btn primary" id="saveNewPhrase">保存</button></div></div></div>
+
+  <div class="modal-backdrop" id="personalPhraseModal"><div class="modal"><div class="modal-head"><h3>调整个人常用语</h3><div class="actions"><button class="anno-marker" data-anno="expert-personal-phrases">7</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><p class="success-note">只影响赵维纲专家本人，不改变内分泌科公共配置。</p><p class="muted" id="personalPhraseField">当前字段：主诉</p><div id="personalPhraseList"><div class="signature-box"><span>血糖升高多年，近期波动明显</span><div class="actions"><button class="btn small personal-move">上移</button><button class="btn small personal-hide">隐藏</button></div></div><div class="signature-box" style="margin-top:8px"><span>近期乏力、体重变化</span><div class="actions"><button class="btn small personal-move">上移</button><button class="btn small personal-hide">隐藏</button></div></div></div><div class="form-row" style="margin-top:16px"><label>新增个人常用语</label><div class="actions"><input class="control" id="personalPhraseInput" placeholder="输入常用语"><button class="btn" id="addPersonalPhrase">新增</button></div><div class="inline-error" id="personalPhraseError"></div></div></div><div class="modal-foot"><button class="btn" id="restoreDepartmentPhrases">恢复科室默认</button><button class="btn primary modal-close">完成</button></div></div></div>
+
+  <div class="modal-backdrop" id="endWorkbenchModal"><div class="modal"><div class="modal-head"><h3>结束专家工作台</h3><button class="btn text modal-close">关闭</button></div><div class="modal-body"><div class="note">结束后当前临时会话失效。已保存草稿和已签署意见继续保留，未保存输入将无法恢复。</div><button class="anno-marker" data-anno="expert-end-session">8</button></div><div class="modal-foot"><button class="btn modal-close">取消</button><button class="btn danger" id="confirmEndWorkbench">确认结束</button></div></div></div>
+
+  <div class="modal-backdrop" id="resendModal"><div class="modal"><div class="modal-head"><h3>同时补发查看通知</h3><button class="btn text modal-close">关闭</button></div><div class="modal-body"><p>将向患者登记手机号补发短信，并同步向已绑定的健康小助理企业微信补发通知。</p><label class="signature-box"><span><b>重新生成安全链接</b><br><small class="muted">勾选后旧链接立即失效，新链接自生成起7×24小时有效；未勾选且原链接有效时继续使用原链接。</small></span><input type="checkbox" id="renewSecureLink"></label><div class="note" style="margin-top:12px">只补发查看通知，不修改专家意见和患者查看状态。原链接已过期时系统自动生成新链接。</div><button class="anno-marker" data-anno="admin-resend">5</button></div><div class="modal-foot"><button class="btn modal-close">取消</button><button class="btn primary" id="confirmResend">确认补发</button></div></div></div>
+
+  <div class="modal-backdrop" id="signatureModal"><div class="modal wide"><div class="modal-head"><h3>签名管理</h3><div class="actions"><button class="anno-marker" data-anno="signature-manager">1</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><p class="success-note">可保存多个本活动签名并设置一个默认签名。活动结束后自动清空可复用原图，已完成意见中的签名快照继续保留。</p><div class="grid-2"><div><h4>手写签名</h4><canvas id="signatureCanvas" width="540" height="180" style="width:100%;height:150px;border:1px solid #cad7d1;border-radius:8px;touch-action:none"></canvas><div class="actions"><button class="btn small" id="clearCanvas">清空画板</button><button class="btn small primary" id="saveCanvas">保存为新签名</button></div></div><div><h4>上传图片</h4><input id="signatureUpload" type="file" accept="image/png,image/jpeg" class="control"><div class="signature-box" style="margin-top:10px"><span class="muted">上传预览</span><span id="uploadPreview">—</span></div><div class="inline-error" id="signatureError"></div></div></div><div class="field-title" style="margin-top:18px"><h4>本活动已存签名（2）</h4><span class="muted">点击“本次使用”即可带回意见表单</span></div><div id="savedSignatureList"><div class="signature-box saved-signature" data-signature="赵维纲"><span class="signature-ink">赵维纲</span><div class="actions"><span class="tag green signature-default">默认</span><button class="btn small use-signature">本次使用</button><button class="btn small set-default-signature hidden">设为默认</button><button class="btn small danger delete-saved-signature">删除</button></div></div><div class="signature-box saved-signature" data-signature="赵维纲·简签" style="margin-top:8px"><span class="signature-ink" style="font-size:24px">赵维纲</span><div class="actions"><span class="tag green signature-default hidden">默认</span><button class="btn small use-signature">本次使用</button><button class="btn small set-default-signature">设为默认</button><button class="btn small danger delete-saved-signature">删除</button></div></div></div></div><div class="modal-foot"><button class="btn danger" id="clearAllSignatures">清空全部签名</button><button class="btn primary modal-close">完成</button></div></div></div>
+
+  <div class="modal-backdrop" id="confirmOpinionModal"><div class="modal wide"><div class="modal-head"><h3>确认提交会诊意见</h3><div class="actions"><button class="anno-marker" data-anno="expert-submit-confirm">1</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><div class="note">请核对患者、意见内容与签名。确认后按固定模板生成Word，再转换为一张或多张分页图片；图片成功后创建短信和企业微信交付任务。</div><div id="confirmOpinionPreview" style="margin-top:16px"></div></div><div class="modal-foot"><button class="btn modal-close">返回修改</button><button class="btn primary" id="finalConfirmOpinion">确认提交</button></div></div></div>
+
+  <div class="modal-backdrop" id="paperModal"><div class="modal wide"><div class="modal-head"><h3>会诊意见图片预览</h3><div class="actions"><button class="anno-marker" data-anno="formal-image">1</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><div class="success-note" id="imagePreviewMeta">当前版本 V2 · 共2页 · 用于患者查看与现场打印</div><div id="printPaper"></div></div><div class="modal-foot"><button class="btn modal-close">关闭</button><button class="btn primary" id="browserPrint">打印当前版本图片</button></div></div></div>
+
+  <div class="modal-backdrop" id="wordModal"><div class="modal wide"><div class="modal-head"><h3>在线填写Word版</h3><div class="actions"><button class="anno-marker" data-anno="formal-word">1</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><div class="note">Word版仅供内部工作人员和当前专家查看；患者端不提供可编辑文件。</div><div class="paper" id="wordPreviewPaper"></div></div><div class="modal-foot"><button class="btn primary modal-close">关闭</button></div></div></div>
+
+  <div class="modal-backdrop" id="uploadOpinionModal"><div class="modal"><div class="modal-head"><h3 id="uploadOpinionTitle">上传手写会诊意见</h3><div class="actions"><button class="anno-marker" data-anno="manual-upload">1</button><button class="btn text modal-close">关闭</button></div></div><div class="modal-body"><div class="note" id="uploadVersionNote">上传成功后将形成新的正式版本，并作为患者查看和打印的当前版本。旧版本保留在版本记录中。</div><div class="form-row" style="margin-top:16px"><label>会诊意见图片 <span style="color:#b83c3c">*</span></label><input id="manualOpinionFiles" class="control" type="file" accept="image/png,image/jpeg" multiple><div class="muted" style="font-size:12px">支持JPG、PNG，可选择多张；图片顺序即患者查看与打印顺序。</div></div><div class="form-row"><label>更新原因 <span style="color:#b83c3c">*</span></label><textarea id="uploadReason" class="editor-textarea" maxlength="200" placeholder="例如：专家现场补充意见"></textarea><div class="inline-error" id="uploadOpinionError"></div></div></div><div class="modal-foot"><button class="btn modal-close">取消</button><button class="btn primary" id="confirmManualUpload">确认上传并提交</button></div></div></div>
+
+  <div class="modal-backdrop" id="annotationModal"><div class="modal annotation-modal"><div class="modal-head"><div><span class="kicker">AXURE PRODUCT SPEC</span><h3 id="annotationTitle">标注说明</h3></div><button class="btn text modal-close">关闭</button></div><div class="modal-body anno-panel" id="annotationBody"></div><div class="modal-foot"><button class="btn primary modal-close">关闭</button></div></div></div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const q = (s, root = document) => root.querySelector(s);
+    const qa = (s, root = document) => [...root.querySelectorAll(s)];
+    const toast = (message) => {
+      const el = q('#toast'); el.textContent = message; el.classList.add('show');
+      clearTimeout(window.__toastTimer); window.__toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+    };
+    const openModal = (id) => q(id).classList.add('show');
+    const closeModals = () => qa('.modal-backdrop').forEach(m => m.classList.remove('show'));
+    const escapeHTML = (value = '') => value.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+
+    function showPage(id) {
+      qa('.page').forEach(p => p.classList.toggle('active', p.id === id));
+      qa('.top-nav button').forEach(b => b.classList.toggle('active', b.dataset.page === id));
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+    qa('.top-nav button').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+
+    function showAdminView(name) {
+      qa('.admin-view').forEach(v => v.classList.toggle('active', v.dataset.view === name));
+      qa('[data-admin-view]').forEach(b => b.classList.toggle('active', b.dataset.adminView === name));
+      q('#showActivityEmpty').classList.remove('active');
+      const isPhrases = name === 'phrases';
+      q('#adminBreadcrumb').textContent = isPhrases ? '会诊配置　›　会诊意见常用语' : '活动管理　›　详情';
+      qa('[data-side-section]').forEach(b => b.classList.toggle('active', b.dataset.sideSection === (isPhrases ? 'phrases' : 'activity')));
+    }
+    qa('[data-admin-view]').forEach(btn => btn.addEventListener('click', () => showAdminView(btn.dataset.adminView)));
+    qa('[data-go-admin]').forEach(btn => btn.addEventListener('click', () => showAdminView(btn.dataset.goAdmin)));
+
+    q('#openExpertLauncher').addEventListener('click', () => {
+      q('#activityDateSelect').value = ''; q('#expertSelect').innerHTML = '<option value="">请先选择活动日期</option>'; q('#expertSelect').disabled = true;
+      q('#launcherError').textContent = ''; q('#expertConfirmCopy').classList.add('hidden'); openModal('#expertLauncherModal');
+    });
+    const expertsByDate = {
+      '2026-09-24': ['内分泌科-赵维纲', '心内科-张云'],
+      '2026-09-25': ['内分泌科-赵维纲', '骨科-李宁']
+    };
+    q('#activityDateSelect').addEventListener('change', e => {
+      const select = q('#expertSelect'); const options = expertsByDate[e.target.value] || [];
+      select.disabled = !e.target.value; select.innerHTML = `<option value="">${e.target.value ? '请选择该日期专家' : '请先选择活动日期'}</option>${options.map(v=>`<option>${v}</option>`).join('')}`;
+      q('#launcherError').textContent = ''; q('#expertConfirmCopy').classList.add('hidden');
+    });
+    q('#expertSelect').addEventListener('change', e => {
+      const copy = q('#expertConfirmCopy');
+      copy.textContent = e.target.value ? `工作日期：${q('#activityDateSelect').value}；专家：${e.target.value}。开启后不可切换。` : '';
+      copy.classList.toggle('hidden', !e.target.value);
+    });
+    q('#confirmLaunchExpert').addEventListener('click', () => {
+      if (!q('#activityDateSelect').value) { q('#launcherError').textContent = '请选择工作日期'; return; }
+      if (!q('#expertSelect').value) { q('#launcherError').textContent = '请选择该日期下的专家'; return; }
+      q('#expertWorkDate').textContent = q('#activityDateSelect').value;
+      q('#expertWorkIdentity').textContent = q('#expertSelect').value.replace('-', ' · ') + '专家';
+      currentPeriod=resolveCurrentPeriod();
+      currentPatientId=currentPeriod==='am'?'6002':'6010';
+      qa('[data-period]').forEach(function(btn){ btn.classList.toggle('active',btn.dataset.period===currentPeriod); });
+      renderPatients(); selectPatient(currentPatientId);
+      closeModals(); showPage('expert-prototype'); toast('临时专家工作台已开启');
+    });
+
+    /* Retained historical prototype logic, intentionally disabled after merging opinion management into activity detail. */
+    if (false) {
+    const opinionSamples = {
+      '唐垒': {name:'唐垒',sex:'男',age:'49',applicant:'高净值 VIP',department:'内分泌科',expert:'赵维纲',date:'2026-09-24',time:'14:32',complaint:'发现血糖升高14年，近一个月升高明显。',diagnosis:'1、2型糖尿病　2、高血压　3、高脂血症　4、动脉硬化',advice:'1、建议定期监测血糖，根据监测结果调整方案。\n2、建议完善相关检查，一个月后复诊。\n3、其他降压、降脂药暂不调整。',delivery:'短信：成功　企业微信：成功　患者：已查看'},
+      '夏娜': {name:'夏娜',sex:'女',age:'42',applicant:'高净值 VIP',department:'内分泌科',expert:'赵维纲',date:'2026-09-24',time:'14:28',complaint:'血糖控制欠佳，近期波动明显。',diagnosis:'2型糖尿病',advice:'建议定期监测血糖，并结合复查结果调整后续方案。',delivery:'短信：成功　企业微信：失败　患者：未查看'}
+    };
+    let currentDocument = opinionSamples['唐垒'];
+    function loadPaper(data) {
+      currentDocument=data; q('#paperDate').textContent=`咨询日期：${data.date}`; q('#paperName').textContent=`姓名：${data.name}`; q('#paperSex').textContent=`性别：${data.sex||'—'}`; q('#paperAge').textContent=`年龄：${data.age||'—'}`; q('#paperApplicant').textContent=`申请医院：${data.applicant||'—'}`; q('#paperDepartment').textContent=`科室：${data.department}`; q('#paperExpert').textContent=`专家：${data.expert}`; q('#paperComplaint').textContent=data.complaint; q('#paperDiagnosis').textContent=data.diagnosis; q('#paperAdvice').textContent=data.advice; q('#paperSignature').textContent=data.expert;
+    }
+    qa('.open-patient-detail').forEach(btn => btn.addEventListener('click', () => {
+      const cells=btn.closest('tr').cells, appointment=cells[0].innerText.trim().split(/\s+/), name=cells[1].innerText.trim(), visit=cells[4].innerText.trim(), department=cells[5].innerText.trim(), number=cells[6].innerText.trim(), tag=cells[7].innerText.trim();
+      q('#patientDrawerTitle').textContent=`患者信息｜${name}`; q('#patientDrawerMeta').textContent=`就诊号 ${number}｜${cells[0].innerText.trim()}｜${department}`; q('#patientDrawerVisit').innerHTML=`<span class="tag ${visit==='已就诊'?'green':visit==='待就诊'?'blue':'gray'}">${visit}</span>`; q('#patientDrawerTag').innerHTML=tag==='—'?'—':`<span class="tag ${tag==='VIP'?'gold':'blue'}">${tag}</span>`; q('#patientDrawerIdentity').innerHTML=`姓名：${name}<br>身份证号：${cells[2].innerText.trim()}<br>手机号：${cells[3].innerText.trim()}`; q('#patientDrawerAppointment').innerHTML=`预约日期：${appointment[0]}<br>预约时段：${appointment[1]||'—'}<br>科室/专家：${department}`; q('#patientDrawer').classList.add('show');
+    }));
+    qa('[data-close-patient-drawer]').forEach(btn => btn.addEventListener('click', () => q('#patientDrawer').classList.remove('show')));
+    qa('.open-opinion').forEach(btn => btn.addEventListener('click', () => {
+      const name=btn.closest('tr').cells[1].innerText.trim().split(/\s+/)[0], data=opinionSamples[name]||opinionSamples['唐垒']; currentDocument=data;
+      q('#opinionDrawerTitle').textContent=`${data.name}｜正式会诊意见`; q('#opinionDrawerMeta').textContent=`${data.department} · ${data.expert}专家｜最后确认：${data.date} ${data.time}`; q('#opinionDrawerDelivery').textContent=data.delivery; q('#opinionDrawerComplaint').textContent=data.complaint; q('#opinionDrawerDiagnosis').textContent=data.diagnosis; q('#opinionDrawerAdvice').textContent=data.advice; q('#opinionDrawerSignature').textContent=data.expert; q('#opinionDrawer').classList.add('show');
+    }));
+    qa('[data-close-drawer]').forEach(btn => btn.addEventListener('click', () => q('#opinionDrawer').classList.remove('show')));
+    qa('.resend').forEach(btn => btn.addEventListener('click', () => openModal('#resendModal')));
+    q('#confirmResend').addEventListener('click', () => { closeModals(); toast('短信与企业微信补发任务已创建'); });
+    qa('.open-print').forEach(btn => btn.addEventListener('click', () => { const row=btn.closest('tr'); if(row){ const name=row.cells[1].innerText.trim().split(/\s+/)[0]; loadPaper(opinionSamples[name]||opinionSamples['唐垒']); } else loadPaper(currentDocument); openModal('#paperModal'); }));
+    q('#browserPrint').addEventListener('click', () => {
+      qa('.page').forEach(p => p.classList.remove('print-target'));
+      q('#admin-prototype').classList.add('print-target');
+      window.print();
+    });
+
+    function applyTableFilter({rows, values, empty, table, count}) {
+      let visible = 0;
+      rows.forEach(row => {
+        const haystack = (row.dataset.search || '').toLowerCase();
+        const matched = values.every(value => !value || haystack.includes(value.toLowerCase()));
+        row.classList.toggle('hidden', !matched); if (matched) visible += 1;
+      });
+      empty.classList.toggle('hidden', visible !== 0); table.classList.toggle('hidden', visible === 0); count.textContent = `共 ${visible} 条结果`;
+    }
+    function filterActivity() {
+      applyTableFilter({
+        rows: qa('#activityTableBody tr'),
+        values: [q('#activityKeyword').value.trim(), q('#activityPeriod').value, q('#activityExpert').value, q('#activityVisit').value, q('#activityTag').value],
+        empty: q('#activityEmpty'), table: q('#activityTableWrap table'), count: q('#activityResultCount')
+      });
+    }
+    q('#activitySearch').addEventListener('click', () => { filterActivity(); toast('已按当前条件查询'); });
+    q('#activityReset').addEventListener('click', () => { ['activityKeyword','activityPeriod','activityExpert','activityVisit','activityTag'].forEach(id => q('#'+id).value=''); filterActivity(); toast('筛选条件已重置'); });
+    function filterOpinions() {
+      applyTableFilter({
+        rows: qa('#opinionTableBody tr'),
+        values: [q('#opinionKeyword').value.trim(), q('#opinionPeriod').value, q('#opinionExpert').value, q('#opinionStatus').value, q('#opinionDelivery').value],
+        empty: q('#opinionEmpty'), table: q('#opinionTableWrap table'), count: q('#opinionResultCount')
+      });
+    }
+    q('#adminSearch').addEventListener('click', () => { filterOpinions(); toast('会诊意见列表已刷新'); });
+    q('#opinionReset').addEventListener('click', () => { ['opinionKeyword','opinionPeriod','opinionExpert','opinionStatus','opinionDelivery'].forEach(id => q('#'+id).value=''); filterOpinions(); toast('筛选条件已重置'); });
+    q('#showOpinionEmpty').addEventListener('click', () => {
+      showAdminView('opinion'); q('#opinionKeyword').value = '无匹配患者'; filterOpinions();
+      qa('.prototype-toolbar [data-admin-view]').forEach(b => b.classList.remove('active')); q('#showOpinionEmpty').classList.add('active');
+    });
+    }
+
+    const opinionSamples = {
+      '崔明': {name:'崔明', sex:'男', age:'49', applicant:'高净值 VIP', department:'心内科', expert:'张云', date:'2026-09-24', time:'14:32', version:'V2', source:'online', sourceLabel:'在线签署', pages:2, formal:true, complaint:'胸闷间断发作，近期活动后症状明显。', diagnosis:'1、冠状动脉粥样硬化性心脏病\n2、高血压', advice:'1、建议进一步完善心电图及心脏超声检查。\n2、按现有方案规律服药，监测血压。\n3、如胸痛持续或加重，请及时就医。', delivery:'success', viewed:true, history:[['V2','在线签署','2026-09-24 14:32','当前版本'],['V1','图片上传','2026-09-24 11:18','历史版本']]},
+      '夏娜': {name:'夏娜', sex:'女', age:'42', applicant:'高净值 VIP', department:'内分泌科', expert:'赵维纲', date:'2026-09-24', time:'14:28', version:'V1', source:'upload', sourceLabel:'图片上传', pages:2, formal:true, complaint:'血糖控制欠佳，近期波动明显。', diagnosis:'2型糖尿病', advice:'建议定期监测血糖，并结合复查结果调整后续方案。', delivery:'partial', viewed:false, history:[['V1','图片上传','2026-09-24 14:28','当前版本']]},
+      '覃祖云': {name:'覃祖云', sex:'女', age:'51', applicant:'—', department:'内分泌科', expert:'赵维纲', date:'2026-09-24', time:'', version:'—', source:'draft', sourceLabel:'在线草稿', pages:0, formal:false, complaint:'甲状腺结节复查咨询。', diagnosis:'甲状腺结节', advice:'', delivery:'none', viewed:false, history:[]},
+      '孙德辉': {name:'孙德辉', sex:'男', age:'57', applicant:'—', department:'心内科', expert:'张云', date:'2026-09-24', time:'', version:'—', source:'none', sourceLabel:'未提供', pages:0, formal:false, complaint:'', diagnosis:'', advice:'', delivery:'none', viewed:false, history:[]}
+    };
+    let currentDocument = opinionSamples['崔明'];
+    let currentPatientRow = null;
+
+    function paperHTML(data, pageNo) {
+      const continuation = pageNo > 1;
+      const body = continuation
+        ? '<div class="paper-section"><b>咨询意见（续）</b><p>' + escapeHTML(data.advice || '—').replace(/\n/g,'<br>') + '</p></div>'
+        : '<div class="paper-meta"><span>姓名：' + escapeHTML(data.name) + '</span><span>性别：' + escapeHTML(data.sex || '—') + '</span><span>年龄：' + escapeHTML(data.age || '—') + '</span><span>申请医院：' + escapeHTML(data.applicant || '—') + '</span></div><div class="paper-meta"><span>科室：' + escapeHTML(data.department) + '</span><span>专家：' + escapeHTML(data.expert) + '</span></div><div class="paper-section"><b>主诉：</b><p>' + escapeHTML(data.complaint || '—').replace(/\n/g,'<br>') + '</p></div><div class="paper-section"><b>诊断：</b><p>' + escapeHTML(data.diagnosis || '—').replace(/\n/g,'<br>') + '</p></div><div class="paper-section"><b>咨询意见：</b><p>' + escapeHTML(data.advice || '—').replace(/\n/g,'<br>') + '</p></div><div class="paper-sign">专家签字：<span class="signature-ink">' + escapeHTML(data.expert) + '</span></div>';
+      return '<article class="paper"><div class="paper-brand">北京尤迈医学诊所</div><h2>咨询记录</h2><div class="paper-date">咨询日期：' + escapeHTML(data.date) + '</div>' + body + '<div class="paper-foot">线上咨询，根据患者提供资料，专家意见仅供参考。　　第 ' + pageNo + ' 页</div></article>';
+    }
+    function documentThumbs(data) {
+      let html = '';
+      for (let i=1; i<=data.pages; i+=1) html += '<button class="document-page open-image"><strong>咨询记录</strong><div class="doc-line"></div><div class="doc-line"></div><div class="doc-line short"></div><div class="doc-line"></div><div class="doc-line short"></div><span class="page-label">第 ' + i + ' 页</span></button>';
+      return html;
+    }
+    function loadPaper(data) {
+      currentDocument = data;
+      let pages = '';
+      const total = Math.max(1, data.pages || 1);
+      for (let i=1; i<=total; i+=1) pages += paperHTML(data, i);
+      q('#printPaper').innerHTML = pages;
+      q('#wordPreviewPaper').innerHTML = paperHTML(data, 1).replace('class="paper"', 'class="paper word-sheet"');
+      q('#imagePreviewMeta').textContent = (data.version || '预览') + ' · 共' + total + '页 · 用于患者查看与现场打印';
+    }
+    function renderVersions(data) {
+      if (!data.history.length) return '<div class="muted">暂无正式版本</div>';
+      return data.history.map(function(v){
+        return '<div class="version-item"><div><b>' + v[0] + ' · ' + v[1] + '</b><small>' + v[2] + '</small></div><span class="tag ' + (v[3]==='当前版本'?'green':'gray') + '">' + v[3] + '</span></div>';
+      }).join('');
+    }
+    function deliveryHTML(data) {
+      if (!data.formal) return '<span>正式意见形成后记录通知状态</span>';
+      if (data.delivery === 'partial') return '<span>短信：<b style="color:#08724f">成功</b></span><span>企微：<b style="color:#b83c3c">失败</b></span><span>患者查看：未查看</span>';
+      return '<span>短信：<b style="color:#08724f">成功</b></span><span>企微：<b style="color:#08724f">成功</b></span><span>患者查看：<b style="color:#08724f">' + (data.viewed?'已查看':'未查看') + '</b></span>';
+    }
+    function openPatientDrawer(row) {
+      currentPatientRow = row;
+      const cells = row.cells;
+      const data = opinionSamples[row.dataset.patient];
+      currentDocument = data;
+      q('#drawerVisitTag').textContent = cells[1].innerText.trim();
+      q('#drawerVisitTag').className = 'tag ' + (cells[1].innerText.includes('完成')?'green':cells[1].innerText.includes('就诊')?'blue':'gray');
+      q('#drawerName').textContent = data.name;
+      q('#drawerIdentity').textContent = cells[3].innerText.trim();
+      q('#drawerPhone').textContent = cells[4].innerText.trim();
+      q('#drawerAppointment').textContent = cells[0].innerText.trim();
+      q('#drawerDepartment').textContent = cells[6].innerText.trim();
+      q('#drawerLocation').textContent = cells[8].innerText.trim();
+      q('#drawerNumber').textContent = cells[7].innerText.trim();
+      q('#drawerClinic').textContent = cells[6].innerText.trim();
+      q('#drawerTicketTime').textContent = cells[1].innerText.includes('待') ? '—' : '09:46:18';
+      q('#drawerVisitTime').textContent = cells[1].innerText.includes('待') ? '—' : '10:18:30';
+      q('#drawerCompleteTime').textContent = cells[1].innerText.includes('完成') ? (data.time || '—') : '—';
+      q('#drawerVisitSteps').innerHTML = ['取号','叫号','就诊','已完成'].map(function(label, index){
+        const done = cells[1].innerText.includes('完成') || (cells[1].innerText.includes('就诊') && index < 3);
+        return '<div class="visit-step ' + (done?'done':'') + '">' + label + '</div>';
+      }).join('');
+      q('#drawerOpinionState').textContent = data.formal ? '已完成' : (data.source==='draft'?'草稿':'未提供');
+      q('#drawerOpinionState').className = 'tag ' + (data.formal?'green':data.source==='draft'?'gold':'gray');
+      q('#drawerOpinionMeta').textContent = data.formal ? '当前版本 ' + data.version + ' · ' + data.sourceLabel + ' · ' + data.date + ' ' + data.time : '当前没有可交付的正式会诊意见';
+      q('#drawerOpinionMeta').classList.toggle('hidden', !data.formal);
+      q('#drawerOpinionPages').innerHTML = data.formal ? documentThumbs(data) : '';
+      q('#drawerOpinionEmpty').classList.toggle('hidden', data.formal);
+      q('#drawerDelivery').innerHTML = deliveryHTML(data);
+      q('#drawerVersionList').innerHTML = renderVersions(data);
+      q('#drawerImage').disabled = !data.formal;
+      q('#drawerPrint').disabled = !data.formal;
+      q('#drawerResend').disabled = !data.formal;
+      q('#drawerWord').classList.toggle('hidden', data.source !== 'online');
+      q('#drawerUpload').disabled = cells[1].innerText.includes('待');
+      q('#patientDrawer').classList.add('show');
+    }
+    qa('.open-patient-detail').forEach(function(btn){ btn.addEventListener('click', function(){ openPatientDrawer(btn.closest('tr')); }); });
+    qa('[data-close-patient-drawer]').forEach(function(btn){ btn.addEventListener('click', function(){ q('#patientDrawer').classList.remove('show'); }); });
+    function closeActionMenus(){ qa('.action-menu').forEach(function(m){ m.classList.remove('show'); }); }
+    qa('.toggle-action-menu').forEach(function(btn){ btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      const menu=btn.nextElementSibling;
+      const willOpen=!menu.classList.contains('show');
+      closeActionMenus();
+      if(!willOpen) return;
+      menu.classList.add('show');
+      const rect=btn.getBoundingClientRect();
+      const width=menu.offsetWidth;
+      const height=menu.offsetHeight;
+      const left=Math.max(8, Math.min(rect.right-width, window.innerWidth-width-8));
+      const top=rect.bottom+height+8>window.innerHeight ? Math.max(8, rect.top-height-5) : rect.bottom+5;
+      /* 活动视图带有入场动画并会成为fixed元素的定位容器，需换算为容器内坐标。 */
+      const containingView=menu.closest('.admin-view');
+      const containingRect=containingView ? containingView.getBoundingClientRect() : {left:0,top:0};
+      menu.style.left=(left-containingRect.left)+'px';
+      menu.style.top=(top-containingRect.top)+'px';
+    }); });
+    document.addEventListener('click', function(){ qa('.action-menu').forEach(function(m){ m.classList.remove('show'); }); });
+    q('#activityTableWrap').addEventListener('scroll', closeActionMenus);
+    function rowDocument(btn) { const row=btn.closest('tr'); return row ? opinionSamples[row.dataset.patient] : currentDocument; }
+    qa('.open-image').forEach(function(btn){ btn.addEventListener('click', function(){ const data=rowDocument(btn); if(!data || !data.formal) return; loadPaper(data); openModal('#paperModal'); }); });
+    q('#drawerOpinionPages').addEventListener('click', function(e){ if(e.target.closest('.open-image')){ loadPaper(currentDocument); openModal('#paperModal'); } });
+    qa('.view-word').forEach(function(btn){ btn.addEventListener('click', function(){ const data=rowDocument(btn); loadPaper(data); openModal('#wordModal'); }); });
+    qa('.print-image').forEach(function(btn){ btn.addEventListener('click', function(){ const data=rowDocument(btn); loadPaper(data); openModal('#paperModal'); }); });
+    qa('.resend').forEach(function(btn){ btn.addEventListener('click', function(){ currentDocument=rowDocument(btn); openModal('#resendModal'); }); });
+    qa('.upload-opinion').forEach(function(btn){ btn.addEventListener('click', function(){ const row=btn.closest('tr'); currentPatientRow=row; currentDocument=opinionSamples[row.dataset.patient]; q('#uploadOpinionTitle').textContent='上传会诊意见｜'+currentDocument.name; q('#uploadReason').value=''; q('#manualOpinionFiles').value=''; q('#uploadOpinionError').textContent=''; openModal('#uploadOpinionModal'); }); });
+    q('#drawerImage').addEventListener('click', function(){ loadPaper(currentDocument); openModal('#paperModal'); });
+    q('#drawerWord').addEventListener('click', function(){ loadPaper(currentDocument); openModal('#wordModal'); });
+    q('#drawerPrint').addEventListener('click', function(){ loadPaper(currentDocument); openModal('#paperModal'); });
+    q('#drawerResend').addEventListener('click', function(){ openModal('#resendModal'); });
+    q('#drawerUpload').addEventListener('click', function(){ q('#uploadOpinionTitle').textContent='上传会诊意见｜'+currentDocument.name; q('#uploadReason').value=''; q('#manualOpinionFiles').value=''; q('#uploadOpinionError').textContent=''; openModal('#uploadOpinionModal'); });
+    q('#confirmResend').addEventListener('click', function(){ const renewed=q('#renewSecureLink').checked; closeModals(); toast(renewed?'新链接已生成，旧链接已失效，双渠道补发任务已创建':'双渠道补发任务已创建，继续使用有效链接'); q('#renewSecureLink').checked=false; });
+    q('#confirmManualUpload').addEventListener('click', function(){
+      const files=q('#manualOpinionFiles').files;
+      const reason=q('#uploadReason').value.trim();
+      if(!files.length){ q('#uploadOpinionError').textContent='请选择至少一张会诊意见图片'; return; }
+      if(!reason){ q('#uploadOpinionError').textContent='请填写本次上传或更新原因'; return; }
+      currentDocument.formal=true; currentDocument.source='upload'; currentDocument.sourceLabel='图片上传'; currentDocument.pages=files.length; currentDocument.time='15:10'; currentDocument.version='V'+(currentDocument.history.length+1);
+      currentDocument.history.unshift([currentDocument.version,'图片上传','2026-09-24 15:10','当前版本']);
+      currentDocument.history.slice(1).forEach(function(v){ v[3]='历史版本'; });
+      closeModals(); toast('图片已提交为当前版本，双渠道通知任务已创建');
+      if(currentPatientRow) openPatientDrawer(currentPatientRow);
+    });
+    q('#browserPrint').addEventListener('click', function(){ document.body.classList.add('printing-images'); window.print(); window.setTimeout(function(){ document.body.classList.remove('printing-images'); }, 100); });
+
+    function multiValues(id){ return qa('input:checked', q('#'+id)).map(function(input){ return input.value; }); }
+    function refreshMultiSelect(id, placeholder){
+      const root=q('#'+id);
+      const values=multiValues(id);
+      q('.multi-select-trigger span',root).textContent=values.length===0?placeholder:(values.length===1?values[0]:'已选 '+values.length+' 项');
+      q('.multi-select-trigger',root).classList.toggle('has-value',values.length>0);
+    }
+    qa('.multi-select').forEach(function(root){
+      q('.multi-select-trigger',root).addEventListener('click',function(e){ e.stopPropagation(); qa('.multi-select').forEach(function(other){ if(other!==root) other.classList.remove('open'); }); root.classList.toggle('open'); });
+      q('.multi-select-panel',root).addEventListener('click',function(e){ e.stopPropagation(); });
+      qa('input',root).forEach(function(input){ input.addEventListener('change',function(){ refreshMultiSelect(root.id,root.id==='activityOpinion'?'意见状态':'交付状态'); }); });
+    });
+    document.addEventListener('click',function(){ qa('.multi-select').forEach(function(root){ root.classList.remove('open'); }); });
+    const activitySingleFilterIds=['activityDate','activityPeriod','activityKeyword','activityVisit','activityExpert','activityType','activityLocation','activityTag','activityFollowup'];
+    function filterActivity(){
+      const singles=activitySingleFilterIds.map(function(id){ return q('#'+id).value.trim(); });
+      const opinions=multiValues('activityOpinion');
+      const deliveries=multiValues('activityDelivery');
+      let visible=0;
+      qa('#activityTableBody tr').forEach(function(row){
+        const haystack=(row.dataset.search||'').toLowerCase();
+        const baseMatched=singles.every(function(value){ return !value || haystack.includes(value.toLowerCase()); });
+        const opinionMatched=!opinions.length || opinions.some(function(value){ return haystack.includes(value.toLowerCase()); });
+        const deliveryMatched=!deliveries.length || deliveries.some(function(value){ return haystack.includes(value.toLowerCase()); });
+        const matched=baseMatched&&opinionMatched&&deliveryMatched;
+        row.classList.toggle('hidden',!matched);
+        if(matched) visible+=1;
+      });
+      q('#activityEmpty').classList.toggle('hidden',visible!==0);
+      q('#activityTableWrap table').classList.toggle('hidden',visible===0);
+      q('#activityResultCount').textContent='共 '+visible+' 条结果';
+      const advancedIds=['activityExpert','activityType','activityLocation','activityTag','activityFollowup'];
+      const used=advancedIds.filter(function(id){ return q('#'+id).value; }).length+(deliveries.length?1:0);
+      q('#advancedFilterCount').textContent=used ? used : '';
+      q('#advancedFilterCount').classList.toggle('show', used>0);
+    }
+    q('#activitySearch').addEventListener('click', function(){ filterActivity(); toast('已按当前条件查询'); });
+    q('#activityReset').addEventListener('click', function(){ activitySingleFilterIds.forEach(function(id){ q('#'+id).value=''; }); qa('.multi-select input').forEach(function(input){ input.checked=false; }); refreshMultiSelect('activityOpinion','意见状态'); refreshMultiSelect('activityDelivery','交付状态'); filterActivity(); toast('筛选条件已重置'); });
+    q('#toggleAdvancedFilters').addEventListener('click', function(){ q('#advancedFilters').classList.toggle('show'); q('#toggleAdvancedFilters').classList.toggle('active'); });
+    q('#activityExport').addEventListener('click', function(){ toast('已按当前筛选条件创建导出任务'); });
+    q('#activityImport').addEventListener('click', function(){ toast('已打开现有预约导入流程'); });
+    qa('[data-stat-filter]').forEach(function(card){ card.addEventListener('click', function(){ if(card.dataset.statFilter==='已完成') q('#activityVisit').value='已完成'; else { const box=q('#activityDelivery input[value="通知异常"]'); box.checked=true; refreshMultiSelect('activityDelivery','交付状态'); } filterActivity(); toast('已筛选'+card.dataset.statFilter+'患者'); }); });
+    q('#showActivityEmpty').addEventListener('click', function(){ showAdminView('activity'); q('#activityKeyword').value='不存在的患者'; filterActivity(); qa('.prototype-toolbar button').forEach(function(b){ b.classList.remove('active'); }); q('#showActivityEmpty').classList.add('active'); });
+
+    let phraseTarget = null, activePhraseButton = null;
+    qa('.add-phrase').forEach(btn => btn.addEventListener('click', () => {
+      phraseTarget = btn.closest('.field-block').querySelector('.editable-phrases');
+      activePhraseButton = null; q('#phraseModalTitle').textContent = '新增常用语'; q('#deletePhrase').classList.add('hidden');
+      q('#phraseFieldLabel').textContent = `所属字段：${btn.dataset.field}`;
+      q('#newPhraseContent').value = ''; q('#phraseEnabled').checked = true; q('#phraseError').textContent = '';
+      openModal('#phraseModal');
+    }));
+    function bindConfigurablePhrase(btn) {
+      btn.addEventListener('click', () => {
+        activePhraseButton = btn; phraseTarget = btn.parentElement; q('#phraseModalTitle').textContent = '编辑常用语';
+        q('#phraseFieldLabel').textContent = `所属字段：${btn.closest('.field-block').querySelector('.field-title span').textContent}`;
+        q('#newPhraseContent').value = btn.textContent; q('#phraseEnabled').checked = !btn.classList.contains('disabled'); q('#phraseError').textContent = '';
+        q('#deletePhrase').classList.remove('hidden'); openModal('#phraseModal');
+      });
+    }
+    qa('.configurable-phrase').forEach(bindConfigurablePhrase);
+    q('#saveNewPhrase').addEventListener('click', () => {
+      const value = q('#newPhraseContent').value.trim();
+      if (!value) { q('#phraseError').textContent = '请输入常用语内容'; return; }
+      const duplicate = qa('.phrase-chip', phraseTarget).some(btn => btn !== activePhraseButton && btn.textContent.trim() === value);
+      if (duplicate) { q('#phraseError').textContent = '当前字段已存在相同常用语'; return; }
+      const btn = activePhraseButton || document.createElement('button'); btn.className = 'phrase-chip configurable-phrase'; btn.textContent = value;
+      btn.classList.toggle('disabled', !q('#phraseEnabled').checked); btn.title = q('#phraseEnabled').checked ? '点击编辑' : '已停用，点击编辑';
+      if (!activePhraseButton) { phraseTarget.appendChild(btn); bindConfigurablePhrase(btn); }
+      closeModals(); toast('科室常用语已保存');
+    });
+    q('#deletePhrase').addEventListener('click', () => { if(activePhraseButton) activePhraseButton.remove(); closeModals(); toast('常用语已删除'); });
+    q('#togglePhraseOrder').addEventListener('click', () => {
+      const list = q('#advicePhraseList');
+      if (list.children.length > 1) list.insertBefore(list.lastElementChild, list.firstElementChild);
+      toast('展示顺序已调整并保存');
+    });
+    qa('[data-dept]').forEach(btn => btn.addEventListener('click', () => {
+      qa('[data-dept]').forEach(b => b.classList.toggle('active', b === btn)); q('#currentDepartment').textContent = `当前科室：${btn.dataset.dept}。下方顺序与专家工作台一致。`;
+      toast(`已切换至${btn.dataset.dept}`);
+    }));
+
+    const patients = [
+      {id:'6002', name:'夏娜', period:'am', vip:false, visitType:'加号', visit:'已就诊', status:'草稿', queueOrder:1, complaint:'血糖控制欠佳，近期波动明显', diagnosis:'2型糖尿病', advice:'建议定期监测血糖'},
+      {id:'6001', name:'覃祖云', period:'am', vip:false, visitType:'预约', visit:'已就诊', status:'未填写', queueOrder:2, complaint:'', diagnosis:'', advice:''},
+      {id:'6005', name:'唐垒', period:'am', vip:true, visitType:'预约', visit:'已就诊', status:'已签署', queueOrder:3, complaint:'发现血糖升高14年，近一个月升高明显', diagnosis:'1、2型糖尿病　2、高血压　3、高脂血症', advice:'1、建议定期监测血糖。\n2、建议完善相关检查，一个月后复诊。'},
+      {id:'6007', name:'卢惠玲', period:'am', vip:false, visitType:'预约', visit:'待就诊', status:'未填写', queueOrder:4, complaint:'', diagnosis:'', advice:''},
+      {id:'6010', name:'孙德辉', period:'pm', vip:true, visitType:'预约', visit:'待就诊', status:'未填写', queueOrder:1, complaint:'', diagnosis:'', advice:''},
+      {id:'6012', name:'冯家强', period:'pm', vip:false, visitType:'加号', visit:'已就诊', status:'草稿', queueOrder:2, complaint:'甲状腺结节复查咨询', diagnosis:'甲状腺结节', advice:''},
+      {id:'6015', name:'金乃仓', period:'pm', vip:false, visitType:'预约', visit:'待叫号', status:'未填写', queueOrder:3, complaint:'', diagnosis:'', advice:''}
+    ];
+    const WORK_PERIOD_SWITCH_MINUTES = 13 * 60 + 30;
+    function resolveCurrentPeriod(){ const now=new Date(); return now.getHours()*60+now.getMinutes()>=WORK_PERIOD_SWITCH_MINUTES?'pm':'am'; }
+    let currentPeriod = resolveCurrentPeriod(), currentPatientId = currentPeriod==='am'?'6002':'6010', patientFilter = 'all', editingSigned = false, submitGoNext = false, forceSaveError = false, editorInitialized = false;
+    function visiblePatients() {
+      const keyword = q('#patientSearch').value.trim();
+      return patients.filter(p => p.period === currentPeriod && (patientFilter === 'all' || p.status === patientFilter) && (!keyword || p.name.includes(keyword) || p.id.includes(keyword)));
+    }
+    function renderPatients() {
+      const list = q('#patientList'); const items = visiblePatients();
+      items.sort(function(a,b){ return a.queueOrder-b.queueOrder; });
+      list.innerHTML = items.length ? items.map(function(p){ return '<button class="patient-item '+(p.id===currentPatientId?'active':'')+'" data-pid="'+p.id+'"><div class="patient-item-head"><strong>'+p.name+'　<span class="muted">'+p.id+'</span></strong><span class="tag '+(p.status==='已签署'?'green':p.status==='草稿'?'gold':'gray')+'">'+p.status+'</span></div><small>'+p.visit+'　·　'+p.visitType+(p.vip?'　<span class="tag gold">VIP</span>':'')+'</small></button>'; }).join('') : '<div style="padding:28px;text-align:center" class="muted">当前筛选无患者</div>';
+      q('#expertEmpty').classList.toggle('hidden', items.length !== 0); q('#expertEditorCard').classList.toggle('hidden', items.length === 0);
+      qa('.patient-item', list).forEach(btn => btn.addEventListener('click', () => selectPatient(btn.dataset.pid)));
+    }
+    function saveCurrent(silent = true) {
+      const p = patients.find(x => x.id === currentPatientId); if (!p) return;
+      if (p.status === '已签署' && !editingSigned) return;
+      if (forceSaveError) { q('#saveState').textContent = '自动保存失败，请重试'; q('#saveState').classList.add('error'); if(!silent) toast('保存失败，输入内容仍保留在当前页面'); return false; }
+      p.complaint = q('#complaint').value; p.diagnosis = q('#diagnosis').value; p.advice = q('#advice').value;
+      if (p.complaint || p.diagnosis || p.advice) p.status = '草稿';
+      q('#saveState').textContent = '已自动保存'; q('#saveState').classList.remove('error');
+      if (!silent) toast('草稿已保存');
+      renderPatients(); updateEditorHeader(p); return true;
+    }
+    function updateEditorHeader(p) {
+      q('#editorPatientName').innerHTML = p.name+(p.vip?' <span class="tag gold">VIP</span>':'');
+      q('#editorPatientMeta').textContent = '就诊号 '+p.id+'｜'+p.visit+'｜'+p.visitType+'｜内分泌科｜赵维纲专家';
+      q('#editorOpinionTag').textContent = p.status;
+      q('#editorOpinionTag').className = `tag ${p.status==='已签署'?'green':p.status==='草稿'?'gold':'gray'}`;
+      const readOnly = p.status === '已签署' && !editingSigned;
+      ['complaint','diagnosis','advice'].forEach(id => q('#'+id).readOnly = readOnly);
+      q('#editingBanner').classList.toggle('show', editingSigned);
+      q('#editSigned').classList.toggle('hidden', p.status !== '已签署' || editingSigned);
+      q('#saveDraft').classList.toggle('hidden', readOnly);
+      q('#saveNext').classList.toggle('hidden', readOnly);
+      q('#submitOpinion').classList.toggle('hidden', readOnly);
+      q('#submitNext').classList.toggle('hidden', readOnly);
+    }
+    function selectPatient(id) {
+      if (editorInitialized && saveCurrent(true) === false) { toast('当前内容保存失败，暂不能切换患者'); return; } currentPatientId = id; editingSigned = false; editorInitialized = true;
+      const p = patients.find(x => x.id === id); q('#complaint').value = p.complaint; q('#diagnosis').value = p.diagnosis; q('#advice').value = p.advice;
+      updateEditorHeader(p); renderPatients();
+    }
+    function goNext() {
+      const items = visiblePatients().filter(p => p.visit !== '已取消'); const idx = items.findIndex(p => p.id === currentPatientId);
+      if (idx >= 0 && idx < items.length - 1) selectPatient(items[idx+1].id); else toast('当前时段已无下一位患者');
+    }
+    qa('[data-period]').forEach(btn => btn.addEventListener('click', () => {
+      if (saveCurrent(true) === false) { toast('当前内容保存失败，暂不能切换时段'); return; } currentPeriod = btn.dataset.period; qa('[data-period]').forEach(b => b.classList.toggle('active', b === btn));
+      const first = visiblePatients()[0]; if (first) currentPatientId = first.id; renderPatients(); if (first) selectPatient(first.id);
+    }));
+    q('#patientSearch').addEventListener('input', renderPatients);
+    qa('.patient-filter').forEach(btn => btn.addEventListener('click', () => { patientFilter = btn.dataset.filter; renderPatients(); }));
+    let saveTimer;
+    qa('#complaint,#diagnosis,#advice').forEach(el => el.addEventListener('input', () => { q('#saveState').textContent = '保存中…'; q('#saveState').classList.remove('error'); clearTimeout(saveTimer); saveTimer = setTimeout(() => saveCurrent(true), 600); }));
+    qa('.field-phrases .phrase-chip').forEach(btn => btn.addEventListener('click', () => {
+      const field = btn.closest('.field-phrases').dataset.for; const el = q('#'+field); if (el.readOnly) return;
+      const insertion = (field === 'advice' && el.value ? '\n' : '') + btn.textContent; const start = el.selectionStart ?? el.value.length;
+      el.value = el.value.slice(0,start) + insertion + el.value.slice(el.selectionEnd ?? start); el.focus(); saveCurrent(true); toast('常用语已插入，可继续编辑');
+    }));
+    q('#saveDraft').addEventListener('click', () => saveCurrent(false));
+    q('#saveNext').addEventListener('click', () => { saveCurrent(false); goNext(); });
+    q('#editSigned').addEventListener('click', () => { editingSigned = true; updateEditorHeader(patients.find(x => x.id === currentPatientId)); toast('已进入修改模式'); });
+    function openConfirm(goNextAfter = false) {
+      saveCurrent(true); const p = patients.find(x => x.id === currentPatientId);
+      if (!p.complaint || !p.diagnosis || !p.advice) { toast('请完整填写主诉、诊断和咨询意见'); return; }
+      if (q('.signature-preview').textContent.includes('暂无签名')) { toast('请选择已存签名，或先在签名管理中新增签名'); openModal('#signatureModal'); return; }
+      submitGoNext = goNextAfter;
+      q('#confirmOpinionPreview').innerHTML = `<h3>${escapeHTML(p.name)}｜${p.id}</h3><p><b>主诉：</b>${escapeHTML(p.complaint)}</p><p><b>诊断：</b>${escapeHTML(p.diagnosis)}</p><p><b>咨询意见：</b>${escapeHTML(p.advice).replace(/\n/g,'<br>')}</p><div class="signature-box"><span>专家签字</span><span class="signature-ink">赵维纲</span></div>`;
+      openModal('#confirmOpinionModal');
+    }
+    q('#previewOpinion').addEventListener('click', () => { const p=patients.find(x=>x.id===currentPatientId); loadPaper({name:p.name,sex:'—',age:'—',applicant:'高净值 VIP',department:'内分泌科',expert:'赵维纲',date:q('#expertWorkDate').textContent,time:'',version:'预览',source:'online',sourceLabel:'在线填写预览',pages:1,formal:false,complaint:p.complaint||'—',diagnosis:p.diagnosis||'—',advice:p.advice||'—',delivery:'none',history:[]}); openModal('#paperModal'); });
+    q('#submitOpinion').addEventListener('click', () => openConfirm(false));
+    q('#submitNext').addEventListener('click', () => openConfirm(true));
+    q('#finalConfirmOpinion').addEventListener('click', () => {
+      const p = patients.find(x => x.id === currentPatientId); p.status = '已签署'; editingSigned = false; closeModals(); updateEditorHeader(p); renderPatients(); toast('Word与分页图片已生成，就诊进度已完成，双渠道交付任务已创建'); if (submitGoNext) goNext();
+    });
+    qa('.adjust-phrases').forEach(btn => btn.addEventListener('click', () => {
+      q('#personalPhraseField').textContent = `当前字段：${btn.dataset.fieldLabel}`; q('#personalPhraseInput').value=''; q('#personalPhraseError').textContent=''; openModal('#personalPhraseModal');
+    }));
+    q('#addPersonalPhrase').addEventListener('click', () => {
+      const value=q('#personalPhraseInput').value.trim(); if(!value){ q('#personalPhraseError').textContent='请输入个人常用语'; return; }
+      const row=document.createElement('div'); row.className='signature-box'; row.style.marginTop='8px'; row.innerHTML=`<span>${escapeHTML(value)}</span><div class="actions"><button class="btn small personal-move">上移</button><button class="btn small personal-hide">隐藏</button></div>`; q('#personalPhraseList').appendChild(row); bindPersonalPhraseRow(row); q('#personalPhraseInput').value=''; toast('个人常用语已新增');
+    });
+    function bindPersonalPhraseRow(row){
+      q('.personal-hide',row).addEventListener('click',()=>{ row.remove(); toast('已从个人工作台隐藏'); });
+      q('.personal-move',row).addEventListener('click',()=>{ if(row.previousElementSibling) row.parentElement.insertBefore(row,row.previousElementSibling); toast('个人顺序已调整'); });
+    }
+    qa('#personalPhraseList .signature-box').forEach(bindPersonalPhraseRow);
+    q('#restoreDepartmentPhrases').addEventListener('click', () => toast('已恢复当前字段的科室默认常用语'));
+    q('#morePhrases').addEventListener('click', () => { q('.extra-phrase').classList.toggle('hidden'); q('#morePhrases').textContent = q('.extra-phrase').classList.contains('hidden') ? '更多' : '收起'; });
+    q('#endWorkbench').addEventListener('click', () => openModal('#endWorkbenchModal'));
+    q('#confirmEndWorkbench').addEventListener('click', () => { closeModals(); showPage('admin-prototype'); showAdminView('activity'); toast('专家工作台已结束'); });
+    qa('.expert-state').forEach(btn => btn.addEventListener('click', () => {
+      qa('.expert-state').forEach(b=>b.classList.toggle('active',b===btn)); forceSaveError=false; q('#saveState').classList.remove('error'); q('#patientSearch').value=''; patientFilter='all'; currentPeriod=resolveCurrentPeriod(); qa('[data-period]').forEach(function(periodBtn){ periodBtn.classList.toggle('active',periodBtn.dataset.period===currentPeriod); });
+      if(btn.dataset.expertState==='signed'){ currentPeriod='am'; qa('[data-period]').forEach(function(periodBtn){ periodBtn.classList.toggle('active',periodBtn.dataset.period==='am'); }); currentPatientId='6005'; renderPatients(); selectPatient('6005'); }
+      else if(btn.dataset.expertState==='empty'){ q('#patientSearch').value='不存在'; renderPatients(); }
+      else if(btn.dataset.expertState==='save-error'){ currentPatientId='6002'; renderPatients(); selectPatient('6002'); forceSaveError=true; q('#saveState').textContent='自动保存失败，请重试'; q('#saveState').classList.add('error'); }
+      else { currentPatientId=currentPeriod==='am'?'6002':'6010'; renderPatients(); selectPatient(currentPatientId); q('#saveState').textContent='已自动保存'; }
+    }));
+
+    q('#signatureManager').addEventListener('click', () => openModal('#signatureModal'));
+    q('#changeSignature').addEventListener('click', () => openModal('#signatureModal'));
+    const canvas = q('#signatureCanvas'), ctx = canvas.getContext('2d'); let drawing = false, signatureDrawn = false;
+    const point = e => { const r = canvas.getBoundingClientRect(); const s = e.touches ? e.touches[0] : e; return {x:(s.clientX-r.left)*(canvas.width/r.width),y:(s.clientY-r.top)*(canvas.height/r.height)}; };
+    const startDraw = e => { drawing = true; const p=point(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); };
+    const moveDraw = e => { if(!drawing) return; const p=point(e); ctx.lineWidth=4; ctx.lineCap='round'; ctx.strokeStyle='#15251f'; ctx.lineTo(p.x,p.y); ctx.stroke(); signatureDrawn=true; e.preventDefault(); };
+    ['mousedown','touchstart'].forEach(ev => canvas.addEventListener(ev,startDraw,{passive:false}));
+    ['mousemove','touchmove'].forEach(ev => canvas.addEventListener(ev,moveDraw,{passive:false}));
+    ['mouseup','mouseleave','touchend'].forEach(ev => canvas.addEventListener(ev,()=>drawing=false));
+    q('#clearCanvas').addEventListener('click', () => { ctx.clearRect(0,0,canvas.width,canvas.height); signatureDrawn=false; });
+    q('#saveCanvas').addEventListener('click', () => { if(!signatureDrawn){ q('#signatureError').textContent='请先在画板内完成签名'; return; } const url=canvas.toDataURL('image/png'); qa('.signature-preview').forEach(el => el.innerHTML=`<img src="${url}" alt="专家签名">`); q('#signatureError').textContent=''; toast('手写签名已保存到本活动'); });
+    q('#signatureUpload').addEventListener('change', e => { const file=e.target.files[0]; if(!file) return; if(!['image/png','image/jpeg'].includes(file.type) || file.size>5*1024*1024){ q('#signatureError').textContent='仅支持不超过5MB的PNG或JPG图片'; e.target.value=''; return; } q('#signatureError').textContent=''; const reader=new FileReader(); reader.onload=()=>{ q('#uploadPreview').innerHTML=`<img src="${reader.result}" alt="上传签名预览" style="max-width:130px;max-height:55px">`; qa('.signature-preview').forEach(el => el.innerHTML=`<img src="${reader.result}" alt="专家签名">`); toast('签名图片已加入本活动'); }; reader.readAsDataURL(file); });
+    function appendSavedSignature(sample,label){
+      const row=document.createElement('div'); row.className='signature-box saved-signature'; row.dataset.signature=label; row.style.marginTop='8px';
+      row.innerHTML='<span class="signature-ink">'+sample+'</span><div class="actions"><span class="tag green signature-default hidden">默认</span><button class="btn small use-signature">本次使用</button><button class="btn small set-default-signature">设为默认</button><button class="btn small danger delete-saved-signature">删除</button></div>';
+      q('#savedSignatureList').appendChild(row); updateSavedSignatureCount();
+    }
+    q('#saveCanvas').addEventListener('click',function(){ if(signatureDrawn) appendSavedSignature('手写签名 '+(qa('.saved-signature').length+1),'手写签名'); });
+    q('#signatureUpload').addEventListener('change',function(e){ const file=e.target.files[0]; if(!file||!['image/png','image/jpeg'].includes(file.type)||file.size>5*1024*1024) return; appendSavedSignature('图片签名 '+(qa('.saved-signature').length+1),file.name); });
+    function updateSavedSignatureCount(){ const count=qa('.saved-signature',q('#savedSignatureList')).length; q('#savedSignatureList').previousElementSibling.querySelector('h4').textContent='本活动已存签名（'+count+'）'; }
+    function chooseSavedSignature(row){ const sample=row.firstElementChild.innerHTML; qa('.signature-preview').forEach(function(el){ el.innerHTML=sample; }); closeModals(); toast('已选择该签名用于本次会诊意见'); }
+    q('#savedSignatureList').addEventListener('click',function(e){
+      const row=e.target.closest('.saved-signature'); if(!row) return;
+      if(e.target.closest('.use-signature')) chooseSavedSignature(row);
+      if(e.target.closest('.set-default-signature')){
+        qa('.saved-signature').forEach(function(item){ q('.signature-default',item).classList.add('hidden'); q('.set-default-signature',item).classList.remove('hidden'); });
+        q('.signature-default',row).classList.remove('hidden'); q('.set-default-signature',row).classList.add('hidden'); toast('已设为本活动默认签名');
+      }
+      if(e.target.closest('.delete-saved-signature')){
+        const wasDefault=!q('.signature-default',row).classList.contains('hidden'); row.remove();
+        const first=q('.saved-signature',q('#savedSignatureList'));
+        if(wasDefault&&first){ q('.signature-default',first).classList.remove('hidden'); q('.set-default-signature',first).classList.add('hidden'); }
+        if(!first) qa('.signature-preview').forEach(function(el){ el.innerHTML='<span class="muted">暂无签名</span>'; });
+        updateSavedSignatureCount(); toast('签名已从本活动可复用列表删除');
+      }
+    });
+    q('#useStoredSignature').addEventListener('click',function(){ if(!q('.saved-signature',q('#savedSignatureList'))) toast('当前活动暂无已存签名，请先手写或上传'); openModal('#signatureModal'); });
+    q('#clearAllSignatures').addEventListener('click', () => { q('#savedSignatureList').innerHTML=''; qa('.signature-preview').forEach(el => el.innerHTML='<span class="muted">暂无签名</span>'); updateSavedSignatureCount(); toast('本活动可复用签名已清空'); });
+
+    function showPatientView(name) {
+      q('#verifyView').classList.toggle('hide', name !== 'verify'); q('#patientOpinionView').classList.toggle('show', name === 'opinion'); q('#patientExpiredView').classList.toggle('show', name === 'expired');
+      qa('[data-patient-view]').forEach(b => b.classList.toggle('active', b.dataset.patientView === name));
+    }
+    qa('[data-patient-view]').forEach(btn => btn.addEventListener('click', () => showPatientView(btn.dataset.patientView)));
+    q('#sendCode').addEventListener('click', () => { q('#verifyError').textContent=''; q('#sendCode').disabled=true; q('#sendCode').textContent='59秒后重发'; toast('验证码已发送，原型验证码为 123456'); setTimeout(()=>{ q('#sendCode').disabled=false; q('#sendCode').textContent='获取验证码'; },1200); });
+    q('#verifySubmit').addEventListener('click', () => { if(!q('#verifyCode').value){ q('#verifyError').textContent='请输入短信验证码'; return; } if(q('#verifyCode').value !== '123456'){ q('#verifyError').textContent='验证码错误或已失效，请重新获取'; return;} q('#verifyError').textContent=''; showPatientView('opinion'); toast('身份验证成功'); });
+    q('#patientImages').addEventListener('click', () => { loadPaper(opinionSamples['崔明']); openModal('#paperModal'); });
+    q('#savePatientImages').addEventListener('click', () => toast('已开始保存当前版本的全部图片'));
+    q('#expiredHelp').addEventListener('click', () => toast('请联系现场工作人员重新发送查看通知'));
+
+    const productRuleTable = rows => `<div class="table-wrap"><table class="anno-table"><thead><tr><th>页面项</th><th>业务来源 / 取值口径</th><th>展示规则</th><th>交互、校验与异常</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    const productStateTable = rows => `<div class="table-wrap"><table class="anno-table"><thead><tr><th>状态/场景</th><th>进入条件</th><th>页面表现</th><th>可执行动作</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    const renderAnnotation = a => `${a.summary?`<div class="anno-summary">${a.summary}</div>`:''}${a.fields?`<h4>字段与展示规则</h4>${productRuleTable(a.fields)}`:''}${a.steps?`<h4>交互序列</h4><ol class="anno-sequence">${a.steps.map(s=>`<li>${s}</li>`).join('')}</ol>`:''}${a.states?`<h4>状态与异常</h4>${productStateTable(a.states)}`:''}${a.impact?`<h4>操作后影响</h4><p>${a.impact}</p>`:''}`;
+    const annotations = {
+      'admin-nav': {title:'管理后台导航范围', summary:'当前原型只保留与本方案有关的“活动管理”和“会诊配置”，避免把未改造模块误认为本期交付。', fields:[['活动管理','现有活动管理菜单','默认进入活动详情完整患者列表','意见字段与操作直接并入该页，不新增下级管理菜单'],['会诊配置','新增配置入口','进入会诊意见常用语页面','点击后切换页面并同步面包屑和选中态']], impact:'菜单权限沿用现有平台分配；没有相应菜单权限的人员不显示对应入口。'},
+      'admin-entry': {title:'活动详情新增入口', summary:'会诊意见管理直接并入现有活动详情；本期只新增“专家工作台”入口，不再建设重复的意见管理页面。', fields:[['专家工作台','当前活动、活动日期和专家安排','活动可工作时显示','点击后先选日期、再选“科室-专家”'],['意见管理','当前活动完整患者名单','通过新增列表字段、详情区和操作完成','不离开活动详情，不损失原预约信息']], states:[['活动已结束','不再允许新开临时工作台','入口禁用并说明原因','仍可查看和打印历史正式意见'],['日期下无专家','该日期未安排专家','专家候选为空且不可确认','返回选择其他日期']], impact:'开启工作台只建立临时使用范围，不改变患者就诊状态。'},
+      'admin-activity-stats': {title:'活动详情统计卡片', summary:'首屏优先展示现场沟通所需的总量与结果量，并控制为单行六卡，适配常见笔记本宽度。', fields:[['预约人数','当前活动预约记录数','沿用现有口径','取消记录仍按现有系统规则处理'],['取号人数','已产生就诊号的人数','同一患者只计一次','重新取号不重复'],['就诊人数','进度达到已就诊或已完成','整数','按当前最新进度'],['已完成人数','当前存在可交付正式会诊意见的人数','包括图片上传与在线签署两条路径','点击筛选就诊进度“已完成”'],['通知异常','当前正式版本短信或企微任一失败的人数','任一渠道失败即计入','点击筛选交付状态“通知异常”'],['取消人数','当前活动取消记录数','沿用现有口径','只读']], impact:'正式图片形成后同时刷新已完成数；通知结果变化后刷新异常数。草稿不进入顶部统计。'},
+      'admin-activity-filter': {title:'活动患者筛选', summary:'保留线上现有全部筛选项，新增意见状态与交付状态；默认只展示现场最常用条件，其余折叠。', fields:[['默认条件','预约时间、时间段、关键词、就诊进度、意见状态','进入页面直接展示','不同条件之间为“且”'],['更多筛选','就诊科室、就诊类型、地点、VIP、回访状态、交付状态','默认收起；有已选条件时显示条件数','收起不清空已选值'],['关键词','就诊号、姓名、身份证号、手机号','支持模糊匹配','空值不限制'],['意见状态','未提供、草稿、已完成·图片上传、已完成·在线签署','多选；同一条件所选值之间为“或”','未选择表示全部'],['交付状态','已通知、通知异常、已查看、未查看','多选；同一患者可同时命中多个值','未选择表示全部']], steps:['点击意见状态或交付状态展开复选列表，可连续勾选多个值。','设置其他条件后点击查询，列表回到第一页。','收起多选面板不清空勾选；按钮展示单个值或“已选N项”。','点击重置清空展开区、默认区及全部多选值。'], states:[['收起但有条件','更多筛选中仍有已选项','按钮显示已选条件数','查询继续使用这些条件'],['无结果','没有同时满足条件的记录','显示空态','可重置或修改条件']], impact:'导出使用当前全部筛选条件；筛选本身不修改患者数据。'},
+      'admin-activity-list': {title:'活动患者完整列表', summary:'保留线上现有字段并追加意见字段；宽表横向滚动，预约时间、就诊进度、患者和操作列固定。患者列只展示VIP业务标签，加号/预约统一在“就诊类型”列展示。', fields:[['现有字段','预约时间、就诊进度、患者、身份证号、手机号、回访状态、就诊科室、就诊号、地点、就诊类型','取当前活动患者最新数据；敏感信息脱敏','未产生值显示“—”'],['患者/VIP','患者姓名与预约VIP属性','VIP时姓名下展示VIP；非VIP不展示标签','不得把“加号”作为患者标签'],['意见状态：未提供','不存在在线已保存内容，且不存在任何成功正式版本','显示“未提供”；最后提交为“—”；交付为不适用','就诊后可在线填写或上传手写意见'],['意见状态：草稿','在线三项正文至少一项已成功保存，且从未形成成功正式版本','显示“草稿 / 在线草稿”','不可通知、查看正式图片或打印'],['意见状态：已完成·在线签署','最近成功正式版本来源为专家在线提交，Word及全部分页图片均成功','显示“已完成 / 在线签署·版本号”','可查看图片和内部Word、打印、补发、修改'],['意见状态：已完成·图片上传','最近成功正式版本来源为工作人员上传，全部图片均成功','显示“已完成 / 图片上传·版本号”','可查看图片、打印、补发、上传更新；无Word入口'],['已有正式版又产生在线修改稿','正式版之后保存了未提交修改','主状态仍显示已完成，可附加“有更新草稿”提示','患者、通知和打印仍使用上一正式版'],['交付：已通知','当前正式版本短信或企业微信至少一个渠道发送成功','命中“已通知”筛选','不代表两个渠道均成功'],['交付：通知异常','当前正式版本短信或企业微信任一渠道明确失败','失败渠道标红；可同时命中“已通知”','允许补发，不撤销正式意见'],['交付：已查看','患者完成身份验证并成功打开当前正式版本至少一页图片','显示已查看','版本更新后新版本重新计算'],['交付：未查看','当前正式版本尚无成功打开记录','显示未查看','与已通知/通知异常可同时存在'],['最后提交','当前正式版本全部文件成功形成时间','年月日＋时分；无正式版为“—”','失败尝试不覆盖'],['操作','查看＋更多','按当前状态展示图片、Word、打印、补发、上传','菜单浮于表格之上，不受横向滚动区域裁切']], states:[['无正式版本','未提供或草稿','交付状态不适用','不可打印或通知'],['部分渠道成功','一个渠道成功、另一个失败','同时命中已通知＋通知异常＋已查看/未查看','可补发'],['新版本失败','新Word或任一图片未成功','继续展示上一成功版本及其交付结果','重试更新']], impact:'后提交且成功的一方成为当前版本，历史版本保留；新版本失败时列表继续显示上一成功版本。'},
+      'admin-patient-detail': {title:'预约详情抽屉', summary:'在现有预约详情中保留预约、就诊和病历信息，并追加会诊意见、交付结果及版本记录。', fields:[['进度步骤','取号、叫号、就诊、已完成','按患者当前进度点亮','正式意见形成前最多到“就诊”'],['预约信息','姓名、证件、手机号、预约时间、科室、地点','保持现有页面口径；敏感信息脱敏','只读'],['就诊信息','就诊号、就诊科室、取号/就诊/完成时间','完成时间取当前正式意见首次形成时点','未发生显示“—”'],['患者病历','现有医助上传病历图片','缩略图展示','沿用现有查看能力'],['会诊意见','当前正式版本图片、来源、版本和交付结果','可多页；草稿仅显示未形成正式意见提示','不可在详情内修改专家正文']], steps:['点击列表“查看”打开抽屉。','核对完整预约和就诊信息。','有正式意见时可查看图片、在线版Word、补发或打印。','关闭后保留列表筛选和滚动位置。'], impact:'查看不改变状态；患者真正打开意见后才更新“已查看”。'},
+      'admin-version-history': {title:'会诊意见版本记录', summary:'图片上传与在线签署使用同一版本链，按成功提交时间倒序。', fields:[['版本号','同一患者同一场会诊的成功正式版本','V1、V2连续递增','失败提交不占用正式版本号'],['来源','图片上传或在线签署','每版固定保存','历史来源不随当前版本改变'],['提交时间','该版本正式形成时间','年月日时分','不可人工修改'],['当前标识','最后一次成功提交的版本','仅一个版本标记当前','新版本失败时不切换']], impact:'患者查看、通知补发与打印默认使用当前版本；历史版本仅供内部追溯。'},
+      'launcher-overview': {title:'开启专家工作台弹窗', summary:'用于为外部临时专家建立一次固定范围的工作台，不创建专家账号。', fields:[['工作日期','当前活动已配置的执行日期','必选；按日期升序','未选择日期时专家不可选'],['选择专家','所选日期下已安排专家','必选；格式“科室-专家”，不展示诊室号','只显示该日期可工作的专家']], steps:['选择日期。','系统刷新该日期下的专家候选。','选择专家并核对确认文案。','点击“确认开启”进入工作台。'], states:[['日期未选','直接确认','提示“请选择工作日期”','停留弹窗'],['专家未选','已选日期但未选专家','提示“请选择该日期下的专家”','停留弹窗'],['开启失败','确认后未能建立工作台','保留日期和专家选择并提示重试','取消或再次确认']], impact:'成功后工作台固定当前活动、所选日期和专家；工作台内不提供日期或专家切换。'},
+      'launcher-date': {title:'工作日期选择', summary:'多日活动必须在入口选择日期，工作台内部不切换日期。', fields:[['日期候选','当前活动已配置的全部执行日期','显示“日期（星期）”；按日期升序','不展示活动范围外日期'],['默认值','无','默认“请选择活动日期”','不得默认今天，避免误开错误日期']], states:[['活动进行中','活动尚未整体结束','可选择该活动任一已配置执行日期','用于当天工作或历史日期补录'],['活动已结束','活动整体状态为已结束','专家工作台入口禁用','不能新开工作台'],['日期无专家','日期有效但未安排专家','日期仍可选择','专家区域显示无候选']], impact:'切换日期会清空已选择专家。'},
+      'launcher-expert': {title:'专家候选规则', summary:'专家候选随工作日期变化，展示格式统一为“科室-专家”。', fields:[['专家候选','所选日期下参与当前活动的专家安排','格式“内分泌科-赵维纲”；同一专家多科室时分行展示','不展示诊室号，不允许选择其他日期专家'],['排序','活动专家安排顺序','先科室后专家','同名专家仍按对应科室区分']], states:[['未选日期','无专家范围','控件禁用并显示“请先选择活动日期”','不可展开'],['无候选','日期下无专家','显示“该日期暂无专家”','确认按钮不可完成']], impact:'选择结果决定工作台患者范围与签名归属。'},
+      'admin-opinion-detail': {title:'会诊意见与交付区', summary:'统一预览当前正式版本的分页图片；两种形成方式在患者交付和打印上效力相同。', fields:[['当前版本','最后一次成功提交版本','展示版本号、来源和提交时间','失败更新不替换'],['意见图片','在线填写转换图片或人工上传图片','按页序展示缩略图，支持多页','点击任一页打开完整分页预览'],['交付结果','短信、企业微信、患者查看','三个结果独立展示','失败渠道标红并允许同时补发'],['Word版','仅在线填写版本生成的内部文件','只在内部后台和专家工作台显示入口','图片上传版本不显示，患者端不提供']], states:[['草稿','在线内容未正式提交','不展示正式图片和交付状态','不可打印或通知'],['转换失败','Word或分页图片未全部形成','仍为草稿或保留上一正式版本','允许重新提交'],['通知异常','正式图片已形成但任一通知失败','意见仍为已完成','允许补发']], impact:'查看和打印均使用当前版本全部图片；打印不限制次数，也暂不建立打印状态。'},
+      'admin-resend': {title:'同时补发与安全链接', summary:'补发属于通知操作，不改变专家意见；安全链接自生成起7×24小时有效。', fields:[['短信','患者登记手机号','始终创建补发任务','发送结果独立记录'],['企业微信','患者已绑定的健康小助理','已绑定立即补发；未绑定等待绑定后推送','不阻断短信'],['当前链接','当前正式版本最近生成的安全链接','未过期时默认复用','链接只允许访问对应患者当前正式版本'],['重新生成','工作人员勾选“重新生成安全链接”','生成新链接并使旧链接立即失效','原链接已过期时系统自动执行']], steps:['点击“同时补发”。','如需主动废止旧链接，勾选重新生成；否则复用仍有效链接。','确认后创建短信与企微两条独立补发任务。','记录链接生成时间、失效时间、操作人和各渠道结果。'], states:[['链接已过期','生成时间已超过7×24小时','自动生成新链接后再补发','无需工作人员先做其他操作'],['正式版本更新','形成新的当前正式版本','自动生成新链接，上一版本链接立即失效','发送更新通知'],['重复点击','同一任务处理中再次确认','不重复创建','返回列表'],['单渠道失败','短信或企微失败','列表显示具体失败渠道','仍可再次补发']], impact:'补发不修改意见与患者查看状态；生成新链接会使旧链接立即失效。'},
+      'admin-phrases-overview': {title:'常用语配置页', summary:'平台公共能力，不与活动绑定；页面采用按科室查看、按字段所见即所得配置。', fields:[['科室范围','平台已维护科室＋全部科室/通用','左侧单选','默认进入上次查看科室；首次进入按科室顺序首项'],['固定字段','主诉、诊断、咨询意见','三个区域始终显示','不允许增删字段'],['常用语','当前科室、当前字段下已配置内容','按展示顺序排列','停用内容保留但标记停用']], impact:'公共配置影响该科室专家后续打开工作台时的默认常用语，不回写既有意见。'},
+      'admin-phrase-dept': {title:'科室切换', summary:'一次只查看一个科室；切换科室时右侧三个字段整体刷新。', fields:[['全部科室/通用','适用于无专科差异的公共内容','列表首项','专家工作台先加载通用，再叠加专科'],['具体科室','平台科室目录','按平台科室顺序','已停用科室不再新增内容，但历史配置保留']], steps:['点击科室。','更新选中态与当前科室提示。','刷新三个字段下的常用语。'], states:[['科室无配置','三个字段均无常用语','保留字段和新增入口，显示空列表','可直接新增']], impact:'未保存的编辑弹窗存在时，切换科室前提示先保存或放弃。'},
+      'admin-phrase-field': {title:'字段与常用语展示', summary:'常用语归属于明确字段，不能跨字段共用。', fields:[['字段名称','公司固定模板','主诉、诊断、咨询意见','只读'],['输入区预览','专家实际填写位置','用于确认常用语在专家填写页的展示位置','配置页中只读，不保存正文'],['常用语卡片','当前科室＋当前字段配置','按顺序从左到右展示','点击进入编辑']], impact:'常用语插入意见后成为普通正文；后续配置变化不修改已填写内容。'},
+      'admin-phrase-actions': {title:'常用语新增与排序', summary:'配置人员可新增、编辑、停用、删除和调整顺序。', fields:[['新增常用语','当前科室＋当前字段','点击打开编辑弹窗','内容必填且同字段不可重复'],['调整顺序','当前字段全部常用语','进入排序后拖动或上下移动','保存后专家工作台按新顺序展示']], steps:['选择科室和字段。','新增或点击现有常用语编辑。','保存内容与启用状态。','必要时调整顺序。'], states:[['重复内容','同科室同字段存在完全相同内容','提示重复并阻止保存','继续编辑'],['已停用','保留配置但不再供专家点击','卡片显示停用样式','可重新启用']], impact:'只影响后续加载；专家个人排序和隐藏不受公共顺序覆盖。'},
+      'phrase-editor': {title:'常用语新增/编辑弹窗', summary:'同一弹窗承载新增和编辑，标题、删除按钮随入口变化。', fields:[['所属字段','入口所在固定字段','只读展示','关闭后不保留未保存内容'],['常用语内容','配置人员输入','必填，最多200字，保留标点和换行','去除首尾空格；同字段不可重复'],['启用','业务可用状态','新增默认启用','停用后不在专家工作台出现'],['删除','仅编辑现有常用语时显示','危险操作','删除不影响已经插入的意见正文']], steps:['填写或修改内容。','选择启用状态。','保存成功关闭弹窗并刷新当前字段。'], states:[['保存失败','未能保存','保留输入并显示原因','再次保存或取消']], impact:'保存只作用于当前科室和当前字段。'},
+      'expert-session': {title:'专家工作台会话范围与时段', summary:'工作台是工作人员为外部专家开启的临时页面，不提供账号登录和范围切换。', fields:[['活动','开启入口所在活动','顶部固定展示','不可切换'],['日期','开启时选择的活动日期','顶部固定展示','不可切换'],['专家','开启时选择的科室-专家','顶部固定展示','不可切换'],['上午/下午','患者预约记录中的时段字段','允许切换；不按自然12点分界','进入时用系统当前时间与本活动配置的时段切换点判断'],['时段人数','当前活动＋固定日期＋固定专家＋对应预约时段下，未取消的有效预约记录数','显示在上午/下午标签后；例“上午 4”','按预约记录计数，同一患者存在两条有效预约时分别计数；不受搜索和意见状态筛选影响']], steps:['进入工作台时读取系统当前时间和活动时段配置；早于“下午开始时间”进入上午，达到或晚于该时间进入下午。','示例活动下午开始时间为13:30；新疆等地区按活动配置，不写死自然时间。','切换时段前先保存当前患者内容，保存成功后展示目标时段队列第一条。','保存失败时停留原时段。'], states:[['目标时段无患者','按当前时间定位的时段人数为0','仍选中该时段并显示空态','专家可手动切换，不自动跳到另一时段'],['会话失效','工作人员结束或超过活动使用范围','禁止继续提交并提示重新开启','保留未保存输入直到离开'],['日期已结束','允许补录时进入','顶部明确日期','仍按当前系统时间定位初始时段，可手动切换']], impact:'所有查看、填写和签名行为都限定当前活动、日期和专家；时段切换不改变患者预约数据。'},
+      'expert-signature-entry': {title:'顶部签名管理入口', summary:'用于管理本活动当前专家的可复用签名，不切换专家或活动。', fields:[['入口可见性','临时工作台有效且当前专家已确定','顶部始终展示','无已存签名时仍可进入新增'],['已存签名','当前活动＋当前专家保存的全部签名','允许多个，标记一个默认','不能查看其他专家签名'],['默认签名','已存签名中的默认项','新患者首次打开表单时自动带入','专家可为本次意见另选其他签名']], steps:['点击签名管理。','手写或上传形成新签名，或在列表选择已有签名。','可设置默认、删除单个或清空全部。','关闭后回到当前患者，正文和草稿保持不变。'], impact:'管理签名不自动提交意见；已完成意见中的签名快照不受删除影响。'},
+      'expert-end-entry': {title:'结束工作台入口', summary:'结束的是本次临时会话，不是活动、专家排班或患者任务。', fields:[['可结束条件','当前会话有效','顶部始终展示','存在保存中或保存失败内容时不能直接结束'],['已保存内容','草稿、正式版本、个人常用语调整','继续保留','重新开启同范围会话后可继续'],['签名','当前活动已存签名','结束单次工作台后继续保留','仅活动结束时按规则自动清空']], steps:['点击结束工作台。','系统先检查当前正文是否保存成功。','弹窗说明未保存风险并要求再次确认。','确认后关闭临时会话并返回活动详情。'], states:[['正在保存','自动保存未完成','结束按钮进入等待或提示稍候','保存结束后再操作'],['保存失败','当前输入未保存','阻止结束并定位错误','重试保存或保留页面']], impact:'结束后原页面不可继续访问患者或提交意见；不改变患者就诊和意见状态。'},
+      'expert-list': {title:'患者列表、取值与排序', summary:'列表展示当前临时会话范围内各就诊节点的有效预约记录，帮助专家掌握本时段完整任务量。', fields:[['数据范围','当前活动＋工作日期＋当前专家＋当前上午/下午，预约未取消的记录','包括待叫号、待就诊、已就诊、已完成','不展示其他专家、日期、时段或已取消记录'],['患者项','姓名、就诊号、意见状态、就诊进度、就诊类型、VIP','VIP以标签展示；加号/预约以普通文字展示为就诊类型','点击切换患者'],['意见状态','当前预约记录对应意见','未填写、草稿、已签署','在线内容保存后立即刷新'],['排序','现有叫号队列顺序号','队列顺序号升序；不按姓名、意见状态或最后编辑时间排序','尚未进入队列的记录排在已有队列记录之后，再按预约导入顺序'],['搜索','姓名、就诊号','只筛当前时段列表','清空恢复原队列顺序'],['状态筛选','全部、未填写、草稿、已签署','单选；与搜索条件同时满足','不改变顶部时段总人数']], steps:['系统先按会话范围取有效预约。','按队列顺序号生成稳定列表。','搜索或筛选只控制可见项，不重新计算业务顺序。','“下一位”按当前可见列表顺序进入下一条。'], states:[['无结果','搜索或状态筛选后无匹配','左右区域显示筛选空态','清除条件或切换时段'],['时段无患者','基础范围内无有效预约','显示时段空态','切换时段'],['保存失败','当前患者草稿未保存','阻止切换患者','保留输入并重试']], impact:'列表切换不改变叫号队列；顶部人数按未筛选基础范围计算。'},
+      'expert-patient': {title:'当前患者信息', summary:'右侧始终与左侧选中预约记录一致，避免跨患者填写。', fields:[['患者姓名','当前选中预约记录的患者','完整展示','切换后立即更新'],['VIP','预约记录的VIP属性','仅VIP展示金色标签；非VIP不展示标签','加号不得展示为患者标签'],['就诊类型','预约或加号','在就诊信息中以文字展示','来源于现有就诊类型字段'],['就诊信息','就诊号、进度、科室、专家','单行展示','只读'],['意见状态','未填写、草稿、已签署','状态标签','决定表单和按钮状态']], states:[['已签署只读','当前意见已签署且未点击编辑','正文只读，显示编辑修改','可预览'],['修改中','从已签署进入编辑','显示修改稿提示','再次确认前患者仍看旧正式版本']], impact:'切换患者前必须完成当前输入的自动保存。'},
+      'expert-form': {title:'会诊意见固定表单', summary:'当前版本固定为主诉、诊断、咨询意见三个正文，不配置模板字段。', fields:[['主诉','专家填写或引用常用语','多行文本；正式提交必填','点击常用语插入光标位置后仍可编辑'],['诊断','专家填写或引用常用语','多行文本；正式提交必填','不自动生成诊断'],['咨询意见','专家填写或引用常用语','多行文本；正式提交必填；保留换行','多条常用语按新行插入'],['自动保存','正文变化','显示保存中、已保存或保存失败','停止输入、切换患者/时段前触发']], states:[['未填写','三个正文均为空','状态未填写','可开始填写'],['草稿','至少一个正文有已保存内容','状态草稿','不可通知或打印'],['保存失败','内容未成功保存','红色提示且保留输入','禁止切换患者和时段']], impact:'常用语只是录入辅助，插入后作为普通正文保存。'},
+      'expert-signature': {title:'会诊意见本次签名区', summary:'正式提交必须明确本次使用的签名；默认签名只是自动带入，可随时改选本活动其他已存签名。', fields:[['本次使用签名','当前患者本次意见选中的签名','展示签名预览','提交时固化为版本快照'],['选择已存签名','当前活动＋当前专家的全部已存签名','点击打开签名列表；允许多个','选择“本次使用”后立即带回，不改变默认设置'],['签名管理','当前活动签名资产','可新增、设默认、删除和清空','不能访问其他专家签名']], steps:['存在默认签名时，新患者首次打开自动带入默认签名。','没有本次签名但存在已存签名时，点击“选择已存签名”，再点目标签名的“本次使用”。','没有任何已存签名时，进入签名管理手写或上传，保存后再选择。'], states:[['无本次签名','预览区显示暂无签名','确认提交被阻止','打开签名列表或新增签名'],['默认签名被删除','该签名不再可选','如存在其他签名则提示设置新默认','已完成意见快照不变'],['已签署修改','编辑正式意见','可复用或改选本活动签名','再次提交视为重新确认']], impact:'删除、清空或更换已存签名不改变历史正式版本中的签名快照。'},
+      'expert-actions': {title:'保存、预览与提交操作', summary:'草稿与正式提交严格区分；正式提交成功的判断以分页图片全部生成成功为准。', fields:[['保存草稿','当前患者结构化正文','保存后仍为草稿','不生成交付文件、不通知、不改变就诊进度'],['保存并下一位','保存成功后切换','仅当前时段筛选序列','保存失败不得切换'],['预览','当前正文套用固定模板','展示图片预览效果','不创建正式版本'],['确认提交','三正文完整且有活动签名','打开确认弹窗','缺项时定位并提示'],['确认提交并下一位','同确认提交','全部处理成功后切换','任何环节失败停留当前患者'],['编辑修改','从当前正式版本创建修改稿','旧正式版本继续有效','再次成功提交后生成下一版本']], states:[['处理中','生成Word、转换分页图片和创建交付任务','按钮禁用并展示进度','不可重复提交'],['Word或图片失败','没有形成完整可交付图片','保留草稿；如已有正式版则继续保留旧版','允许重试，不触发通知'],['通知失败','正式图片已形成','意见和就诊进度仍为已完成','后台标记通知异常并允许补发']], impact:'分页图片成功后创建正式版本、将就诊进度更新为已完成，并同时发起短信与企业微信通知；在线版Word仅供内部查看。'},
+      'expert-personal-phrases': {title:'专家个人常用语调整', summary:'专家在工作台内的调整只影响本人，不影响同科室其他专家。', fields:[['当前字段','从主诉/诊断/咨询意见入口带入','只读','不能在弹窗内跨字段'],['常用语列表','科室公共内容叠加专家个人内容','按专家个人顺序展示','可上移、隐藏'],['新增个人常用语','专家输入','必填；仅本人可见','新增后进入当前字段列表'],['恢复科室默认','当前字段个人调整','操作前说明影响','清除本人隐藏和排序，保留科室公共内容']], impact:'个人设置绑定专家档案，不与活动绑定；本活动和后续活动均按本人设置展示。'},
+      'signature-manager': {title:'活动级多签名管理', summary:'专家在当前活动内可保存多个签名并设置一个默认签名；活动结束后清空全部可复用原图。', fields:[['手写签名','当前画板手写轨迹','必须实际书写后才能“保存为新签名”','每次保存追加一条，不覆盖现有签名'],['上传图片','专家选择本地图片','仅PNG/JPG，不超过5MB','校验通过后追加一条签名'],['已存签名列表','当前活动＋当前专家保存的全部签名','逐条展示预览、默认标识和操作；允许多个','支持本次使用、设为默认、删除'],['默认签名','已存签名中的唯一默认项','列表仅一个“默认”标识','设新默认后旧默认自动取消'],['本次使用','当前患者意见引用','可选择默认以外的任一签名','只改变本次表单，不自动更改默认'],['清空全部','本活动当前专家全部可复用签名','危险操作','清空后正式提交被阻止，历史快照保留']], states:[['无签名','列表为空','主表单显示暂无签名','可手写或上传'],['删除默认签名','默认签名被删除','如有其他签名则第一条成为默认或提示设置','本次已选但未提交签名同步清除'],['活动结束','活动进入结束状态','全部可复用原图自动清空','已完成意见快照保留']], impact:'原始签名不提供单独下载；专家后续独立账号方案不在当前版本。'},
+      'expert-submit-confirm': {title:'正式提交确认', summary:'专家本人完成最后核对；确认后依次生成固定Word和一张或多张分页图片。', fields:[['患者','当前患者姓名和就诊号','固定展示','不可切换'],['主诉/诊断/咨询意见','当前已保存草稿','完整展示并保留换行','只读核对'],['专家签字','当前活动选定签名','展示本次签名快照','无签名不能进入确认']], steps:['专家核对患者、正文与签名。','点击确认后先生成固定模板Word。','将Word转换成按页图片并校验页数完整。','全部图片成功后创建正式版本，进度变为已完成。','同时创建短信和企业微信通知任务。'], states:[['文件生成失败','Word或任一页图片失败','不创建新正式版本，不触发通知','保留草稿或上一正式版本并允许重试'],['通知失败','正式版本已成功形成','保持已完成，展示通知异常','工作人员可同时补发']], impact:'两种正式意见来源效力相同；最后一次成功提交成为当前版本。'},
+      'expert-end-session': {title:'结束专家工作台', summary:'结束操作只关闭临时使用会话，不删除业务数据。', fields:[['保留内容','已保存草稿、已签署意见','继续保留','可由工作人员重新开启同范围工作台'],['未保存输入','页面内尚未保存内容','明确提示可能丢失','保存失败时不允许直接结束']], steps:['点击结束工作台。','阅读影响并确认。','成功后返回活动详情。'], impact:'结束后当前页面不能继续查看患者或提交意见；本活动可复用签名按活动结束规则处理，不因单次工作台结束立即清空。'},
+      'patient-verify': {title:'患者身份验证页面', summary:'短信和企业微信进入同一安全页面；验证前不展示任何健康内容。', fields:[['手机号','当前通知对应患者的登记手机号','仅展示脱敏号码','不可修改'],['短信验证码','患者输入','数字验证码；必填','错误、失效或超限时不进入意见页'],['验证并查看','验证码校验','主按钮','成功后进入本人最新正式意见']], states:[['未验证','首次打开','只展示验证页面','获取验证码、提交验证'],['验证失败','验证码错误或已失效','字段下方显示原因','重新输入或获取']], impact:'验证成功只允许查看当前患者本人意见；不提供跨患者切换。'},
+      'patient-code': {title:'验证码获取与限制', summary:'验证码用于确认当前访问人与登记手机号的一致性。', fields:[['获取验证码','患者登记手机号','点击后进入倒计时','倒计时内不可重复获取'],['有效范围','当前查看链接和登记手机号','一次验证使用','页面提示不暴露健康信息']], states:[['发送失败','短信未成功送达','显示可读原因','允许重新获取'],['次数受限','短时间多次获取','显示稍后再试','不发送新验证码']], impact:'获取验证码不改变患者已查看状态；验证成功并展示正式意见后才记录查看。'},
+      'patient-opinion': {title:'患者正式会诊意见', summary:'患者端只展示当前正式版本的分页图片，不展示结构化正文、Word、草稿或历史版本。', fields:[['版本与确认时间','当前成功版本','展示版本号和提交时间','新版本形成后旧链接仍打开最新版本'],['分页图片','当前版本全部会诊意见图片','按页序纵向展示，可放大与逐页保存','图片上传与在线填写样式均按实际图片展示'],['患者与专家信息','已固化在图片内容中','只读','不得在页面另行拼接未确认数据'],['保存图片','当前版本全部页','按页保存或打包保存','不提供Word入口']], states:[['意见已更新','新正式版本成功形成','刷新后展示新图片和版本号','历史版本患者不可见'],['图片不可用','当前版本图片加载失败','显示重试提示，不回退草稿','联系工作人员或重新加载']], impact:'首次成功展示任一正式图片记录为已查看；重复访问更新最近查看时间。'},
+      'patient-expired': {title:'查看链接有效期与重新生成', summary:'安全链接自生成时起7×24小时有效；到期、正式版本更新或主动重新生成后，旧链接不再展示任何健康信息。', fields:[['有效期起点','首次发送当前正式版本，或工作人员重新生成链接的成功时间','精确到秒，持续7×24小时','补发且复用有效链接时不重新计时'],['自然到期','生成时间加7×24小时','到期后展示统一失效页','不展示姓名、手机号或意见摘要'],['自动生成新链接','原链接已过期时，工作人员点击同时补发','系统先生成新链接再创建通知任务','新链接重新计算7×24小时'],['主动重新生成','原链接仍有效，但工作人员在补发弹窗勾选重新生成','生成新链接，旧链接立即失效','记录操作人、原因、生成与失效时间'],['版本更新','新的正式版本成功形成','自动生成对应新链接','上一版本链接立即失效']], steps:['患者看到失效页后联系现场工作人员。','工作人员在活动详情搜索患者并点击同时补发。','原链接已过期时系统自动生成；仍有效但需废止时勾选重新生成。','新链接通过短信与企业微信同时发送。'], states:[['自然到期','超过7×24小时','显示失效页','申请补发'],['链接被替换','主动重新生成或正式版本更新','旧链接显示失效','使用最新通知'],['生成失败','无法生成新安全链接','不发送包含失效链接的通知','后台提示重试']], impact:'失效访问不改变已查看状态；新链接首次成功打开当前正式版本后记录已查看。'},
+      'formal-image': {title:'正式图片预览与打印', summary:'正式交付载体是当前版本的一张或多张图片；患者预览与现场打印使用同一组图片。', fields:[['图片来源','人工上传图片，或在线Word按页转换图片','按页序完整展示','不混用不同版本页面'],['固定模板','在线填写沿用公司《咨询记录》Word模板','模板本期不可配置','长内容自然生成多页'],['打印范围','当前版本全部图片页','A4纵向逐页打印','不允许只因首屏可见而漏打后续页'],['打印状态','本期不作为业务状态','不限制次数','暂不要求记录打印回执']], states:[['仅草稿','没有正式图片','不允许查看正式图片或打印','返回填写或上传'],['更新失败','新版本图片未全部成功','继续使用上一成功版本','提示重试']], impact:'打印只作用于当前版本图片；签名原图清空不影响已经固化在图片中的签名快照。'},
+      'formal-word': {title:'在线填写Word版', summary:'Word是在线填写路径的内部中间文件，便于内部核对，不是患者交付载体。', fields:[['生成来源','专家确认的结构化正文与签名','按固定公司模板生成','图片上传路径不生成Word'],['可见范围','后台工作人员与当前专家','提供“查看Word版”入口','患者端不显示，不作为通知附件'],['版本关系','与同次生成的分页图片属于同一版本','显示相同版本号','后续更新生成新的Word']], states:[['Word成功但图片失败','未形成完整交付文件','新版本不生效','保留草稿或上一正式版本'],['历史版本','非当前成功版本','仅在版本追溯中查看','默认入口始终打开当前版本']], impact:'Word不可替代正式图片触发已完成；必须完成分页图片转换。'},
+      'manual-upload': {title:'上传手写会诊意见', summary:'现场人员可将专家手写意见按页上传，成功后与在线签署版本具有相同交付效力。', fields:[['图片','JPG或PNG，可多选','至少一张；选择顺序即页序','格式错误、空文件或上传失败时不提交'],['更新原因','本次上传或替换说明','必填，最多200字','用于内部版本记录，不展示给患者'],['版本','基于当前最后成功版本递增','首次为V1，更新为V2等','失败不占版本号']], steps:['选择全部图片并确认顺序。','填写上传或更新原因。','系统完成每页上传与完整性校验。','成功后创建新当前版本、进度更新为已完成并双渠道通知。'], states:[['部分图片失败','任一页未成功','整次不生效','保留上一正式版本并允许重试'],['与在线提交先后发生','两者均成功','按成功时间后者为当前版本','前一版本进入历史']], impact:'上传人不等于专家签署人；页面明确记录来源为图片上传。'},
+    };
+    function toggleAnnotations() { document.body.classList.toggle('annotations-on'); const label=document.body.classList.contains('annotations-on') ? '隐藏标注' : '显示标注'; ['toggleAnnotations','toggleExpertAnnotations','togglePatientAnnotations'].forEach(id=>q('#'+id).textContent=label); }
+    q('#toggleAnnotations').addEventListener('click', e => toggleAnnotations(e.target));
+    q('#toggleExpertAnnotations').addEventListener('click', e => toggleAnnotations(e.target));
+    q('#togglePatientAnnotations').addEventListener('click', e => toggleAnnotations(e.target));
+    qa('.anno-marker').forEach(btn => btn.addEventListener('click', () => { const a=annotations[btn.dataset.anno]; q('#annotationTitle').textContent=a.title; q('#annotationBody').innerHTML=renderAnnotation(a); openModal('#annotationModal'); }));
+
+    qa('.modal-close').forEach(btn => btn.addEventListener('click', closeModals));
+    qa('.modal-backdrop').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) closeModals(); }));
+    document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeModals(); q('#patientDrawer').classList.remove('show'); } });
+    qa('[data-period]').forEach(function(btn){ btn.classList.toggle('active',btn.dataset.period===currentPeriod); });
+    renderPatients(); selectPatient(currentPatientId);
+  </script>
+</body>
+</html>
